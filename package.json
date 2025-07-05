@@ -11,8 +11,10 @@
   },
   "dependencies": {
     "@react-native/new-app-screen": "0.80.1",
+    "lucide-react": "^0.525.0",
     "react": "19.1.0",
-    "react-native": "0.80.1"
+    "react-native": "0.80.1",
+    "react-native-vector-icons": "^10.2.0"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
