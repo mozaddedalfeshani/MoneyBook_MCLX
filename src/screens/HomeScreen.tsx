@@ -5,7 +5,6 @@ import {
   TouchableOpacity,
   ScrollView,
   StyleSheet,
-  Modal,
   Alert,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
@@ -188,53 +187,43 @@ const getShadows = (colors: any) => ({
   },
 });
 
-export default function HomeScreen() {
+export default function HomeScreen({ navigation }: any) {
   const { colors } = useTheme();
   const shadows = getShadows(colors);
   const insets = useSafeAreaInsets();
   const [balance, setBalance] = useState<number>(0);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [infoModalVisible, setInfoModalVisible] = useState<boolean>(false);
-  const [selectedFeature, setSelectedFeature] = useState<any>(null);
 
-  // App features data
-  const appFeatures = [
+  // Navigation cards data
+  const navigationCards = [
     {
       id: 1,
-      title: 'Multi-Account Management',
-      description: 'Create and manage multiple accounts for different purposes',
+      title: 'Accounts',
+      description: 'Manage your accounts',
       icon: 'account-balance-wallet',
+      iconType: 'material',
       color: colors.primary,
-      details:
-        'Organize your finances with separate accounts for personal, business, savings, and more. Each account maintains its own balance and transaction history.',
+      screen: 'Accounts',
     },
     {
       id: 2,
-      title: 'Transaction Tracking',
-      description: 'Record all your income and expenses with detailed reasons',
-      icon: 'trending-up',
+      title: 'History',
+      description: 'View transactions',
+      icon: 'history',
+      iconType: 'fontawesome',
       color: colors.success,
-      details:
-        'Track every cash in and cash out transaction with custom reasons. View detailed transaction history and monitor your spending patterns.',
+      screen: 'Settings',
+      nested: 'History',
     },
     {
       id: 3,
-      title: 'Smart Analytics',
-      description: 'View comprehensive reports and balance insights',
-      icon: 'analytics',
+      title: 'Settings',
+      description: 'App preferences',
+      icon: 'settings',
+      iconType: 'material',
       color: colors.secondary,
-      details:
-        'Get insights into your financial habits with detailed analytics, balance trends, and spending categorization across all your accounts.',
-    },
-    {
-      id: 4,
-      title: 'Secure & Private',
-      description: 'All your data is stored locally on your device',
-      icon: 'security',
-      color: colors.error,
-      details:
-        'Your financial data never leaves your device. Everything is stored locally with robust encryption for maximum privacy and security.',
+      screen: 'Settings',
     },
   ];
 
@@ -248,7 +237,6 @@ export default function HomeScreen() {
   const loadData = async () => {
     try {
       setIsLoading(true);
-      // Initialize store and run migration if needed
       await Store.initialize();
       const data: AppData = await Store.loadData();
       setBalance(data.balance);
@@ -276,46 +264,46 @@ export default function HomeScreen() {
     }
   }, [transactions]);
 
-  // Load data when component mounts
   useEffect(() => {
     loadData();
   }, []);
 
-  // Reload data when navigating back from other screens
   useFocusEffect(
     useCallback(() => {
       loadData();
     }, []),
   );
 
-  const handleFeaturePress = (feature: any) => {
-    setSelectedFeature(feature);
-    setInfoModalVisible(true);
+  const handleCardPress = (card: any) => {
+    if (card.nested) {
+      navigation.navigate(card.screen, { screen: card.nested });
+    } else {
+      navigation.navigate(card.screen);
+    }
   };
 
-  const renderFeatureCard = (feature: any) => (
+  const renderNavigationCard = (card: any) => (
     <TouchableOpacity
-      key={feature.id}
-      style={[styles.featureCard, { borderLeftColor: feature.color }]}
-      onPress={() => handleFeaturePress(feature)}
+      key={card.id}
+      style={[styles.navigationCard, { borderLeftColor: card.color }]}
+      onPress={() => handleCardPress(card)}
       activeOpacity={0.7}
     >
-      <View style={styles.featureHeader}>
-        <View
-          style={[
-            styles.featureIcon,
-            { backgroundColor: feature.color + '20' },
-          ]}
-        >
-          <MaterialIcons name={feature.icon} size={24} color={feature.color} />
+      <View style={styles.cardContent}>
+        <View style={[styles.cardIcon, { backgroundColor: card.color + '20' }]}>
+          {card.iconType === 'material' ? (
+            <MaterialIcons name={card.icon} size={28} color={card.color} />
+          ) : (
+            <FontAwesome5 name={card.icon} size={28} color={card.color} />
+          )}
         </View>
-        <View style={styles.featureContent}>
-          <Text style={styles.featureTitle}>{feature.title}</Text>
-          <Text style={styles.featureDescription}>{feature.description}</Text>
+        <View style={styles.cardTextContent}>
+          <Text style={styles.cardTitle}>{card.title}</Text>
+          <Text style={styles.cardDescription}>{card.description}</Text>
         </View>
         <FontAwesome5
           name="chevron-right"
-          size={16}
+          size={20}
           color={colors.textTertiary}
         />
       </View>
@@ -332,25 +320,9 @@ export default function HomeScreen() {
       paddingTop: Spacing.xl,
       paddingBottom: insets.bottom + 80, // Safe area bottom + tab bar space
     },
-    welcomeSection: {
+    navigationSection: {
       marginHorizontal: Spacing.lg,
-      marginTop: Spacing.xl,
-      marginBottom: Spacing.lg,
-    },
-    welcomeTitle: {
-      fontSize: Typography.fontSize.title1,
-      fontWeight: Typography.fontWeight.bold,
-      color: colors.textPrimary,
-      marginBottom: Spacing.sm,
-    },
-    welcomeSubtitle: {
-      fontSize: Typography.fontSize.body,
-      color: colors.textSecondary,
-      lineHeight: Typography.lineHeight.normal * Typography.fontSize.body,
-    },
-    featuresSection: {
-      marginHorizontal: Spacing.lg,
-      marginTop: Spacing.xl,
+      marginTop: Spacing.xxl,
     },
     sectionTitle: {
       fontSize: Typography.fontSize.title3,
@@ -358,84 +330,19 @@ export default function HomeScreen() {
       color: colors.textPrimary,
       marginBottom: Spacing.lg,
     },
-    featureCard: {
+    navigationCard: {
       backgroundColor: colors.white,
       borderRadius: Spacing.borderRadius.large,
       padding: Spacing.lg,
-      marginBottom: Spacing.md,
+      marginBottom: Spacing.lg,
       borderLeftWidth: 4,
       ...shadows.card,
     },
-    featureHeader: {
+    cardContent: {
       flexDirection: 'row' as const,
       alignItems: 'center' as const,
     },
-    featureIcon: {
-      width: 48,
-      height: 48,
-      borderRadius: 24,
-      justifyContent: 'center' as const,
-      alignItems: 'center' as const,
-      marginRight: Spacing.md,
-    },
-    featureContent: {
-      flex: 1,
-    },
-    featureTitle: {
-      fontSize: Typography.fontSize.headline,
-      fontWeight: Typography.fontWeight.semibold,
-      color: colors.textPrimary,
-      marginBottom: 4,
-    },
-    featureDescription: {
-      fontSize: Typography.fontSize.subheadline,
-      color: colors.textSecondary,
-      lineHeight:
-        Typography.lineHeight.normal * Typography.fontSize.subheadline,
-    },
-    quickActionsSection: {
-      marginHorizontal: Spacing.lg,
-      marginTop: Spacing.xl,
-    },
-    actionButton: {
-      backgroundColor: colors.primary,
-      paddingVertical: Spacing.lg,
-      paddingHorizontal: Spacing.xl,
-      borderRadius: Spacing.borderRadius.large,
-      flexDirection: 'row' as const,
-      alignItems: 'center' as const,
-      justifyContent: 'center' as const,
-      marginBottom: Spacing.md,
-      ...shadows.button,
-    },
-    actionButtonText: {
-      color: colors.textLight,
-      fontSize: Typography.fontSize.callout,
-      fontWeight: Typography.fontWeight.semibold,
-      marginLeft: Spacing.sm,
-    },
-    // Modal styles
-    modalOverlay: {
-      flex: 1,
-      backgroundColor: colors.overlay,
-      justifyContent: 'center' as const,
-      alignItems: 'center' as const,
-      padding: Spacing.xl,
-    },
-    modalContent: {
-      backgroundColor: colors.white,
-      borderRadius: Spacing.borderRadius.xxl,
-      padding: Spacing.xxl,
-      width: '100%' as const,
-      maxWidth: 400,
-      alignItems: 'center' as const,
-    },
-    modalHeader: {
-      flexDirection: 'row' as const,
-      alignItems: 'center' as const,
-      marginBottom: Spacing.xl,
-    },
-    modalIcon: {
+    cardIcon: {
       width: 56,
       height: 56,
       borderRadius: 28,
@@ -443,28 +350,18 @@ export default function HomeScreen() {
       alignItems: 'center' as const,
       marginRight: Spacing.lg,
     },
-    modalTitle: {
+    cardTextContent: {
+      flex: 1,
+    },
+    cardTitle: {
       fontSize: Typography.fontSize.title3,
-      fontWeight: Typography.fontWeight.bold,
-      color: colors.textPrimary,
-    },
-    modalDescription: {
-      fontSize: Typography.fontSize.body,
-      color: colors.textSecondary,
-      lineHeight: Typography.lineHeight.normal * Typography.fontSize.body,
-      textAlign: 'center' as const,
-      marginBottom: Spacing.xl,
-    },
-    closeButton: {
-      backgroundColor: colors.lightGray,
-      paddingVertical: Spacing.md,
-      paddingHorizontal: Spacing.xl,
-      borderRadius: Spacing.borderRadius.large,
-    },
-    closeButtonText: {
-      color: colors.textPrimary,
-      fontSize: Typography.fontSize.callout,
       fontWeight: Typography.fontWeight.semibold,
+      color: colors.textPrimary,
+      marginBottom: 4,
+    },
+    cardDescription: {
+      fontSize: Typography.fontSize.subheadline,
+      color: colors.textSecondary,
     },
   });
 
@@ -482,77 +379,11 @@ export default function HomeScreen() {
         lastCashOut={lastTransactionAmounts.lastCashOut}
       />
 
-      {/* Welcome Section */}
-      <View style={styles.welcomeSection}>
-        <Text style={styles.welcomeTitle}>Welcome to MoneyBook</Text>
-        <Text style={styles.welcomeSubtitle}>
-          Your personal finance companion for tracking multiple accounts,
-          managing transactions, and gaining insights into your spending habits.
-        </Text>
+      {/* Navigation Cards */}
+      <View style={styles.navigationSection}>
+        <Text style={styles.sectionTitle}>Quick Access</Text>
+        {navigationCards.map(renderNavigationCard)}
       </View>
-
-      {/* Features Section */}
-      <View style={styles.featuresSection}>
-        <Text style={styles.sectionTitle}>What You Can Do</Text>
-        {appFeatures.map(renderFeatureCard)}
-      </View>
-
-      {/* Quick Actions */}
-      <View style={styles.quickActionsSection}>
-        <Text style={styles.sectionTitle}>Quick Actions</Text>
-        <TouchableOpacity style={styles.actionButton} activeOpacity={0.7}>
-          <FontAwesome5 name="plus-circle" size={20} color={colors.textLight} />
-          <Text style={styles.actionButtonText}>
-            Go to Accounts to Add Transactions
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.actionButton} activeOpacity={0.7}>
-          <FontAwesome5 name="chart-line" size={20} color={colors.textLight} />
-          <Text style={styles.actionButtonText}>View Transaction History</Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* Feature Details Modal */}
-      <Modal
-        animationType="slide"
-        transparent={true}
-        visible={infoModalVisible}
-        onRequestClose={() => setInfoModalVisible(false)}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            {selectedFeature && (
-              <>
-                <View style={styles.modalHeader}>
-                  <View
-                    style={[
-                      styles.modalIcon,
-                      { backgroundColor: selectedFeature.color + '20' },
-                    ]}
-                  >
-                    <MaterialIcons
-                      name={selectedFeature.icon}
-                      size={32}
-                      color={selectedFeature.color}
-                    />
-                  </View>
-                  <Text style={styles.modalTitle}>{selectedFeature.title}</Text>
-                </View>
-                <Text style={styles.modalDescription}>
-                  {selectedFeature.details}
-                </Text>
-                <TouchableOpacity
-                  style={styles.closeButton}
-                  onPress={() => setInfoModalVisible(false)}
-                  activeOpacity={0.7}
-                >
-                  <Text style={styles.closeButtonText}>Got it!</Text>
-                </TouchableOpacity>
-              </>
-            )}
-          </View>
-        </View>
-      </Modal>
     </ScrollView>
   );
 }
