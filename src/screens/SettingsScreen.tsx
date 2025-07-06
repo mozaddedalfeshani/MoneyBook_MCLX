@@ -1,5 +1,12 @@
 import React from 'react';
-import { View, Text, Switch, Alert, StyleSheet } from 'react-native';
+import {
+  View,
+  Text,
+  Switch,
+  Alert,
+  StyleSheet,
+  TouchableOpacity,
+} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import { useTheme } from '../contexts';
@@ -116,7 +123,7 @@ const Spacing = {
   },
 };
 
-export default function SettingsScreen() {
+export default function SettingsScreen({ navigation }: any) {
   const { currentTheme, colors, toggleTheme, isLoading } = useTheme();
 
   const handleThemeToggle = async () => {
@@ -169,7 +176,17 @@ export default function SettingsScreen() {
       textShadowOffset: { width: 0, height: 1 },
       textShadowRadius: 1,
     },
-    toggleContainer: {
+    settingsSection: {
+      marginBottom: Spacing.xxl,
+    },
+    sectionTitle: {
+      fontSize: Typography.fontSize.large,
+      fontWeight: Typography.fontWeight.semibold,
+      color: colors.textPrimary,
+      marginBottom: Spacing.lg,
+      marginLeft: Spacing.sm,
+    },
+    settingsCard: {
       backgroundColor:
         currentTheme === 'light'
           ? 'rgba(255, 255, 255, 0.9)'
@@ -184,29 +201,59 @@ export default function SettingsScreen() {
       shadowOpacity: 0.2,
       shadowRadius: 12,
       elevation: 8,
-      marginBottom: Spacing.xl,
+      marginBottom: Spacing.md,
       borderWidth: 1,
       borderColor:
         currentTheme === 'light'
           ? 'rgba(255, 255, 255, 0.5)'
           : 'rgba(255, 255, 255, 0.1)',
     },
-    toggleContent: {
-      flex: 1,
-      marginRight: Spacing.lg,
+    navigableCard: {
+      backgroundColor:
+        currentTheme === 'light'
+          ? 'rgba(255, 255, 255, 0.9)'
+          : 'rgba(45, 45, 45, 0.9)',
+      borderRadius: Spacing.borderRadius.large,
+      padding: Spacing.xl,
+      flexDirection: 'row' as const,
+      alignItems: 'center' as const,
+      justifyContent: 'space-between' as const,
+      shadowColor: colors.shadowPrimary,
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.2,
+      shadowRadius: 12,
+      elevation: 8,
+      marginBottom: Spacing.md,
+      borderWidth: 1,
+      borderColor:
+        currentTheme === 'light'
+          ? 'rgba(255, 255, 255, 0.5)'
+          : 'rgba(255, 255, 255, 0.1)',
     },
-    toggleTitle: {
+    cardContent: {
+      flex: 1,
+      marginLeft: Spacing.md,
+    },
+    cardTitle: {
       fontSize: Typography.fontSize.large,
       fontWeight: Typography.fontWeight.semibold,
       color: colors.textPrimary,
       marginBottom: 4,
     },
-    toggleDescription: {
+    cardDescription: {
       fontSize: Typography.fontSize.regular,
       color: colors.textSecondary,
     },
-    themeIcon: {
+    cardIcon: {
+      width: 40,
+      height: 40,
+      borderRadius: 20,
+      justifyContent: 'center' as const,
+      alignItems: 'center' as const,
       marginRight: Spacing.md,
+    },
+    chevronIcon: {
+      marginLeft: Spacing.sm,
     },
     currentThemeText: {
       fontSize: Typography.fontSize.medium,
@@ -268,30 +315,75 @@ export default function SettingsScreen() {
           <Text style={styles.subtitle}>Customize your experience</Text>
         </View>
 
-        {/* Theme Toggle */}
-        <View style={styles.toggleContainer}>
-          <FontAwesome5
-            name={currentTheme === 'light' ? 'sun' : 'moon'}
-            size={24}
-            color={currentTheme === 'light' ? '#FFA726' : '#4A90E2'}
-            style={styles.themeIcon}
-          />
-          <View style={styles.toggleContent}>
-            <Text style={styles.toggleTitle}>Dark Mode</Text>
-            <Text style={styles.toggleDescription}>
-              Switch between light and dark themes
-            </Text>
+        {/* Data & History Section */}
+        <View style={styles.settingsSection}>
+          <Text style={styles.sectionTitle}>Data & History</Text>
+
+          <TouchableOpacity
+            style={styles.navigableCard}
+            onPress={() => navigation.navigate('History')}
+            activeOpacity={0.7}
+          >
+            <View
+              style={[
+                styles.cardIcon,
+                { backgroundColor: colors.primaryLight },
+              ]}
+            >
+              <FontAwesome5 name="history" size={20} color={colors.primary} />
+            </View>
+            <View style={styles.cardContent}>
+              <Text style={styles.cardTitle}>Transaction History</Text>
+              <Text style={styles.cardDescription}>
+                View all transactions with filtering options
+              </Text>
+            </View>
+            <FontAwesome5
+              name="chevron-right"
+              size={16}
+              color={colors.textSecondary}
+              style={styles.chevronIcon}
+            />
+          </TouchableOpacity>
+        </View>
+
+        {/* Appearance Section */}
+        <View style={styles.settingsSection}>
+          <Text style={styles.sectionTitle}>Appearance</Text>
+
+          <View style={styles.settingsCard}>
+            <View
+              style={[
+                styles.cardIcon,
+                {
+                  backgroundColor:
+                    currentTheme === 'light' ? '#FFF3E0' : '#2A2A2A',
+                },
+              ]}
+            >
+              <FontAwesome5
+                name={currentTheme === 'light' ? 'sun' : 'moon'}
+                size={20}
+                color={currentTheme === 'light' ? '#FFA726' : '#4A90E2'}
+              />
+            </View>
+            <View style={styles.cardContent}>
+              <Text style={styles.cardTitle}>Dark Mode</Text>
+              <Text style={styles.cardDescription}>
+                Switch between light and dark themes
+              </Text>
+            </View>
+            <Switch
+              value={currentTheme === 'dark'}
+              onValueChange={handleThemeToggle}
+              trackColor={{
+                false: colors.lightGray,
+                true: colors.primary,
+              }}
+              thumbColor={colors.white}
+              ios_backgroundColor={colors.lightGray}
+            />
           </View>
-          <Switch
-            value={currentTheme === 'dark'}
-            onValueChange={handleThemeToggle}
-            trackColor={{
-              false: colors.lightGray,
-              true: colors.primary,
-            }}
-            thumbColor={colors.white}
-            ios_backgroundColor={colors.lightGray}
-          />
         </View>
 
         {/* Current Theme Display */}
