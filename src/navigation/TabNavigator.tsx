@@ -1,10 +1,10 @@
 /* eslint-disable react/no-unstable-nested-components */
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { Platform } from 'react-native';
+
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import AntDesign from 'react-native-vector-icons/AntDesign';
-import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
+
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import { useTheme } from '../contexts';
 
@@ -27,21 +27,37 @@ export default function TabNavigator() {
         tabBarInactiveTintColor: colors.textTertiary,
         tabBarStyle: {
           backgroundColor: colors.white,
-          borderTopColor: colors.border,
-          borderTopWidth: 0.5,
-          height: 58 + insets.bottom, // Base height + safe area
-          paddingTop: 8,
-          paddingBottom: Math.max(insets.bottom, 10), // At least 10px, or safe area
-          paddingLeft: insets.left,
-          paddingRight: insets.right,
+          backdropFilter: 'blur(10px)',
+          borderTopWidth: 0, // Remove top border
+          height: 80, // Increased height to show labels
+          paddingTop: 5, // Add top padding
+          paddingBottom: 0, // Add top padding
+          paddingLeft: 0, // Add top padding
+          paddingRight: 0, // Add top padding
+          marginHorizontal: 14, // Add top padding
+          marginBottom: 9, // Add top padding
+          marginTop: 0, // Add top padding
+
+          borderRadius: 16, // Slightly smaller radius
+          shadowColor: '#000',
+          shadowOffset: {
+            width: 0,
+            height: -2,
+          },
+          shadowOpacity: 0.08,
+          shadowRadius: 8,
+          elevation: 6, // Reduced shadow
+          position: 'absolute', // Make it float
         },
         tabBarLabelStyle: {
-          fontSize: 11,
+          fontSize: 13,
           fontWeight: '500',
-          marginTop: 4,
+          marginTop: 1,
+          marginBottom: 1,
         },
         tabBarIconStyle: {
-          marginTop: 4,
+          marginTop: 6,
+          marginBottom: 3,
         },
         headerShown: false,
       })}

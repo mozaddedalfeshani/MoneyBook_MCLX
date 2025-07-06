@@ -4,9 +4,10 @@ import {
   DefaultTheme,
   DarkTheme,
 } from '@react-navigation/native';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { TabNavigator } from './src/navigation';
 import { ThemeProvider, useTheme } from './src/contexts';
+import { StatusBar } from 'react-native';
 
 function AppNavigator() {
   const { currentTheme, colors } = useTheme();
@@ -35,9 +36,12 @@ function AppNavigator() {
 function App() {
   return (
     <SafeAreaProvider>
-      <ThemeProvider>
-        <AppNavigator />
-      </ThemeProvider>
+      <SafeAreaView style={{ flex: 1 }}>
+        <StatusBar barStyle="light-content" />
+        <ThemeProvider>
+          <AppNavigator />
+        </ThemeProvider>
+      </SafeAreaView>
     </SafeAreaProvider>
   );
 }
