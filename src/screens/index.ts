@@ -1,3 +1,4 @@
 export { default as HomeScreen } from './HomeScreen';
-export { default as ProfileScreen } from './ProfileScreen';
 export { default as SettingsScreen } from './SettingsScreen';
+export { default as AccountDetailScreen } from './AccountDetailScreen';
+export { default as TableViewScreen } from './TableViewScreen';
