@@ -175,6 +175,13 @@ export default function CalculatorScreen({ navigation }: any) {
       justifyContent: 'center',
       alignItems: 'center',
     },
+    wideButton: {
+      width: buttonSize * 2 + 20, // Double width plus margin
+      height: buttonSize,
+      borderRadius: buttonSize / 2,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
 
     numberButton: {
       backgroundColor: calculatorColors.numberButton,
@@ -208,9 +215,10 @@ export default function CalculatorScreen({ navigation }: any) {
     onPress: () => void,
     buttonStyle: any,
     textStyle: any,
+    isWide?: boolean,
   ) => (
     <TouchableOpacity
-      style={[styles.button, buttonStyle]}
+      style={[styles.button, buttonStyle, isWide && styles.wideButton]}
       onPress={onPress}
       activeOpacity={0.8}
     >
@@ -395,6 +403,7 @@ export default function CalculatorScreen({ navigation }: any) {
             () => handleOperation('='),
             styles.operatorButton,
             styles.operatorButtonText,
+            true,
           )}
         </View>
       </View>
