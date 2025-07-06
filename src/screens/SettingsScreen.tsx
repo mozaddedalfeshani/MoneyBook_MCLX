@@ -1,42 +1,19 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { View, Text, Switch, Alert } from 'react-native';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
-import { ThemeStore, ThemeType } from '../store/slices/themeStore';
-import { getColors } from '../styles/theme/colors';
+import { useTheme } from '../contexts';
 import { Typography } from '../styles/theme/typography';
 import { Spacing } from '../styles/theme/spacing';
 
 export default function SettingsScreen() {
-  const [currentTheme, setCurrentTheme] = useState<ThemeType>('light');
-  const [isLoading, setIsLoading] = useState(true);
-
-  // Get current theme colors
-  const colors = getColors(currentTheme);
-
-  // Load theme on component mount
-  useEffect(() => {
-    loadTheme();
-  }, []);
-
-  const loadTheme = async () => {
-    try {
-      const theme = await ThemeStore.loadTheme();
-      setCurrentTheme(theme);
-    } catch (error) {
-      console.error('Error loading theme:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const { currentTheme, colors, toggleTheme, isLoading } = useTheme();
 
   const handleThemeToggle = async () => {
     try {
-      const newTheme = await ThemeStore.toggleTheme(currentTheme);
-      setCurrentTheme(newTheme);
-
+      await toggleTheme();
       Alert.alert(
         'Theme Changed',
-        `Switched to ${newTheme} theme. Please restart the app to see all changes.`,
+        `Switched to ${currentTheme === 'light' ? 'dark' : 'light'} theme!`,
         [{ text: 'OK' }],
       );
     } catch (error) {

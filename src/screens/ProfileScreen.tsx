@@ -12,14 +12,152 @@ import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import { useFocusEffect } from '@react-navigation/native';
 import Store from '../store/store';
 import { Transaction, AppData } from '../store/types/types';
-import { ProfileScreenStyles } from '../styles/components/profileScreen';
-import { Colors } from '../styles/theme/colors';
+import { useTheme } from '../contexts';
+import { Typography } from '../styles/theme/typography';
+import { Spacing } from '../styles/theme/spacing';
+import { Shadows } from '../styles/theme/shadows';
 
 export default function ProfileScreen() {
+  const { colors } = useTheme();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [balance, setBalance] = useState<number>(0);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [refreshing, setRefreshing] = useState<boolean>(false);
+
+  // Dynamic styles based on current theme
+  const styles = {
+    container: {
+      flex: 1,
+      backgroundColor: colors.background,
+    },
+    loadingContainer: {
+      flex: 1,
+      justifyContent: 'center' as const,
+      alignItems: 'center' as const,
+      backgroundColor: colors.background,
+    },
+    loadingText: {
+      marginTop: Spacing.lg,
+      fontSize: Typography.fontSize.medium,
+      color: colors.textSecondary,
+    },
+    header: {
+      backgroundColor: colors.white,
+      paddingHorizontal: Spacing.xl,
+      paddingVertical: Spacing.xl,
+      borderBottomWidth: Spacing.width.border,
+      borderBottomColor: colors.borderLight,
+      ...Shadows.header,
+    },
+    headerTitle: {
+      fontSize: Typography.fontSize.xxl,
+      fontWeight: Typography.fontWeight.bold,
+      color: colors.textPrimary,
+      marginBottom: Spacing.gap.medium,
+    },
+    balanceContainer: {
+      flexDirection: 'row' as const,
+      justifyContent: 'space-between' as const,
+      alignItems: 'center' as const,
+    },
+    balanceLabel: {
+      fontSize: Typography.fontSize.medium,
+      color: colors.textSecondary,
+    },
+    balanceAmount: {
+      fontSize: Typography.fontSize.xl,
+      fontWeight: Typography.fontWeight.bold,
+      color: colors.primary,
+    },
+    listContainer: {
+      padding: Spacing.lg,
+      paddingBottom: 100,
+    },
+    transactionCard: {
+      backgroundColor: colors.white,
+      borderRadius: Spacing.borderRadius.large,
+      padding: Spacing.lg,
+      marginBottom: Spacing.md,
+      ...Shadows.card,
+    },
+    transactionHeader: {
+      flexDirection: 'row' as const,
+      alignItems: 'center' as const,
+      marginBottom: Spacing.md,
+    },
+    transactionIcon: {
+      width: Spacing.height.icon,
+      height: Spacing.height.icon,
+      borderRadius: Spacing.xl,
+      backgroundColor: colors.veryLightGray,
+      justifyContent: 'center' as const,
+      alignItems: 'center' as const,
+      marginRight: Spacing.md,
+    },
+    transactionDetails: {
+      flex: 1,
+    },
+    transactionType: {
+      fontSize: Typography.fontSize.medium,
+      fontWeight: Typography.fontWeight.semibold,
+      color: colors.textPrimary,
+      marginBottom: 4,
+    },
+    transactionDate: {
+      fontSize: Typography.fontSize.small,
+      color: colors.textSecondary,
+    },
+    transactionAmount: {
+      alignItems: 'flex-end' as const,
+    },
+    amountText: {
+      fontSize: Typography.fontSize.large,
+      fontWeight: Typography.fontWeight.bold,
+    },
+    transactionBody: {
+      flexDirection: 'row' as const,
+      justifyContent: 'space-between' as const,
+      alignItems: 'center' as const,
+    },
+    reasonText: {
+      flex: 1,
+      fontSize: Typography.fontSize.regular,
+      color: colors.textSecondary,
+      marginRight: Spacing.md,
+    },
+    deleteButton: {
+      flexDirection: 'row' as const,
+      alignItems: 'center' as const,
+      backgroundColor: colors.dangerBackground,
+      paddingHorizontal: Spacing.md,
+      paddingVertical: Spacing.sm,
+      borderRadius: Spacing.borderRadius.medium,
+      gap: Spacing.gap.small,
+    },
+    deleteButtonText: {
+      fontSize: Typography.fontSize.small,
+      color: colors.dangerText,
+      fontWeight: Typography.fontWeight.semibold,
+    },
+    emptyState: {
+      flex: 1,
+      justifyContent: 'center' as const,
+      alignItems: 'center' as const,
+      paddingVertical: Spacing.xxl,
+    },
+    emptyStateText: {
+      fontSize: Typography.fontSize.large,
+      fontWeight: Typography.fontWeight.semibold,
+      color: colors.textSecondary,
+      marginTop: Spacing.lg,
+      marginBottom: Spacing.md,
+    },
+    emptyStateSubtext: {
+      fontSize: Typography.fontSize.medium,
+      color: colors.textTertiary,
+      textAlign: 'center' as const,
+    },
+  };
 
   const loadData = async () => {
     try {
@@ -96,27 +234,27 @@ export default function ProfileScreen() {
   }, []);
 
   const renderTransaction = ({ item }: { item: Transaction }) => (
-    <View style={ProfileScreenStyles.transactionCard}>
-      <View style={ProfileScreenStyles.transactionHeader}>
-        <View style={ProfileScreenStyles.transactionIcon}>
+    <View style={styles.transactionCard}>
+      <View style={styles.transactionHeader}>
+        <View style={styles.transactionIcon}>
           <FontAwesome5
             name={item.type === 'cash_in' ? 'arrow-down' : 'arrow-up'}
             size={20}
-            color={item.type === 'cash_in' ? Colors.success : Colors.error}
+            color={item.type === 'cash_in' ? colors.success : colors.error}
           />
         </View>
-        <View style={ProfileScreenStyles.transactionDetails}>
-          <Text style={ProfileScreenStyles.transactionType}>
+        <View style={styles.transactionDetails}>
+          <Text style={styles.transactionType}>
             {item.type === 'cash_in' ? '💰 Cash In' : '💸 Cash Out'}
           </Text>
-          <Text style={ProfileScreenStyles.transactionDate}>{item.date}</Text>
+          <Text style={styles.transactionDate}>{item.date}</Text>
         </View>
-        <View style={ProfileScreenStyles.transactionAmount}>
+        <View style={styles.transactionAmount}>
           <Text
             style={[
-              ProfileScreenStyles.amountText,
+              styles.amountText,
               {
-                color: item.type === 'cash_in' ? Colors.success : Colors.error,
+                color: item.type === 'cash_in' ? colors.success : colors.error,
               },
             ]}
           >
@@ -126,27 +264,25 @@ export default function ProfileScreen() {
         </View>
       </View>
 
-      <View style={ProfileScreenStyles.transactionBody}>
-        <Text style={ProfileScreenStyles.reasonText}>{item.reason}</Text>
+      <View style={styles.transactionBody}>
+        <Text style={styles.reasonText}>{item.reason}</Text>
         <TouchableOpacity
-          style={ProfileScreenStyles.deleteButton}
+          style={styles.deleteButton}
           onPress={() => handleDeleteTransaction(item)}
           activeOpacity={0.7}
         >
-          <FontAwesome5 name="trash" size={16} color={Colors.dangerText} />
-          <Text style={ProfileScreenStyles.deleteButtonText}>Delete</Text>
+          <FontAwesome5 name="trash" size={16} color={colors.dangerText} />
+          <Text style={styles.deleteButtonText}>Delete</Text>
         </TouchableOpacity>
       </View>
     </View>
   );
 
   const renderEmptyState = () => (
-    <View style={ProfileScreenStyles.emptyState}>
-      <FontAwesome5 name="history" size={64} color="#ccc" />
-      <Text style={ProfileScreenStyles.emptyStateText}>
-        No transactions yet
-      </Text>
-      <Text style={ProfileScreenStyles.emptyStateSubtext}>
+    <View style={styles.emptyState}>
+      <FontAwesome5 name="history" size={64} color={colors.textTertiary} />
+      <Text style={styles.emptyStateText}>No transactions yet</Text>
+      <Text style={styles.emptyStateSubtext}>
         Your transaction history will appear here
       </Text>
     </View>
@@ -154,25 +290,21 @@ export default function ProfileScreen() {
 
   if (isLoading) {
     return (
-      <View style={ProfileScreenStyles.loadingContainer}>
-        <ActivityIndicator size="large" color={Colors.primary} />
-        <Text style={ProfileScreenStyles.loadingText}>
-          Loading transaction history...
-        </Text>
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color={colors.primary} />
+        <Text style={styles.loadingText}>Loading transaction history...</Text>
       </View>
     );
   }
 
   return (
-    <View style={ProfileScreenStyles.container}>
+    <View style={styles.container}>
       {/* Header with balance info */}
-      <View style={ProfileScreenStyles.header}>
-        <Text style={ProfileScreenStyles.headerTitle}>Transaction History</Text>
-        <View style={ProfileScreenStyles.balanceContainer}>
-          <Text style={ProfileScreenStyles.balanceLabel}>Current Balance</Text>
-          <Text style={ProfileScreenStyles.balanceAmount}>
-            {balance.toFixed(2)} Tk
-          </Text>
+      <View style={styles.header}>
+        <Text style={styles.headerTitle}>Transaction History</Text>
+        <View style={styles.balanceContainer}>
+          <Text style={styles.balanceLabel}>Current Balance</Text>
+          <Text style={styles.balanceAmount}>{balance.toFixed(2)} Tk</Text>
         </View>
       </View>
 
@@ -181,13 +313,13 @@ export default function ProfileScreen() {
         data={transactions}
         renderItem={renderTransaction}
         keyExtractor={item => item.id}
-        contentContainerStyle={ProfileScreenStyles.listContainer}
+        contentContainerStyle={styles.listContainer}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
             onRefresh={onRefresh}
-            colors={[Colors.primary]}
-            tintColor={Colors.primary}
+            colors={[colors.primary]}
+            tintColor={colors.primary}
           />
         }
         ListEmptyComponent={renderEmptyState}

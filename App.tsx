@@ -1,12 +1,15 @@
 import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { TabNavigator } from './src/navigation';
+import { ThemeProvider } from './src/contexts';
 
 function App() {
   return (
-    <NavigationContainer>
-      <TabNavigator />
-    </NavigationContainer>
+    <ThemeProvider>
+      <NavigationContainer>
+        <TabNavigator />
+      </NavigationContainer>
+    </ThemeProvider>
   );
 }
 
