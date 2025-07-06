@@ -9,23 +9,10 @@ import {
   RefreshControl,
   ActivityIndicator,
 } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import { useFocusEffect } from '@react-navigation/native';
-
-interface Transaction {
-  id: string;
-  type: 'cash_in' | 'cash_out';
-  amount: number;
-  reason: string;
-  date: string;
-  timestamp: number;
-}
-
-interface AppData {
-  balance: number;
-  transactions: Transaction[];
-}
+import Store from '../store/store';
+import { Transaction, AppData } from '../store/types';
 
 export default function ProfileScreen() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -35,12 +22,9 @@ export default function ProfileScreen() {
 
   const loadData = async () => {
     try {
-      const savedData = await AsyncStorage.getItem('appData');
-      if (savedData !== null) {
-        const data: AppData = JSON.parse(savedData);
-        setBalance(data.balance || 0);
-        setTransactions(data.transactions || []);
-      }
+      const data: AppData = await Store.loadData();
+      setBalance(data.balance);
+      setTransactions(data.transactions);
     } catch (error) {
       console.error('Error loading data:', error);
       Alert.alert('Error', 'Failed to load transaction history');
@@ -49,22 +33,9 @@ export default function ProfileScreen() {
     }
   };
 
-  const saveData = async (
-    newBalance: number,
-    newTransactions: Transaction[],
-  ) => {
-    try {
-      const appData: AppData = {
-        balance: newBalance,
-        transactions: newTransactions,
-      };
-      await AsyncStorage.setItem('appData', JSON.stringify(appData));
-      setBalance(newBalance);
-      setTransactions(newTransactions);
-    } catch (error) {
-      console.error('Error saving data:', error);
-      Alert.alert('Error', 'Failed to save changes');
-    }
+  const updateLocalState = (newData: AppData) => {
+    setBalance(newData.balance);
+    setTransactions(newData.transactions);
   };
 
   const handleDeleteTransaction = (transaction: Transaction) => {
@@ -88,26 +59,12 @@ export default function ProfileScreen() {
 
   const deleteTransaction = async (transactionToDelete: Transaction) => {
     try {
-      // Calculate new balance
-      let newBalance = balance;
-      if (transactionToDelete.type === 'cash_in') {
-        // If deleting cash in, subtract from balance
-        newBalance = balance - transactionToDelete.amount;
-      } else {
-        // If deleting cash out, add back to balance
-        newBalance = balance + transactionToDelete.amount;
-      }
-
-      // Remove transaction from list
-      const newTransactions = transactions.filter(
-        t => t.id !== transactionToDelete.id,
-      );
-
-      await saveData(newBalance, newTransactions);
-
+      const newData = await Store.deleteTransaction(balance, transactions, transactionToDelete);
+      updateLocalState(newData);
+      
       Alert.alert(
         'Transaction Deleted',
-        `Transaction deleted successfully!\nNew balance: ${newBalance.toFixed(
+        `Transaction deleted successfully!\nNew balance: ${newData.balance.toFixed(
           2,
         )} Tk`,
       );

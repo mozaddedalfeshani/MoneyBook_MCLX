@@ -9,23 +9,10 @@ import {
   Alert,
   ScrollView,
 } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect } from '@react-navigation/native';
+import Store from '../store/store';
+import { Transaction, AppData } from '../store/types';
 import HomeCard from '../components/Cards/HomeCard';
-
-interface Transaction {
-  id: string;
-  type: 'cash_in' | 'cash_out';
-  amount: number;
-  reason: string;
-  date: string;
-  timestamp: number;
-}
-
-interface AppData {
-  balance: number;
-  transactions: Transaction[];
-}
 
 export default function HomeScreen() {
   const [balance, setBalance] = useState<number>(0);
@@ -35,20 +22,13 @@ export default function HomeScreen() {
   const [modalVisible, setModalVisible] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
-  // Load data from storage when component mounts
-  useEffect(() => {
-    loadData();
-  }, []);
-
+  // Load data from store
   const loadData = async () => {
     try {
       setIsLoading(true);
-      const savedData = await AsyncStorage.getItem('appData');
-      if (savedData !== null) {
-        const data: AppData = JSON.parse(savedData);
-        setBalance(data.balance || 0);
-        setTransactions(data.transactions || []);
-      }
+      const data: AppData = await Store.loadData();
+      setBalance(data.balance);
+      setTransactions(data.transactions);
     } catch (error) {
       console.error('Error loading data:', error);
       Alert.alert('Error', 'Failed to load transaction data');
@@ -57,51 +37,10 @@ export default function HomeScreen() {
     }
   };
 
-  const saveData = async (
-    newBalance: number,
-    newTransactions: Transaction[],
-  ) => {
-    try {
-      const appData: AppData = {
-        balance: newBalance,
-        transactions: newTransactions,
-      };
-      await AsyncStorage.setItem('appData', JSON.stringify(appData));
-      setBalance(newBalance);
-      setTransactions(newTransactions);
-    } catch (error) {
-      console.error('Error saving data:', error);
-      Alert.alert('Error', 'Failed to save transaction data');
-    }
-  };
-
-  const generateTransactionId = () => {
-    return Date.now().toString() + Math.random().toString(36).substr(2, 9);
-  };
-
-  const formatDate = (timestamp: number) => {
-    const date = new Date(timestamp);
-    return date.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-  };
-
-  const getLastTransactionAmounts = () => {
-    const lastCashIn =
-      transactions
-        .filter(t => t.type === 'cash_in')
-        .sort((a, b) => b.timestamp - a.timestamp)[0]?.amount || 0;
-
-    const lastCashOut =
-      transactions
-        .filter(t => t.type === 'cash_out')
-        .sort((a, b) => b.timestamp - a.timestamp)[0]?.amount || 0;
-
-    return { lastCashIn, lastCashOut };
+  // Update local state with new data
+  const updateLocalState = (newData: AppData) => {
+    setBalance(newData.balance);
+    setTransactions(newData.transactions);
   };
 
   const handleUpdatePress = () => {
@@ -116,77 +55,81 @@ export default function HomeScreen() {
   };
 
   const handleCashIn = async () => {
-    const cashInAmount = parseFloat(amount);
-    const newBalance = balance + cashInAmount;
+    try {
+      const cashInAmount = parseFloat(amount);
+      const newData = await Store.addCashIn(
+        balance,
+        transactions,
+        cashInAmount,
+        reason,
+      );
+      updateLocalState(newData);
+      setModalVisible(false);
+      setAmount('');
+      setReason('');
 
-    const newTransaction: Transaction = {
-      id: generateTransactionId(),
-      type: 'cash_in',
-      amount: cashInAmount,
-      reason: reason.trim() || 'No reason provided',
-      date: formatDate(Date.now()),
-      timestamp: Date.now(),
-    };
-
-    const newTransactions = [newTransaction, ...transactions];
-    await saveData(newBalance, newTransactions);
-    setModalVisible(false);
-    setAmount('');
-    setReason('');
-
-    const reasonText = reason.trim() ? ` (${reason.trim()})` : '';
-    Alert.alert(
-      'Success',
-      `Cash In successful! New balance: ${newBalance.toFixed(
-        2,
-      )} Tk${reasonText}`,
-    );
+      const reasonText = reason.trim() ? ` (${reason.trim()})` : '';
+      Alert.alert(
+        'Success',
+        `Cash In successful! New balance: ${newData.balance.toFixed(
+          2,
+        )} Tk${reasonText}`,
+      );
+    } catch (error) {
+      console.error('Error in cash in:', error);
+      Alert.alert('Error', 'Failed to add cash in transaction');
+    }
   };
 
   const handleCashOut = async () => {
-    const cashOutAmount = parseFloat(amount);
-    if (cashOutAmount > balance) {
-      Alert.alert(
-        'Insufficient Balance',
-        "You don't have enough money for this transaction",
+    try {
+      const cashOutAmount = parseFloat(amount);
+      const newData = await Store.addCashOut(
+        balance,
+        transactions,
+        cashOutAmount,
+        reason,
       );
-      return;
+      updateLocalState(newData);
+      setModalVisible(false);
+      setAmount('');
+      setReason('');
+
+      const reasonText = reason.trim() ? ` (${reason.trim()})` : '';
+      Alert.alert(
+        'Success',
+        `Cash Out successful! New balance: ${newData.balance.toFixed(
+          2,
+        )} Tk${reasonText}`,
+      );
+    } catch (error) {
+      console.error('Error in cash out:', error);
+      if (error instanceof Error && error.message === 'Insufficient balance') {
+        Alert.alert(
+          'Insufficient Balance',
+          "You don't have enough money for this transaction",
+        );
+      } else {
+        Alert.alert('Error', 'Failed to add cash out transaction');
+      }
     }
-
-    const newBalance = balance - cashOutAmount;
-
-    const newTransaction: Transaction = {
-      id: generateTransactionId(),
-      type: 'cash_out',
-      amount: cashOutAmount,
-      reason: reason.trim() || 'No reason provided',
-      date: formatDate(Date.now()),
-      timestamp: Date.now(),
-    };
-
-    const newTransactions = [newTransaction, ...transactions];
-    await saveData(newBalance, newTransactions);
-    setModalVisible(false);
-    setAmount('');
-    setReason('');
-
-    const reasonText = reason.trim() ? ` (${reason.trim()})` : '';
-    Alert.alert(
-      'Success',
-      `Cash Out successful! New balance: ${newBalance.toFixed(
-        2,
-      )} Tk${reasonText}`,
-    );
   };
 
   const closeModal = () => {
     setModalVisible(false);
-    setReason(''); // Clear reason when closing
+    setReason('');
   };
 
-  const { lastCashIn, lastCashOut } = getLastTransactionAmounts();
+  // Get last transaction amounts for HomeCard
+  const { lastCashIn, lastCashOut } =
+    Store.getLastTransactionAmounts(transactions);
 
-  // Reload data when navigating back from the History screen
+  // Load data when component mounts
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  // Reload data when navigating back from History screen
   useFocusEffect(
     useCallback(() => {
       loadData();

@@ -5,13 +5,9 @@ import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 export default function SettingsScreen() {
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Settings Screen</Text>
-      <FontAwesome5 name="cog" size={80} color="#28a745" />
-      <Text style={styles.subtitle}>App Settings</Text>
-      <Text>• Notifications</Text>
-      <Text>• Privacy</Text>
-      <Text>• Account</Text>
-      <Text>• About</Text>
+      <FontAwesome5 name="truck-loading" size={80} color="#28a745" />
+      <Text>Settings</Text>
+      <Text>Coming Soon</Text>
     </View>
   );
 }
