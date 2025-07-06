@@ -8,6 +8,7 @@ import {
   RefreshControl,
   ActivityIndicator,
   StyleSheet,
+  ImageBackground,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
@@ -440,81 +441,89 @@ export default function HistoryScreen({ navigation }: any) {
       <View style={styles.container}>
         {/* Summary Card */}
         <View style={styles.summaryCard}>
-          <View
-            style={[
-              styles.gradientOverlay,
-              { backgroundColor: colors.secondary },
-            ]}
-          />
-          <View style={styles.cardContentContainer}>
-            <Text style={[styles.summaryTitle, { color: colors.textLight }]}>
-              Transaction Summary
-            </Text>
+          <ImageBackground
+            source={require('../../assets/images/naturalflower.jpg')}
+            style={styles.imageBackground}
+            imageStyle={{ borderRadius: 20 }}
+            blurRadius={8}
+          >
+            <View style={styles.overlay} />
+            <View style={styles.cardContentContainer}>
+              <Text style={[styles.summaryTitle, { color: colors.textLight }]}>
+                Transaction Summary
+              </Text>
 
-            {/* Grid Stats Layout */}
-            <View style={styles.statsGridRow}>
-              <View style={styles.statGridItem}>
-                <FontAwesome5
-                  name="arrow-up"
-                  size={22}
-                  color={colors.success}
-                  style={{ marginBottom: 2 }}
-                />
-                <Text
-                  style={[styles.statValueGrid, { color: colors.textLight }]}
-                >
-                  {filteredCredit.toFixed(2)} Tk
-                </Text>
-                <Text
-                  style={[styles.statLabelGrid, { color: colors.overlayLight }]}
-                >
-                  Credit
-                </Text>
+              {/* Grid Stats Layout */}
+              <View style={styles.statsGridRow}>
+                <View style={styles.statGridItem}>
+                  <FontAwesome5
+                    name="arrow-up"
+                    size={22}
+                    color={colors.success}
+                    style={{ marginBottom: 2 }}
+                  />
+                  <Text
+                    style={[styles.statValueGrid, { color: colors.textLight }]}
+                  >
+                    {filteredCredit.toFixed(2)} Tk
+                  </Text>
+                  <Text
+                    style={[
+                      styles.statLabelGrid,
+                      { color: colors.overlayLight },
+                    ]}
+                  >
+                    Credit
+                  </Text>
+                </View>
+                <View style={styles.statGridItem}>
+                  <FontAwesome5
+                    name="arrow-down"
+                    size={22}
+                    color={colors.error}
+                    style={{ marginBottom: 2 }}
+                  />
+                  <Text
+                    style={[styles.statValueGrid, { color: colors.textLight }]}
+                  >
+                    {filteredDebit.toFixed(2)} Tk
+                  </Text>
+                  <Text
+                    style={[
+                      styles.statLabelGrid,
+                      { color: colors.overlayLight },
+                    ]}
+                  >
+                    Debit
+                  </Text>
+                </View>
               </View>
-              <View style={styles.statGridItem}>
+              <View style={styles.transactionsStatRow}>
                 <FontAwesome5
-                  name="arrow-down"
-                  size={22}
-                  color={colors.error}
-                  style={{ marginBottom: 2 }}
+                  name="list"
+                  size={20}
+                  color={colors.textLight}
+                  style={{ marginRight: 6 }}
                 />
                 <Text
-                  style={[styles.statValueGrid, { color: colors.textLight }]}
+                  style={[
+                    styles.transactionsStatValue,
+                    { color: colors.textLight },
+                  ]}
                 >
-                  {filteredDebit.toFixed(2)} Tk
+                  {filteredTransactions.length}
                 </Text>
                 <Text
-                  style={[styles.statLabelGrid, { color: colors.overlayLight }]}
+                  style={[
+                    styles.transactionsStatLabel,
+                    { color: colors.overlayLight },
+                  ]}
                 >
-                  Debit
+                  Transactions
                 </Text>
               </View>
             </View>
-            <View style={styles.transactionsStatRow}>
-              <FontAwesome5
-                name="list"
-                size={20}
-                color={colors.textLight}
-                style={{ marginRight: 6 }}
-              />
-              <Text
-                style={[
-                  styles.transactionsStatValue,
-                  { color: colors.textLight },
-                ]}
-              >
-                {filteredTransactions.length}
-              </Text>
-              <Text
-                style={[
-                  styles.transactionsStatLabel,
-                  { color: colors.overlayLight },
-                ]}
-              >
-                Transactions
-              </Text>
-            </View>
-          </View>
+          </ImageBackground>
         </View>
 
         {/* Transaction List */}
@@ -578,13 +587,15 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     position: 'relative',
   },
-  gradientOverlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    opacity: 0.9,
+  imageBackground: {
+    width: '100%',
+    borderRadius: 20,
+    overflow: 'hidden',
+  },
+  overlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(80, 80, 160, 0.3)', // adjust for your theme
+    borderRadius: 20,
   },
   cardContentContainer: {
     padding: 10,
