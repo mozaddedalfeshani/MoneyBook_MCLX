@@ -73,3 +73,21 @@ yarn-error.log
 !.yarn/releases
 !.yarn/sdks
 !.yarn/versions
+
+# Build outputs and release artifacts
+output/
+*.apk
+*.aab
+*.ipa
+android/app/build/
+android/build/
+ios/build/
+android/app/release/
+android/app/debug/
+
+# Release signing
+*.jks
+*.p8
+*.p12
+*.mobileprovision
+release.keystore
