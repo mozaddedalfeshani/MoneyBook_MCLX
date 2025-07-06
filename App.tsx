@@ -1,7 +1,8 @@
+/* eslint-disable react/no-unstable-nested-components */
 import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
+import AntDesign from 'react-native-vector-icons/AntDesign';
 
 // Import our screen components
 import HomeScreen from './screens/HomeScreen';
@@ -20,14 +21,14 @@ function App() {
             let iconName: string = 'home';
 
             if (route.name === 'Home') {
-              iconName = 'home';
+              iconName = 'tachometer';
             } else if (route.name === 'Profile') {
               iconName = 'user';
             } else if (route.name === 'Settings') {
               iconName = 'cog';
             }
 
-            return <FontAwesome5 name={iconName} size={size} color={color} />;
+            return <AntDesign name={iconName} size={size} color={color} />;
           },
           tabBarActiveTintColor: '#007bff',
           tabBarInactiveTintColor: 'gray',
