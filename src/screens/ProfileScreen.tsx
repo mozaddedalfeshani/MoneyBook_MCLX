@@ -10,8 +10,7 @@ import {
 } from 'react-native';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import { useFocusEffect } from '@react-navigation/native';
-import Store from '../store/store';
-import { Transaction, AppData } from '../store/types/types';
+import Store, { LegacyTransaction, AppData } from '../store/store';
 import { useTheme } from '../contexts';
 import { Typography } from '../styles/theme/typography';
 import { Spacing } from '../styles/theme/spacing';
@@ -19,7 +18,7 @@ import { Shadows } from '../styles/theme/shadows';
 
 export default function ProfileScreen() {
   const { colors } = useTheme();
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [transactions, setTransactions] = useState<LegacyTransaction[]>([]);
   const [balance, setBalance] = useState<number>(0);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [refreshing, setRefreshing] = useState<boolean>(false);
@@ -161,6 +160,8 @@ export default function ProfileScreen() {
 
   const loadData = async () => {
     try {
+      // Initialize store and run migration if needed
+      await Store.initialize();
       const data: AppData = await Store.loadData();
       setBalance(data.balance);
       setTransactions(data.transactions);
@@ -177,7 +178,7 @@ export default function ProfileScreen() {
     setTransactions(newData.transactions);
   };
 
-  const handleDeleteTransaction = (transaction: Transaction) => {
+  const handleDeleteTransaction = (transaction: LegacyTransaction) => {
     Alert.alert(
       'Delete Transaction',
       `Are you sure you want to delete this ${
@@ -196,7 +197,7 @@ export default function ProfileScreen() {
     );
   };
 
-  const deleteTransaction = async (transactionToDelete: Transaction) => {
+  const deleteTransaction = async (transactionToDelete: LegacyTransaction) => {
     try {
       const newData = await Store.deleteTransaction(
         balance,
@@ -233,7 +234,7 @@ export default function ProfileScreen() {
     loadData();
   }, []);
 
-  const renderTransaction = ({ item }: { item: Transaction }) => (
+  const renderTransaction = ({ item }: { item: LegacyTransaction }) => (
     <View style={styles.transactionCard}>
       <View style={styles.transactionHeader}>
         <View style={styles.transactionIcon}>

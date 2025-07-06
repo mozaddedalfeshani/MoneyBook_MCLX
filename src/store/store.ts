@@ -1,71 +1,152 @@
-import { TransactionStore } from './slices/transactionStore';
-import { StorageService } from './storage';
-import { Transaction, AppData, TransactionStats } from './types/types';
+import { TransactionService } from '../database/services/TransactionService';
+import { MigrationService } from '../database/services/MigrationService';
+import { Transaction } from '../database/models/Transaction';
 
-// Main store interface that combines all functionality
-const Store = {
-  // Transaction operations
-  Transaction: TransactionStore,
+// Legacy interface for compatibility
+export interface LegacyTransaction {
+  id: string;
+  type: 'cash_in' | 'cash_out';
+  amount: number;
+  reason: string;
+  date: string;
+  timestamp: number;
+}
 
-  // Storage operations
-  Storage: StorageService,
+export interface AppData {
+  balance: number;
+  transactions: LegacyTransaction[];
+}
 
-  // Convenience methods that combine common operations
-  async loadData(): Promise<AppData> {
-    return await TransactionStore.loadAppData();
-  },
+export class Store {
+  // Initialize store and run migration if needed
+  static async initialize(): Promise<void> {
+    try {
+      await MigrationService.migrateData();
+    } catch (error) {
+      console.error('Error during store initialization:', error);
+    }
+  }
 
-  async addCashIn(
+  // Convert WatermelonDB Transaction to legacy format for UI compatibility
+  private static convertToLegacyFormat(
+    transaction: Transaction,
+  ): LegacyTransaction {
+    return {
+      id: transaction.id,
+      type: transaction.type,
+      amount: transaction.amount,
+      reason: transaction.reason,
+      date: transaction.dateString,
+      timestamp: transaction.timestamp,
+    };
+  }
+
+  // Load all data (balance and transactions)
+  static async loadData(): Promise<AppData> {
+    try {
+      const [balance, transactions] = await Promise.all([
+        TransactionService.getCurrentBalance(),
+        TransactionService.getAllTransactions(),
+      ]);
+
+      const legacyTransactions = transactions.map(this.convertToLegacyFormat);
+
+      return {
+        balance,
+        transactions: legacyTransactions,
+      };
+    } catch (error) {
+      console.error('Error loading data:', error);
+      return { balance: 0, transactions: [] };
+    }
+  }
+
+  // Add cash in transaction
+  static async addCashIn(
     currentBalance: number,
-    currentTransactions: Transaction[],
+    currentTransactions: LegacyTransaction[],
     amount: number,
-    reason: string = '',
+    reason: string,
   ): Promise<AppData> {
-    return await TransactionStore.addCashIn(
-      currentBalance,
-      currentTransactions,
-      amount,
-      reason,
-    );
-  },
+    try {
+      await TransactionService.addTransaction('cash_in', amount, reason);
+      return await this.loadData();
+    } catch (error) {
+      console.error('Error adding cash in:', error);
+      throw error;
+    }
+  }
 
-  async addCashOut(
+  // Add cash out transaction
+  static async addCashOut(
     currentBalance: number,
-    currentTransactions: Transaction[],
+    currentTransactions: LegacyTransaction[],
     amount: number,
-    reason: string = '',
+    reason: string,
   ): Promise<AppData> {
-    return await TransactionStore.addCashOut(
-      currentBalance,
-      currentTransactions,
-      amount,
-      reason,
-    );
-  },
+    try {
+      const balance = await TransactionService.getCurrentBalance();
 
-  async deleteTransaction(
+      if (balance < amount) {
+        throw new Error('Insufficient balance');
+      }
+
+      await TransactionService.addTransaction('cash_out', amount, reason);
+      return await this.loadData();
+    } catch (error) {
+      console.error('Error adding cash out:', error);
+      throw error;
+    }
+  }
+
+  // Delete transaction
+  static async deleteTransaction(
     currentBalance: number,
-    currentTransactions: Transaction[],
-    transactionToDelete: Transaction,
+    currentTransactions: LegacyTransaction[],
+    transactionToDelete: LegacyTransaction,
   ): Promise<AppData> {
-    return await TransactionStore.deleteTransaction(
-      currentBalance,
-      currentTransactions,
-      transactionToDelete,
-    );
-  },
+    try {
+      // Find the WatermelonDB transaction by ID
+      const allTransactions = await TransactionService.getAllTransactions();
+      const transaction = allTransactions.find(
+        t => t.id === transactionToDelete.id,
+      );
 
-  getLastTransactionAmounts(transactions: Transaction[]): TransactionStats {
-    return TransactionStore.getLastTransactionAmounts(transactions);
-  },
+      if (transaction) {
+        await TransactionService.deleteTransaction(transaction);
+      }
 
-  getTransactionStats(transactions: Transaction[]) {
-    return TransactionStore.getTransactionStats(transactions);
-  },
+      return await this.loadData();
+    } catch (error) {
+      console.error('Error deleting transaction:', error);
+      throw error;
+    }
+  }
 
-  async resetAllData(): Promise<void> {
-    return await TransactionStore.resetAllData();
-  },
-};
+  // Get last transaction amounts for statistics
+  static async getLastTransactionAmounts(
+    transactions: LegacyTransaction[],
+  ): Promise<{
+    lastCashIn: number;
+    lastCashOut: number;
+  }> {
+    try {
+      return await TransactionService.getLastTransactionAmounts();
+    } catch (error) {
+      console.error('Error getting last transaction amounts:', error);
+      return { lastCashIn: 0, lastCashOut: 0 };
+    }
+  }
+
+  // Clear all data (for reset functionality)
+  static async clearAllData(): Promise<void> {
+    try {
+      await TransactionService.clearAllTransactions();
+    } catch (error) {
+      console.error('Error clearing all data:', error);
+      throw error;
+    }
+  }
+}
 
 export default Store;

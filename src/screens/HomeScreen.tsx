@@ -9,8 +9,7 @@ import {
   ScrollView,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
-import Store from '../store/store';
-import { Transaction, AppData } from '../store/types/types';
+import Store, { LegacyTransaction, AppData } from '../store/store';
 import { useTheme } from '../contexts';
 import { Typography } from '../styles/theme/typography';
 import { Spacing } from '../styles/theme/spacing';
@@ -20,7 +19,7 @@ import HomeCard from '../components/cards/HomeCard';
 export default function HomeScreen() {
   const { colors } = useTheme();
   const [balance, setBalance] = useState<number>(0);
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [transactions, setTransactions] = useState<LegacyTransaction[]>([]);
   const [amount, setAmount] = useState<string>('');
   const [reason, setReason] = useState<string>('');
   const [modalVisible, setModalVisible] = useState<boolean>(false);
@@ -179,6 +178,8 @@ export default function HomeScreen() {
   const loadData = async () => {
     try {
       setIsLoading(true);
+      // Initialize store and run migration if needed
+      await Store.initialize();
       const data: AppData = await Store.loadData();
       setBalance(data.balance);
       setTransactions(data.transactions);
@@ -274,8 +275,25 @@ export default function HomeScreen() {
   };
 
   // Get last transaction amounts for HomeCard
-  const { lastCashIn, lastCashOut } =
-    Store.getLastTransactionAmounts(transactions);
+  const [lastTransactionAmounts, setLastTransactionAmounts] = useState({
+    lastCashIn: 0,
+    lastCashOut: 0,
+  });
+
+  useEffect(() => {
+    const getLastAmounts = async () => {
+      try {
+        const amounts = await Store.getLastTransactionAmounts(transactions);
+        setLastTransactionAmounts(amounts);
+      } catch (error) {
+        console.error('Error getting last transaction amounts:', error);
+      }
+    };
+
+    if (transactions.length > 0) {
+      getLastAmounts();
+    }
+  }, [transactions]);
 
   // Load data when component mounts
   useEffect(() => {
@@ -297,8 +315,8 @@ export default function HomeScreen() {
       <HomeCard
         balance={balance}
         isLoading={isLoading}
-        lastCashIn={lastCashIn}
-        lastCashOut={lastCashOut}
+        lastCashIn={lastTransactionAmounts.lastCashIn}
+        lastCashOut={lastTransactionAmounts.lastCashOut}
       />
 
       {/* Money Management Box */}
