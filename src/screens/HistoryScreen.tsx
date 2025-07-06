@@ -8,10 +8,12 @@ import {
   RefreshControl,
   ActivityIndicator,
   StyleSheet,
+  ScrollView,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import { useFocusEffect } from '@react-navigation/native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { TransactionService } from '../database/services/TransactionService';
 import { AccountService } from '../database/services/AccountService';
 import { Account } from '../database/models/Account';
@@ -71,6 +73,7 @@ type FilterType = 'all' | 'credit' | 'debit';
 
 export default function HistoryScreen({ navigation }: any) {
   const { colors, currentTheme } = useTheme();
+  const insets = useSafeAreaInsets();
 
   const [allTransactions, setAllTransactions] = useState<
     TransactionWithAccount[]
@@ -575,7 +578,7 @@ export default function HistoryScreen({ navigation }: any) {
     // Floating Action Button
     fab: {
       position: 'absolute',
-      bottom: 30,
+      bottom: insets.bottom + 90, // Safe area bottom + tab bar height
       right: 20,
       width: 56,
       height: 56,
@@ -769,6 +772,9 @@ export default function HistoryScreen({ navigation }: any) {
             keyExtractor={item => item.id}
             ListEmptyComponent={renderEmptyState}
             showsVerticalScrollIndicator={false}
+            contentContainerStyle={{
+              paddingBottom: insets.bottom + 80, // Safe area bottom + tab bar space
+            }}
             refreshControl={
               <RefreshControl
                 refreshing={refreshing}

@@ -10,113 +10,113 @@ import { ThemeStore, ThemeType } from '../store/slices/themeStore';
 // Colors styles moved from centralized styles
 
 const LightColors = {
-  // Primary colors
-  primary: '#007bff',
-  primaryLight: '#4A90E2',
-  primaryDark: '#0056b3',
+  // iOS Primary colors
+  primary: '#007AFF',
+  primaryLight: '#5AC8FA',
+  primaryDark: '#0051D5',
 
-  // Secondary colors
-  secondary: '#667eea',
-  secondaryLight: '#8b9aec',
-  secondaryDark: '#4a5ab8',
+  // iOS Secondary colors
+  secondary: '#5856D6',
+  secondaryLight: '#AF52DE',
+  secondaryDark: '#1D1D1F',
 
-  // Status colors
-  success: '#4CAF50',
-  error: '#FF6B6B',
-  warning: '#FFA726',
-  info: '#29B6F6',
+  // iOS Status colors
+  success: '#34C759',
+  error: '#FF3B30',
+  warning: '#FF9500',
+  info: '#007AFF',
 
-  // Neutral colors
+  // iOS Neutral colors
   white: '#FFFFFF',
   black: '#000000',
-  gray: '#666666',
-  lightGray: '#999999',
-  veryLightGray: '#f0f0f0',
-  background: '#f8f9fa',
-  border: '#ddd',
-  borderLight: '#eee',
+  gray: '#8E8E93',
+  lightGray: '#C7C7CC',
+  veryLightGray: '#F2F2F7',
+  background: '#F2F2F7',
+  border: '#C6C6C8',
+  borderLight: '#F2F2F7',
 
-  // Text colors
-  textPrimary: '#333333',
-  textSecondary: '#666666',
-  textTertiary: '#999999',
+  // iOS Text colors
+  textPrimary: '#000000',
+  textSecondary: '#3C3C43',
+  textTertiary: '#8E8E93',
   textLight: '#FFFFFF',
 
-  // Shadow colors
+  // iOS Shadow colors
   shadowPrimary: '#000000',
-  shadowSecondary: '#4A90E2',
+  shadowSecondary: '#007AFF',
 
-  // Overlay colors
-  overlay: 'rgba(0, 0, 0, 0.5)',
-  overlayLight: 'rgba(255, 255, 255, 0.1)',
-  overlayDark: 'rgba(255, 255, 255, 0.08)',
+  // iOS Overlay colors
+  overlay: 'rgba(0, 0, 0, 0.4)',
+  overlayLight: 'rgba(255, 255, 255, 0.8)',
+  overlayDark: 'rgba(0, 0, 0, 0.04)',
 
-  // Transparent colors
+  // iOS Transparent colors
   transparent: 'transparent',
-  whiteTransparent: 'rgba(255, 255, 255, 0.2)',
-  whiteOpaque: 'rgba(255, 255, 255, 0.3)',
+  whiteTransparent: 'rgba(255, 255, 255, 0.85)',
+  whiteOpaque: 'rgba(255, 255, 255, 0.95)',
 
-  // Delete/danger colors
-  dangerBackground: '#ffe6e6',
-  dangerText: '#FF6B6B',
+  // iOS Delete/danger colors
+  dangerBackground: '#FFE7E5',
+  dangerText: '#FF3B30',
 
-  // Success colors
-  successBackground: '#e6ffe6',
+  // iOS Success colors
+  successBackground: '#E5F7E8',
 };
 
 const DarkColors = {
-  // Primary colors
-  primary: '#4A90E2',
-  primaryLight: '#6BA3F0',
-  primaryDark: '#2C5AA0',
+  // iOS Dark Primary colors
+  primary: '#0A84FF',
+  primaryLight: '#64D2FF',
+  primaryDark: '#0040DD',
 
-  // Secondary colors
-  secondary: '#667eea',
-  secondaryLight: '#8b9aec',
-  secondaryDark: '#4a5ab8',
+  // iOS Dark Secondary colors
+  secondary: '#5E5CE6',
+  secondaryLight: '#BF5AF2',
+  secondaryDark: '#8E8E93',
 
-  // Status colors
-  success: '#4CAF50',
-  error: '#FF6B6B',
-  warning: '#FFA726',
-  info: '#29B6F6',
+  // iOS Dark Status colors
+  success: '#30D158',
+  error: '#FF453A',
+  warning: '#FF9F0A',
+  info: '#0A84FF',
 
-  // Neutral colors (Fixed for dark theme)
-  white: '#2D2D2D', // Dark surface color instead of white
+  // iOS Dark Neutral colors
+  white: '#1C1C1E', // iOS dark surface color
   black: '#000000',
-  gray: '#CCCCCC',
-  lightGray: '#AAAAAA',
-  veryLightGray: '#3A3A3A', // Darker input background
-  background: '#1A1A1A',
-  border: '#444444',
-  borderLight: '#333333',
+  gray: '#8E8E93',
+  lightGray: '#48484A',
+  veryLightGray: '#2C2C2E',
+  background: '#000000',
+  border: '#38383A',
+  borderLight: '#2C2C2E',
 
-  // Text colors
+  // iOS Dark Text colors
   textPrimary: '#FFFFFF',
-  textSecondary: '#CCCCCC',
-  textTertiary: '#AAAAAA',
+  textSecondary: '#EBEBF5',
+  textTertiary: '#8E8E93',
   textLight: '#FFFFFF',
 
-  // Shadow colors
+  // iOS Dark Shadow colors
   shadowPrimary: '#000000',
-  shadowSecondary: '#4A90E2',
+  shadowSecondary: '#0A84FF',
 
-  // Overlay colors
-  overlay: 'rgba(0, 0, 0, 0.7)',
-  overlayLight: 'rgba(255, 255, 255, 0.1)',
-  overlayDark: 'rgba(255, 255, 255, 0.08)',
+  // iOS Dark Overlay colors
+  overlay: 'rgba(0, 0, 0, 0.6)',
+  overlayLight: 'rgba(255, 255, 255, 0.16)',
+  overlayDark: 'rgba(0, 0, 0, 0.32)',
 
-  // Transparent colors
+  // iOS Dark Transparent colors
   transparent: 'transparent',
-  whiteTransparent: 'rgba(255, 255, 255, 0.2)',
-  whiteOpaque: 'rgba(255, 255, 255, 0.3)',
+  whiteTransparent: 'rgba(255, 255, 255, 0.16)',
+  whiteOpaque: 'rgba(255, 255, 255, 0.85)',
 
-  // Delete/danger colors
-  dangerBackground: '#4D1F1F',
-  dangerText: '#FF6B6B',
+  // iOS Dark Delete/danger colors
+  dangerBackground: '#2D1B1B',
+  dangerText: '#FF453A',
 
-  // Success colors
-  successBackground: '#1F4D1F',
+  // iOS Dark Success colors
+  successBackground: '#1B2D1B',
 };
 
 export const getColors = (theme: ThemeType) => {

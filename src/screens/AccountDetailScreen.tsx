@@ -19,44 +19,62 @@ import { TransactionService } from '../database/services/TransactionService';
 import { Transaction } from '../database/models/Transaction';
 import { useTheme } from '../contexts';
 
-// Typography styles moved from centralized styles
+// iOS Typography System
 const Typography = {
-  // Font Sizes
+  // iOS Font Sizes (following iOS Human Interface Guidelines)
   fontSize: {
-    tiny: 10,
-    small: 12,
-    regular: 14,
-    medium: 16,
-    large: 18,
-    xl: 20,
-    xxl: 24,
-    xxxl: 36,
+    // iOS naming
+    caption2: 11, // Caption 2
+    caption1: 12, // Caption 1
+    footnote: 13, // Footnote
+    subheadline: 15, // Subheadline
+    callout: 16, // Callout
+    body: 17, // Body
+    headline: 17, // Headline
+    title3: 20, // Title 3
+    title2: 22, // Title 2
+    title1: 28, // Title 1
+    largeTitle: 34, // Large Title
+
+    // Backward compatibility
+    tiny: 11, // Maps to caption2
+    small: 13, // Maps to footnote
+    regular: 17, // Maps to body
+    medium: 16, // Maps to callout
+    large: 20, // Maps to title3
+    xl: 22, // Maps to title2
+    xxl: 28, // Maps to title1
+    xxxl: 34, // Maps to largeTitle
   },
 
-  // Font Weights
+  // iOS Font Weights
   fontWeight: {
+    ultraLight: '100' as const,
+    thin: '200' as const,
     light: '300' as const,
     regular: '400' as const,
     medium: '500' as const,
     semibold: '600' as const,
     bold: '700' as const,
+    heavy: '800' as const,
+    black: '900' as const,
   },
 
-  // Line Heights
+  // iOS Line Heights
   lineHeight: {
-    tight: 1.2,
-    normal: 1.5,
-    loose: 1.8,
+    tight: 1.15,
+    normal: 1.25,
+    relaxed: 1.4,
   },
 
-  // Letter Spacing
+  // iOS Letter Spacing
   letterSpacing: {
-    tight: -0.5,
+    tight: -0.41,
     normal: 0,
-    wide: 0.5,
+    wide: 0.38,
   },
 
-  // Font Families (if needed for custom fonts)
+  // iOS Font Families
   fontFamily: {
     regular: 'System',
     medium: 'System',
@@ -64,70 +82,71 @@ const Typography = {
   },
 };
 
-// Spacing styles moved from centralized styles
+// iOS Spacing System (8pt grid)
 const Spacing = {
-  // Base spacing unit
+  // Base spacing unit (iOS uses 8pt grid)
   base: 8,
 
-  // Margin/Padding sizes
-  xs: 4,
-  sm: 8,
-  md: 12,
-  lg: 16,
-  xl: 20,
-  xxl: 24,
-  xxxl: 32,
+  // iOS spacing values
+  xs: 4, // 0.5x
+  sm: 8, // 1x
+  md: 16, // 2x
+  lg: 24, // 3x
+  xl: 32, // 4x
+  xxl: 40, // 5x
+  xxxl: 48, // 6x
 
-  // Specific spacing values
+  // iOS spacing
   margin: {
     xs: 4,
     sm: 8,
-    md: 12,
-    lg: 16,
-    xl: 20,
-    xxl: 24,
-    xxxl: 32,
+    md: 16,
+    lg: 24,
+    xl: 32,
+    xxl: 40,
+    xxxl: 48,
   },
 
   padding: {
     xs: 4,
     sm: 8,
-    md: 12,
-    lg: 16,
-    xl: 20,
-    xxl: 24,
-    xxxl: 32,
+    md: 16,
+    lg: 24,
+    xl: 32,
+    xxl: 40,
+    xxxl: 48,
   },
 
-  // Border radius
+  // iOS Border radius (more rounded)
   borderRadius: {
     small: 8,
-    medium: 10,
-    large: 12,
-    xl: 15,
-    xxl: 20,
+    medium: 12,
+    large: 16,
+    xl: 20,
+    xxl: 24,
+    xxxl: 28,
   },
 
-  // Heights
+  // iOS Heights
   height: {
-    input: 50,
-    button: 50,
+    input: 44, // iOS standard touch target
+    button: 44, // iOS standard touch target
     card: 200,
-    icon: 40,
+    icon: 44, // iOS standard touch target
   },
 
-  // Widths
+  // iOS Widths
   width: {
-    divider: 1,
+    divider: 0.5, // iOS standard divider
     border: 1,
   },
 
-  // Gaps
+  // iOS Gaps
   gap: {
     small: 8,
-    medium: 10,
-    large: 12,
-    xl: 15,
+    medium: 16,
+    large: 24,
+    xl: 32,
   },
 };
 
@@ -655,13 +674,13 @@ export default function AccountDetailScreen({ route, navigation }: any) {
       marginBottom: Spacing.xxl,
     },
     accountNameLabel: {
-      fontSize: Typography.fontSize.medium,
+      fontSize: Typography.fontSize.callout,
       color: colors.textLight,
       marginBottom: Spacing.md,
       fontWeight: Typography.fontWeight.medium,
     },
     balanceLabel: {
-      fontSize: Typography.fontSize.medium,
+      fontSize: Typography.fontSize.callout,
       color: colors.textLight,
       marginBottom: Spacing.md,
       fontWeight: Typography.fontWeight.medium,
@@ -673,7 +692,7 @@ export default function AccountDetailScreen({ route, navigation }: any) {
       marginBottom: Spacing.sm,
     },
     lastUpdated: {
-      fontSize: Typography.fontSize.small,
+      fontSize: Typography.fontSize.footnote,
       color: colors.overlayLight,
       fontStyle: 'italic',
     },
@@ -690,13 +709,13 @@ export default function AccountDetailScreen({ route, navigation }: any) {
       alignItems: 'center',
     },
     statValue: {
-      fontSize: Typography.fontSize.large,
+      fontSize: Typography.fontSize.title3,
       fontWeight: Typography.fontWeight.bold,
       color: colors.textLight,
       marginBottom: 4,
     },
     statLabel: {
-      fontSize: Typography.fontSize.small,
+      fontSize: Typography.fontSize.footnote,
       color: colors.overlayLight,
       textAlign: 'center',
     },
@@ -744,7 +763,7 @@ export default function AccountDetailScreen({ route, navigation }: any) {
           : 'rgba(255, 255, 255, 0.1)',
     },
     boxTitle: {
-      fontSize: Typography.fontSize.large,
+      fontSize: Typography.fontSize.title3,
       fontWeight: Typography.fontWeight.semibold,
       color: colors.textPrimary,
       marginBottom: Spacing.lg,
@@ -762,7 +781,7 @@ export default function AccountDetailScreen({ route, navigation }: any) {
       borderColor: colors.border,
       borderRadius: Spacing.borderRadius.medium,
       paddingHorizontal: Spacing.lg,
-      fontSize: Typography.fontSize.medium,
+      fontSize: Typography.fontSize.body,
       backgroundColor: colors.veryLightGray,
       color: colors.textPrimary,
     },
@@ -775,7 +794,7 @@ export default function AccountDetailScreen({ route, navigation }: any) {
     },
     updateButtonText: {
       color: colors.textLight,
-      fontSize: Typography.fontSize.medium,
+      fontSize: Typography.fontSize.body,
       fontWeight: Typography.fontWeight.semibold,
       textAlign: 'center',
     },

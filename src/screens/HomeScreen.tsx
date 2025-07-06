@@ -10,8 +10,10 @@ import {
   StyleSheet,
   Platform,
   StatusBar,
+  SafeAreaView,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Store, { LegacyTransaction, AppData } from '../store/store';
 import { useTheme } from '../contexts';
 import HomeCard from '../components/cards/HomeCard';
@@ -19,44 +21,62 @@ import { TransactionService } from '../database/services/TransactionService';
 import { Transaction } from '../database/models/Transaction';
 import { HomeCard as HomeCardComponent } from '../components';
 
-// Typography styles moved from centralized styles
+// iOS Typography System
 const Typography = {
-  // Font Sizes
+  // iOS Font Sizes (following iOS Human Interface Guidelines)
   fontSize: {
-    tiny: 10,
-    small: 12,
-    regular: 14,
-    medium: 16,
-    large: 18,
-    xl: 20,
-    xxl: 24,
-    xxxl: 36,
+    // iOS naming
+    caption2: 11, // Caption 2
+    caption1: 12, // Caption 1
+    footnote: 13, // Footnote
+    subheadline: 15, // Subheadline
+    callout: 16, // Callout
+    body: 17, // Body
+    headline: 17, // Headline
+    title3: 20, // Title 3
+    title2: 22, // Title 2
+    title1: 28, // Title 1
+    largeTitle: 34, // Large Title
+
+    // Backward compatibility
+    tiny: 11, // Maps to caption2
+    small: 13, // Maps to footnote
+    regular: 17, // Maps to body
+    medium: 16, // Maps to callout
+    large: 20, // Maps to title3
+    xl: 22, // Maps to title2
+    xxl: 28, // Maps to title1
+    xxxl: 34, // Maps to largeTitle
   },
 
-  // Font Weights
+  // iOS Font Weights
   fontWeight: {
+    ultraLight: '100' as const,
+    thin: '200' as const,
     light: '300' as const,
     regular: '400' as const,
     medium: '500' as const,
     semibold: '600' as const,
     bold: '700' as const,
+    heavy: '800' as const,
+    black: '900' as const,
   },
 
-  // Line Heights
+  // iOS Line Heights
   lineHeight: {
-    tight: 1.2,
-    normal: 1.5,
-    loose: 1.8,
+    tight: 1.15,
+    normal: 1.25,
+    relaxed: 1.4,
   },
 
-  // Letter Spacing
+  // iOS Letter Spacing
   letterSpacing: {
-    tight: -0.5,
+    tight: -0.41,
     normal: 0,
-    wide: 0.5,
+    wide: 0.38,
   },
 
-  // Font Families (if needed for custom fonts)
+  // iOS Font Families
   fontFamily: {
     regular: 'System',
     medium: 'System',
@@ -191,6 +211,7 @@ const getShadows = (colors: any) => ({
 export default function HomeScreen() {
   const { colors } = useTheme();
   const shadows = getShadows(colors);
+  const insets = useSafeAreaInsets();
   const [balance, setBalance] = useState<number>(0);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [amount, setAmount] = useState<string>('');
@@ -220,7 +241,7 @@ export default function HomeScreen() {
     contentContainer: {
       flexGrow: 1,
       paddingTop: Spacing.xl,
-      paddingBottom: 40,
+      paddingBottom: insets.bottom + 80, // Safe area bottom + tab bar space
     },
     managementBox: {
       backgroundColor: colors.secondaryLight,

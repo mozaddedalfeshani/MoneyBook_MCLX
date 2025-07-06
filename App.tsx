@@ -4,6 +4,7 @@ import {
   DefaultTheme,
   DarkTheme,
 } from '@react-navigation/native';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { TabNavigator } from './src/navigation';
 import { ThemeProvider, useTheme } from './src/contexts';
 
@@ -33,9 +34,11 @@ function AppNavigator() {
 
 function App() {
   return (
-    <ThemeProvider>
-      <AppNavigator />
-    </ThemeProvider>
+    <SafeAreaProvider>
+      <ThemeProvider>
+        <AppNavigator />
+      </ThemeProvider>
+    </SafeAreaProvider>
   );
 }
 

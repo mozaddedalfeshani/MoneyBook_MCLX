@@ -268,7 +268,7 @@ MoneyBook features professionally designed app icons that adapt to any theme:
 ```
 output/
 ├── MoneyBook-v1.0.0-release.apk          # AsyncStorage (53MB)
-├── MoneyBook-v1.1.0-release.apk          # Icon updates (53MB)
+├── MoneyBook-v1.1.0-release.apk          # Icon updates (53MB) 
 ├── MoneyBook-v1.2.0-transparent-release.apk # Transparent icons (53MB)
 └── MoneyBook-v2.0.0-WatermelonDB-release.apk # WatermelonDB (54MB) ⭐
 ```

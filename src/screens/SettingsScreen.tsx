@@ -6,49 +6,59 @@ import {
   Alert,
   StyleSheet,
   TouchableOpacity,
+  ScrollView,
+  StatusBar,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import LinearGradient from 'react-native-linear-gradient';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import { useTheme } from '../contexts';
 
-// Typography styles moved from centralized styles
+// iOS Typography System
 const Typography = {
-  // Font Sizes
+  // iOS Font Sizes (following iOS Human Interface Guidelines)
   fontSize: {
-    tiny: 10,
-    small: 12,
-    regular: 14,
-    medium: 16,
-    large: 18,
-    xl: 20,
-    xxl: 24,
-    xxxl: 36,
+    caption2: 11, // Caption 2
+    caption1: 12, // Caption 1
+    footnote: 13, // Footnote
+    subheadline: 15, // Subheadline
+    callout: 16, // Callout
+    body: 17, // Body
+    headline: 17, // Headline
+    title3: 20, // Title 3
+    title2: 22, // Title 2
+    title1: 28, // Title 1
+    largeTitle: 34, // Large Title
   },
 
-  // Font Weights
+  // iOS Font Weights
   fontWeight: {
+    ultraLight: '100' as const,
+    thin: '200' as const,
     light: '300' as const,
     regular: '400' as const,
     medium: '500' as const,
     semibold: '600' as const,
     bold: '700' as const,
+    heavy: '800' as const,
+    black: '900' as const,
   },
 
-  // Line Heights
+  // iOS Line Heights
   lineHeight: {
-    tight: 1.2,
-    normal: 1.5,
-    loose: 1.8,
+    tight: 1.15,
+    normal: 1.25,
+    relaxed: 1.4,
   },
 
-  // Letter Spacing
+  // iOS Letter Spacing
   letterSpacing: {
-    tight: -0.5,
+    tight: -0.41,
     normal: 0,
-    wide: 0.5,
+    wide: 0.38,
   },
 
-  // Font Families (if needed for custom fonts)
+  // iOS Font Families
   fontFamily: {
     regular: 'System',
     medium: 'System',
@@ -56,75 +66,77 @@ const Typography = {
   },
 };
 
-// Spacing styles moved from centralized styles
+// iOS Spacing System (8pt grid)
 const Spacing = {
-  // Base spacing unit
+  // Base spacing unit (iOS uses 8pt grid)
   base: 8,
 
-  // Margin/Padding sizes
-  xs: 4,
-  sm: 8,
-  md: 12,
-  lg: 16,
-  xl: 20,
-  xxl: 24,
-  xxxl: 32,
+  // iOS spacing values
+  xs: 4, // 0.5x
+  sm: 8, // 1x
+  md: 16, // 2x
+  lg: 24, // 3x
+  xl: 32, // 4x
+  xxl: 40, // 5x
+  xxxl: 48, // 6x
 
-  // Specific spacing values
+  // iOS spacing
   margin: {
     xs: 4,
     sm: 8,
-    md: 12,
-    lg: 16,
-    xl: 20,
-    xxl: 24,
-    xxxl: 32,
+    md: 16,
+    lg: 24,
+    xl: 32,
+    xxl: 40,
+    xxxl: 48,
   },
 
   padding: {
     xs: 4,
     sm: 8,
-    md: 12,
-    lg: 16,
-    xl: 20,
-    xxl: 24,
-    xxxl: 32,
+    md: 16,
+    lg: 24,
+    xl: 32,
+    xxl: 40,
+    xxxl: 48,
   },
 
-  // Border radius
+  // iOS Border radius (more rounded)
   borderRadius: {
     small: 8,
-    medium: 10,
-    large: 12,
-    xl: 15,
-    xxl: 20,
+    medium: 12,
+    large: 16,
+    xl: 20,
+    xxl: 24,
+    xxxl: 28,
   },
 
-  // Heights
+  // iOS Heights
   height: {
-    input: 50,
-    button: 50,
+    input: 44, // iOS standard touch target
+    button: 44, // iOS standard touch target
     card: 200,
-    icon: 40,
+    icon: 44, // iOS standard touch target
   },
 
-  // Widths
+  // iOS Widths
   width: {
-    divider: 1,
+    divider: 0.5, // iOS standard divider
     border: 1,
   },
 
-  // Gaps
+  // iOS Gaps
   gap: {
     small: 8,
-    medium: 10,
-    large: 12,
-    xl: 15,
+    medium: 16,
+    large: 24,
+    xl: 32,
   },
 };
 
 export default function SettingsScreen({ navigation }: any) {
   const { currentTheme, colors, toggleTheme, isLoading } = useTheme();
+  const insets = useSafeAreaInsets();
 
   const handleThemeToggle = async () => {
     try {
@@ -140,114 +152,107 @@ export default function SettingsScreen({ navigation }: any) {
     }
   };
 
-  // Theme-compatible gradient colors - Much lighter and subtle
-  const gradientColors =
-    currentTheme === 'light'
-      ? ['#f8f9ff', '#f0f2ff', '#e8f0fe'] // Very light blue-purple gradient
-      : ['#2a2a2a', '#252525', '#1f1f1f']; // Subtle dark gradient
+  // iOS-style clean background
+  const backgroundColor = colors.background;
 
   const styles = StyleSheet.create({
-    gradientContainer: {
-      flex: 1,
-    },
     container: {
       flex: 1,
-      paddingHorizontal: Spacing.xl,
+      backgroundColor: backgroundColor,
+      paddingTop: insets.top, // Safe area top
+      paddingLeft: insets.left,
+      paddingRight: insets.right,
+    },
+    scrollView: {
+      flex: 1,
+    },
+    scrollContent: {
+      paddingHorizontal: Spacing.md,
+      paddingTop: Spacing.md,
+      paddingBottom: insets.bottom + 80, // Safe area bottom + tab bar space
     },
     header: {
       alignItems: 'center' as const,
-      marginBottom: 60,
+      marginTop: Spacing.sm,
+      marginBottom: Spacing.lg,
+      paddingVertical: Spacing.md,
     },
     title: {
-      fontSize: Typography.fontSize.xxl,
-      fontWeight: Typography.fontWeight.bold,
+      fontSize: 28, // Direct size instead of variable
+      fontWeight: '700' as const,
       color: colors.textPrimary,
       marginBottom: 8,
-      textShadowColor:
-        currentTheme === 'light' ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.1)',
-      textShadowOffset: { width: 0, height: 1 },
-      textShadowRadius: 2,
+      textAlign: 'center' as const,
     },
     subtitle: {
-      fontSize: Typography.fontSize.medium,
+      fontSize: 16, // Direct size instead of variable
+      fontWeight: '400' as const,
       color: colors.textSecondary,
-      textShadowColor:
-        currentTheme === 'light' ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.1)',
-      textShadowOffset: { width: 0, height: 1 },
-      textShadowRadius: 1,
+      textAlign: 'center' as const,
     },
     settingsSection: {
-      marginBottom: Spacing.xxl,
+      marginBottom: Spacing.xl,
     },
     sectionTitle: {
-      fontSize: Typography.fontSize.large,
-      fontWeight: Typography.fontWeight.semibold,
+      fontSize: 18, // Direct size
+      fontWeight: '600' as const,
       color: colors.textPrimary,
-      marginBottom: Spacing.lg,
-      marginLeft: Spacing.sm,
+      marginBottom: Spacing.md,
+      marginLeft: Spacing.md,
     },
     settingsCard: {
-      backgroundColor:
-        currentTheme === 'light'
-          ? 'rgba(255, 255, 255, 0.9)'
-          : 'rgba(45, 45, 45, 0.9)',
-      borderRadius: Spacing.borderRadius.large,
-      padding: Spacing.xl,
+      backgroundColor: colors.white,
+      borderRadius: Spacing.borderRadius.medium,
+      padding: Spacing.md,
+      paddingVertical: Spacing.lg,
       flexDirection: 'row' as const,
       alignItems: 'center' as const,
       justifyContent: 'space-between' as const,
       shadowColor: colors.shadowPrimary,
-      shadowOffset: { width: 0, height: 4 },
-      shadowOpacity: 0.2,
-      shadowRadius: 12,
-      elevation: 8,
-      marginBottom: Spacing.md,
-      borderWidth: 1,
-      borderColor:
-        currentTheme === 'light'
-          ? 'rgba(255, 255, 255, 0.5)'
-          : 'rgba(255, 255, 255, 0.1)',
+      shadowOffset: { width: 0, height: 1 },
+      shadowOpacity: 0.04,
+      shadowRadius: 4,
+      elevation: 1,
+      marginBottom: Spacing.sm,
+      borderWidth: 0.5,
+      borderColor: colors.border,
     },
     navigableCard: {
-      backgroundColor:
-        currentTheme === 'light'
-          ? 'rgba(255, 255, 255, 0.9)'
-          : 'rgba(45, 45, 45, 0.9)',
-      borderRadius: Spacing.borderRadius.large,
-      padding: Spacing.xl,
+      backgroundColor: colors.white,
+      borderRadius: Spacing.borderRadius.medium,
+      padding: Spacing.md,
+      paddingVertical: Spacing.lg,
       flexDirection: 'row' as const,
       alignItems: 'center' as const,
       justifyContent: 'space-between' as const,
       shadowColor: colors.shadowPrimary,
-      shadowOffset: { width: 0, height: 4 },
-      shadowOpacity: 0.2,
-      shadowRadius: 12,
-      elevation: 8,
-      marginBottom: Spacing.md,
-      borderWidth: 1,
-      borderColor:
-        currentTheme === 'light'
-          ? 'rgba(255, 255, 255, 0.5)'
-          : 'rgba(255, 255, 255, 0.1)',
+      shadowOffset: { width: 0, height: 1 },
+      shadowOpacity: 0.04,
+      shadowRadius: 4,
+      elevation: 1,
+      marginBottom: Spacing.sm,
+      borderWidth: 0.5,
+      borderColor: colors.border,
     },
     cardContent: {
       flex: 1,
       marginLeft: Spacing.md,
     },
     cardTitle: {
-      fontSize: Typography.fontSize.large,
-      fontWeight: Typography.fontWeight.semibold,
+      fontSize: 16, // Direct size
+      fontWeight: '500' as const,
       color: colors.textPrimary,
       marginBottom: 4,
     },
     cardDescription: {
-      fontSize: Typography.fontSize.regular,
+      fontSize: 13, // Direct size
+      fontWeight: '400' as const,
       color: colors.textSecondary,
     },
     cardIcon: {
-      width: 40,
-      height: 40,
-      borderRadius: 20,
+      width: 32,
+      height: 32,
+      borderRadius: 8,
       justifyContent: 'center' as const,
       alignItems: 'center' as const,
       marginRight: Spacing.md,
@@ -256,15 +261,11 @@ export default function SettingsScreen({ navigation }: any) {
       marginLeft: Spacing.sm,
     },
     currentThemeText: {
-      fontSize: Typography.fontSize.medium,
-      color: colors.textSecondary,
+      fontSize: 12, // Direct size
+      fontWeight: '400' as const,
+      color: colors.textTertiary,
       textAlign: 'center' as const,
-      marginTop: Spacing.xl,
-      fontStyle: 'italic' as const,
-      textShadowColor:
-        currentTheme === 'light' ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.1)',
-      textShadowOffset: { width: 0, height: 1 },
-      textShadowRadius: 1,
+      marginTop: Spacing.lg,
     },
     loadingContainer: {
       flex: 1,
@@ -272,37 +273,37 @@ export default function SettingsScreen({ navigation }: any) {
       alignItems: 'center' as const,
     },
     loadingText: {
+      fontSize: 16, // Direct size
+      fontWeight: '400' as const,
       color: colors.textSecondary,
-      textShadowColor:
-        currentTheme === 'light' ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.1)',
-      textShadowOffset: { width: 0, height: 1 },
-      textShadowRadius: 1,
     },
   });
 
   if (isLoading) {
     return (
-      <LinearGradient
-        colors={gradientColors}
-        style={styles.gradientContainer}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-      >
+      <View style={styles.container}>
+        <StatusBar
+          barStyle={currentTheme === 'light' ? 'dark-content' : 'light-content'}
+          backgroundColor={backgroundColor}
+        />
         <View style={styles.loadingContainer}>
           <Text style={styles.loadingText}>Loading...</Text>
         </View>
-      </LinearGradient>
+      </View>
     );
   }
 
   return (
-    <LinearGradient
-      colors={gradientColors}
-      style={styles.gradientContainer}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 1, y: 1 }}
-    >
-      <View style={styles.container}>
+    <View style={styles.container}>
+      <StatusBar
+        barStyle={currentTheme === 'light' ? 'dark-content' : 'light-content'}
+        backgroundColor={backgroundColor}
+      />
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
         {/* Header */}
         <View style={styles.header}>
           <FontAwesome5
@@ -391,7 +392,7 @@ export default function SettingsScreen({ navigation }: any) {
           Current theme:{' '}
           {currentTheme.charAt(0).toUpperCase() + currentTheme.slice(1)}
         </Text>
-      </View>
-    </LinearGradient>
+      </ScrollView>
+    </View>
   );
 }
