@@ -1,24 +1,20 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
-  TextInput,
   TouchableOpacity,
-  Modal,
-  Alert,
   ScrollView,
   StyleSheet,
-  Platform,
-  StatusBar,
-  SafeAreaView,
+  Modal,
+  Alert,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import Store, { LegacyTransaction, AppData } from '../store/store';
-import { useTheme } from '../contexts';
-import HomeCard from '../components/cards/HomeCard';
-import { TransactionService } from '../database/services/TransactionService';
+import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
+import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+import Store, { AppData } from '../store/store';
 import { Transaction } from '../database/models/Transaction';
+import { useTheme } from '../contexts';
 import { HomeCard as HomeCardComponent } from '../components';
 
 // iOS Typography System
@@ -75,16 +71,9 @@ const Typography = {
     normal: 0,
     wide: 0.38,
   },
-
-  // iOS Font Families
-  fontFamily: {
-    regular: 'System',
-    medium: 'System',
-    bold: 'System',
-  },
 };
 
-// Spacing styles moved from centralized styles
+// iOS Spacing System
 const Spacing = {
   // Base spacing unit
   base: 8,
@@ -189,15 +178,6 @@ const getShadows = (colors: any) => ({
     elevation: 3,
   },
 
-  // Header shadow
-  header: {
-    shadowColor: colors.shadowPrimary,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-
   // Button shadow
   button: {
     shadowColor: colors.shadowPrimary,
@@ -214,171 +194,54 @@ export default function HomeScreen() {
   const insets = useSafeAreaInsets();
   const [balance, setBalance] = useState<number>(0);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [amount, setAmount] = useState<string>('');
-  const [reason, setReason] = useState<string>('');
-  const [modalVisible, setModalVisible] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [infoModalVisible, setInfoModalVisible] = useState<boolean>(false);
+  const [selectedFeature, setSelectedFeature] = useState<any>(null);
 
-  const calculateStats = useMemo(() => {
-    const lastCashIn =
-      transactions
-        .filter(t => t.type === 'cash_in')
-        .sort((a, b) => b.timestamp - a.timestamp)[0]?.amount || 0;
-
-    const lastCashOut =
-      transactions
-        .filter(t => t.type === 'cash_out')
-        .sort((a, b) => b.timestamp - a.timestamp)[0]?.amount || 0;
-
-    return { lastCashIn, lastCashOut };
-  }, [transactions]);
-
-  const styles = StyleSheet.create({
-    container: {
-      flex: 1,
-      backgroundColor: colors.background,
-    },
-    contentContainer: {
-      flexGrow: 1,
-      paddingTop: Spacing.xl,
-      paddingBottom: insets.bottom + 80, // Safe area bottom + tab bar space
-    },
-    managementBox: {
-      backgroundColor: colors.secondaryLight,
-      marginHorizontal: Spacing.lg,
-      marginTop: Spacing.xl,
-      borderRadius: Spacing.borderRadius.xl,
-      padding: Spacing.xl,
-      ...shadows.medium,
-    },
-    boxTitle: {
-      fontSize: Typography.fontSize.large,
-      fontWeight: Typography.fontWeight.semibold,
-      color: colors.textPrimary,
-      marginBottom: Spacing.lg,
-      textAlign: 'center' as const,
-    },
-    inputContainer: {
-      flexDirection: 'row' as const,
-      alignItems: 'center' as const,
-      gap: Spacing.gap.medium,
-    },
-    input: {
-      flex: 1,
-      height: Spacing.height.input,
-      borderWidth: Spacing.width.border,
-      borderColor: colors.border,
-      borderRadius: Spacing.borderRadius.medium,
-      paddingHorizontal: Spacing.lg,
-      fontSize: Typography.fontSize.medium,
-      backgroundColor: colors.veryLightGray,
-      color: colors.textPrimary,
-    },
-    updateButton: {
-      backgroundColor: colors.secondary,
-      paddingHorizontal: Spacing.xl,
-      paddingVertical: Spacing.lg,
-      borderRadius: Spacing.borderRadius.medium,
-      minWidth: 80,
-    },
-    updateButtonText: {
-      color: colors.textLight,
-      fontSize: Typography.fontSize.medium,
-      fontWeight: Typography.fontWeight.semibold,
-      textAlign: 'center' as const,
-    },
-    // Modal styles
-    modalOverlay: {
-      flex: 1,
-      backgroundColor: colors.overlay,
-      justifyContent: 'center' as const,
-      alignItems: 'center' as const,
-      padding: Spacing.xl,
-    },
-    modalContent: {
-      backgroundColor: colors.white,
-      borderRadius: Spacing.borderRadius.xxl,
-      padding: Spacing.xxl,
-      width: '100%' as const,
-      maxWidth: 350,
-      alignItems: 'center' as const,
-    },
-    modalTitle: {
-      fontSize: Typography.fontSize.xl,
-      fontWeight: Typography.fontWeight.bold,
-      color: colors.textPrimary,
-      marginBottom: Spacing.lg,
-      textAlign: 'center' as const,
-    },
-    modalAmount: {
-      fontSize: Typography.fontSize.large,
-      fontWeight: Typography.fontWeight.semibold,
+  // App features data
+  const appFeatures = [
+    {
+      id: 1,
+      title: 'Multi-Account Management',
+      description: 'Create and manage multiple accounts for different purposes',
+      icon: 'account-balance-wallet',
       color: colors.primary,
-      marginBottom: Spacing.xl,
+      details:
+        'Organize your finances with separate accounts for personal, business, savings, and more. Each account maintains its own balance and transaction history.',
     },
-    reasonContainer: {
-      width: '100%' as const,
-      marginBottom: Spacing.xl,
+    {
+      id: 2,
+      title: 'Transaction Tracking',
+      description: 'Record all your income and expenses with detailed reasons',
+      icon: 'trending-up',
+      color: colors.success,
+      details:
+        'Track every cash in and cash out transaction with custom reasons. View detailed transaction history and monitor your spending patterns.',
     },
-    reasonLabel: {
-      fontSize: Typography.fontSize.medium,
-      fontWeight: Typography.fontWeight.semibold,
-      color: colors.textPrimary,
-      marginBottom: Spacing.md,
+    {
+      id: 3,
+      title: 'Smart Analytics',
+      description: 'View comprehensive reports and balance insights',
+      icon: 'analytics',
+      color: colors.secondary,
+      details:
+        'Get insights into your financial habits with detailed analytics, balance trends, and spending categorization across all your accounts.',
     },
-    reasonInput: {
-      borderWidth: Spacing.width.border,
-      borderColor: colors.border,
-      borderRadius: Spacing.borderRadius.medium,
-      paddingHorizontal: Spacing.lg,
-      paddingVertical: Spacing.md,
-      fontSize: Typography.fontSize.medium,
-      backgroundColor: colors.veryLightGray,
-      color: colors.textPrimary,
-      minHeight: 60,
-      textAlignVertical: 'top' as const,
+    {
+      id: 4,
+      title: 'Secure & Private',
+      description: 'All your data is stored locally on your device',
+      icon: 'security',
+      color: colors.error,
+      details:
+        'Your financial data never leaves your device. Everything is stored locally with robust encryption for maximum privacy and security.',
     },
-    modalButtons: {
-      flexDirection: 'row' as const,
-      justifyContent: 'space-between' as const,
-      width: '100%' as const,
-      gap: Spacing.gap.medium,
-      marginBottom: Spacing.xl,
-    },
-    modalButton: {
-      flex: 1,
-      paddingVertical: Spacing.lg,
-      paddingHorizontal: Spacing.lg,
-      borderRadius: Spacing.borderRadius.large,
-      alignItems: 'center' as const,
-    },
-    cashInButton: {
-      backgroundColor: colors.success,
-    },
-    cashOutButton: {
-      backgroundColor: colors.error,
-    },
-    modalButtonText: {
-      color: colors.textLight,
-      fontSize: Typography.fontSize.medium,
-      fontWeight: Typography.fontWeight.bold,
-      marginBottom: 4,
-    },
-    modalButtonSubtext: {
-      color: colors.textLight,
-      fontSize: Typography.fontSize.small,
-      textAlign: 'center' as const,
-    },
-    cancelButton: {
-      paddingVertical: Spacing.md,
-      paddingHorizontal: Spacing.xl,
-      borderRadius: Spacing.borderRadius.medium,
-    },
-    cancelButtonText: {
-      color: colors.textSecondary,
-      fontSize: Typography.fontSize.medium,
-      fontWeight: Typography.fontWeight.semibold,
-    },
+  ];
+
+  // Get last transaction amounts for HomeCard
+  const [lastTransactionAmounts, setLastTransactionAmounts] = useState({
+    lastCashIn: 0,
+    lastCashOut: 0,
   });
 
   // Load data from store
@@ -397,95 +260,6 @@ export default function HomeScreen() {
       setIsLoading(false);
     }
   };
-
-  // Update local state with new data
-  const updateLocalState = (newData: AppData) => {
-    setBalance(newData.balance);
-    setTransactions(newData.transactions);
-  };
-
-  const handleUpdatePress = () => {
-    if (!amount || parseFloat(amount) <= 0) {
-      Alert.alert(
-        'Invalid Amount',
-        'Please enter a valid amount greater than 0',
-      );
-      return;
-    }
-    setModalVisible(true);
-  };
-
-  const handleCashIn = async () => {
-    try {
-      const cashInAmount = parseFloat(amount);
-      const newData = await Store.addCashIn(
-        balance,
-        transactions,
-        cashInAmount,
-        reason,
-      );
-      updateLocalState(newData);
-      setModalVisible(false);
-      setAmount('');
-      setReason('');
-
-      const reasonText = reason.trim() ? ` (${reason.trim()})` : '';
-      Alert.alert(
-        'Success',
-        `Cash In successful! New balance: ${newData.balance.toFixed(
-          2,
-        )} Tk${reasonText}`,
-      );
-    } catch (error) {
-      console.error('Error in cash in:', error);
-      Alert.alert('Error', 'Failed to add cash in transaction');
-    }
-  };
-
-  const handleCashOut = async () => {
-    try {
-      const cashOutAmount = parseFloat(amount);
-      const newData = await Store.addCashOut(
-        balance,
-        transactions,
-        cashOutAmount,
-        reason,
-      );
-      updateLocalState(newData);
-      setModalVisible(false);
-      setAmount('');
-      setReason('');
-
-      const reasonText = reason.trim() ? ` (${reason.trim()})` : '';
-      Alert.alert(
-        'Success',
-        `Cash Out successful! New balance: ${newData.balance.toFixed(
-          2,
-        )} Tk${reasonText}`,
-      );
-    } catch (error) {
-      console.error('Error in cash out:', error);
-      if (error instanceof Error && error.message === 'Insufficient balance') {
-        Alert.alert(
-          'Insufficient Balance',
-          "You don't have enough money for this transaction",
-        );
-      } else {
-        Alert.alert('Error', 'Failed to add cash out transaction');
-      }
-    }
-  };
-
-  const closeModal = () => {
-    setModalVisible(false);
-    setReason('');
-  };
-
-  // Get last transaction amounts for HomeCard
-  const [lastTransactionAmounts, setLastTransactionAmounts] = useState({
-    lastCashIn: 0,
-    lastCashOut: 0,
-  });
 
   useEffect(() => {
     const getLastAmounts = async () => {
@@ -507,18 +281,200 @@ export default function HomeScreen() {
     loadData();
   }, []);
 
-  // Reload data when navigating back from History screen
+  // Reload data when navigating back from other screens
   useFocusEffect(
     useCallback(() => {
       loadData();
     }, []),
   );
 
+  const handleFeaturePress = (feature: any) => {
+    setSelectedFeature(feature);
+    setInfoModalVisible(true);
+  };
+
+  const renderFeatureCard = (feature: any) => (
+    <TouchableOpacity
+      key={feature.id}
+      style={[styles.featureCard, { borderLeftColor: feature.color }]}
+      onPress={() => handleFeaturePress(feature)}
+      activeOpacity={0.7}
+    >
+      <View style={styles.featureHeader}>
+        <View
+          style={[
+            styles.featureIcon,
+            { backgroundColor: feature.color + '20' },
+          ]}
+        >
+          <MaterialIcons name={feature.icon} size={24} color={feature.color} />
+        </View>
+        <View style={styles.featureContent}>
+          <Text style={styles.featureTitle}>{feature.title}</Text>
+          <Text style={styles.featureDescription}>{feature.description}</Text>
+        </View>
+        <FontAwesome5
+          name="chevron-right"
+          size={16}
+          color={colors.textTertiary}
+        />
+      </View>
+    </TouchableOpacity>
+  );
+
+  const styles = StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.background,
+    },
+    contentContainer: {
+      flexGrow: 1,
+      paddingTop: Spacing.xl,
+      paddingBottom: insets.bottom + 80, // Safe area bottom + tab bar space
+    },
+    welcomeSection: {
+      marginHorizontal: Spacing.lg,
+      marginTop: Spacing.xl,
+      marginBottom: Spacing.lg,
+    },
+    welcomeTitle: {
+      fontSize: Typography.fontSize.title1,
+      fontWeight: Typography.fontWeight.bold,
+      color: colors.textPrimary,
+      marginBottom: Spacing.sm,
+    },
+    welcomeSubtitle: {
+      fontSize: Typography.fontSize.body,
+      color: colors.textSecondary,
+      lineHeight: Typography.lineHeight.normal * Typography.fontSize.body,
+    },
+    featuresSection: {
+      marginHorizontal: Spacing.lg,
+      marginTop: Spacing.xl,
+    },
+    sectionTitle: {
+      fontSize: Typography.fontSize.title3,
+      fontWeight: Typography.fontWeight.semibold,
+      color: colors.textPrimary,
+      marginBottom: Spacing.lg,
+    },
+    featureCard: {
+      backgroundColor: colors.white,
+      borderRadius: Spacing.borderRadius.large,
+      padding: Spacing.lg,
+      marginBottom: Spacing.md,
+      borderLeftWidth: 4,
+      ...shadows.card,
+    },
+    featureHeader: {
+      flexDirection: 'row' as const,
+      alignItems: 'center' as const,
+    },
+    featureIcon: {
+      width: 48,
+      height: 48,
+      borderRadius: 24,
+      justifyContent: 'center' as const,
+      alignItems: 'center' as const,
+      marginRight: Spacing.md,
+    },
+    featureContent: {
+      flex: 1,
+    },
+    featureTitle: {
+      fontSize: Typography.fontSize.headline,
+      fontWeight: Typography.fontWeight.semibold,
+      color: colors.textPrimary,
+      marginBottom: 4,
+    },
+    featureDescription: {
+      fontSize: Typography.fontSize.subheadline,
+      color: colors.textSecondary,
+      lineHeight:
+        Typography.lineHeight.normal * Typography.fontSize.subheadline,
+    },
+    quickActionsSection: {
+      marginHorizontal: Spacing.lg,
+      marginTop: Spacing.xl,
+    },
+    actionButton: {
+      backgroundColor: colors.primary,
+      paddingVertical: Spacing.lg,
+      paddingHorizontal: Spacing.xl,
+      borderRadius: Spacing.borderRadius.large,
+      flexDirection: 'row' as const,
+      alignItems: 'center' as const,
+      justifyContent: 'center' as const,
+      marginBottom: Spacing.md,
+      ...shadows.button,
+    },
+    actionButtonText: {
+      color: colors.textLight,
+      fontSize: Typography.fontSize.callout,
+      fontWeight: Typography.fontWeight.semibold,
+      marginLeft: Spacing.sm,
+    },
+    // Modal styles
+    modalOverlay: {
+      flex: 1,
+      backgroundColor: colors.overlay,
+      justifyContent: 'center' as const,
+      alignItems: 'center' as const,
+      padding: Spacing.xl,
+    },
+    modalContent: {
+      backgroundColor: colors.white,
+      borderRadius: Spacing.borderRadius.xxl,
+      padding: Spacing.xxl,
+      width: '100%' as const,
+      maxWidth: 400,
+      alignItems: 'center' as const,
+    },
+    modalHeader: {
+      flexDirection: 'row' as const,
+      alignItems: 'center' as const,
+      marginBottom: Spacing.xl,
+    },
+    modalIcon: {
+      width: 56,
+      height: 56,
+      borderRadius: 28,
+      justifyContent: 'center' as const,
+      alignItems: 'center' as const,
+      marginRight: Spacing.lg,
+    },
+    modalTitle: {
+      fontSize: Typography.fontSize.title3,
+      fontWeight: Typography.fontWeight.bold,
+      color: colors.textPrimary,
+    },
+    modalDescription: {
+      fontSize: Typography.fontSize.body,
+      color: colors.textSecondary,
+      lineHeight: Typography.lineHeight.normal * Typography.fontSize.body,
+      textAlign: 'center' as const,
+      marginBottom: Spacing.xl,
+    },
+    closeButton: {
+      backgroundColor: colors.lightGray,
+      paddingVertical: Spacing.md,
+      paddingHorizontal: Spacing.xl,
+      borderRadius: Spacing.borderRadius.large,
+    },
+    closeButtonText: {
+      color: colors.textPrimary,
+      fontSize: Typography.fontSize.callout,
+      fontWeight: Typography.fontWeight.semibold,
+    },
+  });
+
   return (
     <ScrollView
       style={styles.container}
       contentContainerStyle={styles.contentContainer}
+      showsVerticalScrollIndicator={false}
     >
+      {/* Balance Card */}
       <HomeCardComponent
         balance={balance}
         isLoading={isLoading}
@@ -526,86 +482,74 @@ export default function HomeScreen() {
         lastCashOut={lastTransactionAmounts.lastCashOut}
       />
 
-      {/* Money Management Box */}
-      <View style={styles.managementBox}>
-        <Text style={styles.boxTitle}>Manage Your Money</Text>
-
-        <View style={styles.inputContainer}>
-          <TextInput
-            style={styles.input}
-            placeholder="Enter amount (Tk)"
-            placeholderTextColor={colors.textSecondary}
-            value={amount}
-            onChangeText={setAmount}
-            keyboardType="numeric"
-          />
-          <TouchableOpacity
-            style={styles.updateButton}
-            onPress={handleUpdatePress}
-            activeOpacity={0.7}
-          >
-            <Text style={styles.updateButtonText}>Update</Text>
-          </TouchableOpacity>
-        </View>
+      {/* Welcome Section */}
+      <View style={styles.welcomeSection}>
+        <Text style={styles.welcomeTitle}>Welcome to MoneyBook</Text>
+        <Text style={styles.welcomeSubtitle}>
+          Your personal finance companion for tracking multiple accounts,
+          managing transactions, and gaining insights into your spending habits.
+        </Text>
       </View>
 
-      {/* Modal for Cash In/Out Selection */}
+      {/* Features Section */}
+      <View style={styles.featuresSection}>
+        <Text style={styles.sectionTitle}>What You Can Do</Text>
+        {appFeatures.map(renderFeatureCard)}
+      </View>
+
+      {/* Quick Actions */}
+      <View style={styles.quickActionsSection}>
+        <Text style={styles.sectionTitle}>Quick Actions</Text>
+        <TouchableOpacity style={styles.actionButton} activeOpacity={0.7}>
+          <FontAwesome5 name="plus-circle" size={20} color={colors.textLight} />
+          <Text style={styles.actionButtonText}>
+            Go to Accounts to Add Transactions
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.actionButton} activeOpacity={0.7}>
+          <FontAwesome5 name="chart-line" size={20} color={colors.textLight} />
+          <Text style={styles.actionButtonText}>View Transaction History</Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* Feature Details Modal */}
       <Modal
         animationType="slide"
         transparent={true}
-        visible={modalVisible}
-        onRequestClose={closeModal}
+        visible={infoModalVisible}
+        onRequestClose={() => setInfoModalVisible(false)}
       >
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Choose Transaction Type</Text>
-            <Text style={styles.modalAmount}>Amount: {amount} Tk</Text>
-
-            {/* Reason Input Field */}
-            <View style={styles.reasonContainer}>
-              <Text style={styles.reasonLabel}>Reason (Optional)</Text>
-              <TextInput
-                style={styles.reasonInput}
-                placeholder="e.g., Groceries, Salary, Gift..."
-                placeholderTextColor={colors.textSecondary}
-                value={reason}
-                onChangeText={setReason}
-                multiline={true}
-                maxLength={100}
-              />
-            </View>
-
-            <View style={styles.modalButtons}>
-              <TouchableOpacity
-                style={[styles.modalButton, styles.cashInButton]}
-                onPress={handleCashIn}
-                activeOpacity={0.7}
-              >
-                <Text style={styles.modalButtonText}>💰 Cash In</Text>
-                <Text style={styles.modalButtonSubtext}>
-                  Add money to balance
+            {selectedFeature && (
+              <>
+                <View style={styles.modalHeader}>
+                  <View
+                    style={[
+                      styles.modalIcon,
+                      { backgroundColor: selectedFeature.color + '20' },
+                    ]}
+                  >
+                    <MaterialIcons
+                      name={selectedFeature.icon}
+                      size={32}
+                      color={selectedFeature.color}
+                    />
+                  </View>
+                  <Text style={styles.modalTitle}>{selectedFeature.title}</Text>
+                </View>
+                <Text style={styles.modalDescription}>
+                  {selectedFeature.details}
                 </Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={[styles.modalButton, styles.cashOutButton]}
-                onPress={handleCashOut}
-                activeOpacity={0.7}
-              >
-                <Text style={styles.modalButtonText}>💸 Cash Out</Text>
-                <Text style={styles.modalButtonSubtext}>
-                  Use money from balance
-                </Text>
-              </TouchableOpacity>
-            </View>
-
-            <TouchableOpacity
-              style={styles.cancelButton}
-              onPress={closeModal}
-              activeOpacity={0.7}
-            >
-              <Text style={styles.cancelButtonText}>Cancel</Text>
-            </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.closeButton}
+                  onPress={() => setInfoModalVisible(false)}
+                  activeOpacity={0.7}
+                >
+                  <Text style={styles.closeButtonText}>Got it!</Text>
+                </TouchableOpacity>
+              </>
+            )}
           </View>
         </View>
       </Modal>

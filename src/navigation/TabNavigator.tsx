@@ -76,12 +76,16 @@ export default function TabNavigator() {
         }}
       />
       <Tab.Screen
-        name="Table View"
+        name="Accounts"
         component={TableViewNavigator}
         options={{
           tabBarIcon: ({ color, size }) => {
             return (
-              <MaterialIcons name="table-view" size={size} color={color} />
+              <MaterialIcons
+                name="account-balance-wallet"
+                size={size}
+                color={color}
+              />
             );
           },
         }}
