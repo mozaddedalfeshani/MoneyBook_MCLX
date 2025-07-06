@@ -27,6 +27,8 @@ interface RouteParams {
   accountName: string;
 }
 
+type FilterType = 'all' | 'credit' | 'debit';
+
 export default function AccountDetailScreen({ route, navigation }: any) {
   const { accountId, accountName }: RouteParams = route.params;
   const { colors, currentTheme } = useTheme();
@@ -34,6 +36,10 @@ export default function AccountDetailScreen({ route, navigation }: any) {
 
   const [balance, setBalance] = useState<number>(0);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [filteredTransactions, setFilteredTransactions] = useState<
+    Transaction[]
+  >([]);
+  const [currentFilter, setCurrentFilter] = useState<FilterType>('all');
   const [amount, setAmount] = useState<string>('');
   const [reason, setReason] = useState<string>('');
   const [modalVisible, setModalVisible] = useState<boolean>(false);
@@ -42,10 +48,10 @@ export default function AccountDetailScreen({ route, navigation }: any) {
     useState<Transaction | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [refreshing, setRefreshing] = useState<boolean>(false);
-  const [lastTransactionAmounts, setLastTransactionAmounts] = useState({
-    lastCashIn: 0,
-    lastCashOut: 0,
-  });
+  const [totalCredit, setTotalCredit] = useState<number>(0);
+  const [totalDebit, setTotalDebit] = useState<number>(0);
+  const [filteredCredit, setFilteredCredit] = useState<number>(0);
+  const [filteredDebit, setFilteredDebit] = useState<number>(0);
 
   // Theme-compatible gradient colors
   const gradientColors =
@@ -53,19 +59,74 @@ export default function AccountDetailScreen({ route, navigation }: any) {
       ? ['#f0faff', '#e6f7ff', '#f8fbff'] // Very light blue gradient
       : ['#2a2a2a', '#252525', '#1f1f1f']; // Subtle dark gradient
 
+  const calculateTotals = (transactionList: Transaction[]) => {
+    let credit = 0;
+    let debit = 0;
+
+    transactionList.forEach(transaction => {
+      if (transaction.type === 'cash_in') {
+        credit += transaction.amount;
+      } else {
+        debit += transaction.amount;
+      }
+    });
+
+    setTotalCredit(credit);
+    setTotalDebit(debit);
+  };
+
+  const calculateFilteredTotals = (transactionList: Transaction[]) => {
+    let credit = 0;
+    let debit = 0;
+
+    transactionList.forEach(transaction => {
+      if (transaction.type === 'cash_in') {
+        credit += transaction.amount;
+      } else {
+        debit += transaction.amount;
+      }
+    });
+
+    setFilteredCredit(credit);
+    setFilteredDebit(debit);
+  };
+
+  const applyFilter = (filter: FilterType, transactionList: Transaction[]) => {
+    let filtered: Transaction[] = [];
+
+    switch (filter) {
+      case 'credit':
+        filtered = transactionList.filter(t => t.type === 'cash_in');
+        break;
+      case 'debit':
+        filtered = transactionList.filter(t => t.type === 'cash_out');
+        break;
+      default:
+        filtered = transactionList;
+        break;
+    }
+
+    setFilteredTransactions(filtered);
+    calculateFilteredTotals(filtered);
+  };
+
+  const handleFilterChange = (filter: FilterType) => {
+    setCurrentFilter(filter);
+    applyFilter(filter, transactions);
+  };
+
   const loadAccountData = async () => {
     try {
       setIsLoading(true);
-      const [accountBalance, accountTransactions, lastAmounts] =
-        await Promise.all([
-          TransactionService.getAccountBalance(accountId),
-          TransactionService.getAccountTransactions(accountId),
-          TransactionService.getAccountLastTransactionAmounts(accountId),
-        ]);
+      const [accountBalance, accountTransactions] = await Promise.all([
+        TransactionService.getAccountBalance(accountId),
+        TransactionService.getAccountTransactions(accountId),
+      ]);
 
       setBalance(accountBalance);
       setTransactions(accountTransactions);
-      setLastTransactionAmounts(lastAmounts);
+      calculateTotals(accountTransactions);
+      applyFilter(currentFilter, accountTransactions);
     } catch (error) {
       console.error('Error loading account data:', error);
       Alert.alert('Error', 'Failed to load account data');
@@ -85,13 +146,13 @@ export default function AccountDetailScreen({ route, navigation }: any) {
     setModalVisible(true);
   };
 
-  const handleCashIn = async () => {
+  const handleCredit = async () => {
     try {
-      const cashInAmount = parseFloat(amount);
+      const creditAmount = parseFloat(amount);
       await TransactionService.addTransaction(
         accountId,
         'cash_in',
-        cashInAmount,
+        creditAmount,
         reason,
       );
       await loadAccountData();
@@ -102,21 +163,21 @@ export default function AccountDetailScreen({ route, navigation }: any) {
       const reasonText = reason.trim() ? ` (${reason.trim()})` : '';
       Alert.alert(
         'Success',
-        `Cash In successful! New balance: ${
-          balance + cashInAmount
+        `Credit successful! New balance: ${
+          balance + creditAmount
         } Tk${reasonText}`,
       );
     } catch (error) {
-      console.error('Error in cash in:', error);
-      Alert.alert('Error', 'Failed to add cash in transaction');
+      console.error('Error in credit:', error);
+      Alert.alert('Error', 'Failed to add credit transaction');
     }
   };
 
-  const handleCashOut = async () => {
+  const handleDebit = async () => {
     try {
-      const cashOutAmount = parseFloat(amount);
+      const debitAmount = parseFloat(amount);
 
-      if (balance < cashOutAmount) {
+      if (balance < debitAmount) {
         Alert.alert(
           'Insufficient Balance',
           "You don't have enough money for this transaction",
@@ -127,7 +188,7 @@ export default function AccountDetailScreen({ route, navigation }: any) {
       await TransactionService.addTransaction(
         accountId,
         'cash_out',
-        cashOutAmount,
+        debitAmount,
         reason,
       );
       await loadAccountData();
@@ -138,13 +199,13 @@ export default function AccountDetailScreen({ route, navigation }: any) {
       const reasonText = reason.trim() ? ` (${reason.trim()})` : '';
       Alert.alert(
         'Success',
-        `Cash Out successful! New balance: ${
-          balance - cashOutAmount
+        `Debit successful! New balance: ${
+          balance - debitAmount
         } Tk${reasonText}`,
       );
     } catch (error) {
-      console.error('Error in cash out:', error);
-      Alert.alert('Error', 'Failed to add cash out transaction');
+      console.error('Error in debit:', error);
+      Alert.alert('Error', 'Failed to add debit transaction');
     }
   };
 
@@ -189,11 +250,12 @@ export default function AccountDetailScreen({ route, navigation }: any) {
   };
 
   const handleDeleteTransaction = (transaction: Transaction) => {
+    const transactionType = transaction.type === 'cash_in' ? 'Credit' : 'Debit';
     Alert.alert(
       'Delete Transaction',
-      `Are you sure you want to delete this ${
-        transaction.type === 'cash_in' ? 'Cash In' : 'Cash Out'
-      } transaction?\n\nAmount: ${transaction.amount.toFixed(2)} Tk\nReason: ${
+      `Are you sure you want to delete this ${transactionType} transaction?\n\nAmount: ${transaction.amount.toFixed(
+        2,
+      )} Tk\nReason: ${
         transaction.reason
       }\n\nThis will adjust your balance accordingly.`,
       [
@@ -249,21 +311,63 @@ export default function AccountDetailScreen({ route, navigation }: any) {
     });
   }, [accountId, accountName, navigation]);
 
+  const renderFilterButton = (
+    filter: FilterType,
+    label: string,
+    icon: string,
+  ) => (
+    <TouchableOpacity
+      style={[
+        styles.filterButton,
+        currentFilter === filter && styles.activeFilterButton,
+      ]}
+      onPress={() => handleFilterChange(filter)}
+      activeOpacity={0.7}
+    >
+      <FontAwesome5
+        name={icon}
+        size={16}
+        color={
+          currentFilter === filter ? colors.textLight : colors.textSecondary
+        }
+      />
+      <Text
+        style={[
+          styles.filterButtonText,
+          currentFilter === filter && styles.activeFilterButtonText,
+        ]}
+      >
+        {label}
+      </Text>
+    </TouchableOpacity>
+  );
+
   const renderTransaction = ({ item }: { item: Transaction }) => (
     <View style={styles.transactionCard}>
       <View style={styles.transactionHeader}>
-        <View style={styles.transactionIcon}>
+        <View
+          style={[
+            styles.transactionIcon,
+            {
+              backgroundColor:
+                item.type === 'cash_in'
+                  ? colors.successBackground
+                  : colors.dangerBackground,
+            },
+          ]}
+        >
           <FontAwesome5
-            name={item.type === 'cash_in' ? 'arrow-down' : 'arrow-up'}
-            size={20}
+            name={item.type === 'cash_in' ? 'plus' : 'minus'}
+            size={18}
             color={item.type === 'cash_in' ? colors.success : colors.error}
           />
         </View>
         <View style={styles.transactionDetails}>
           <Text style={styles.transactionType}>
-            {item.type === 'cash_in' ? '💰 Cash In' : '💸 Cash Out'}
+            {item.type === 'cash_in' ? '💰 Credit' : '💸 Debit'}
           </Text>
           <Text style={styles.transactionDate}>{item.dateString}</Text>
+          <Text style={styles.reasonText}>{item.reason}</Text>
         </View>
         <View style={styles.transactionAmount}>
           <Text
@@ -277,29 +381,23 @@ export default function AccountDetailScreen({ route, navigation }: any) {
             {item.type === 'cash_in' ? '+' : '-'}
             {item.amount.toFixed(2)} Tk
           </Text>
-        </View>
-      </View>
+          <View style={styles.transactionActions}>
+            <TouchableOpacity
+              style={styles.editButton}
+              onPress={() => handleEditTransaction(item)}
+              activeOpacity={0.7}
+            >
+              <FontAwesome5 name="edit" size={14} color={colors.primary} />
+            </TouchableOpacity>
 
-      <View style={styles.transactionBody}>
-        <Text style={styles.reasonText}>{item.reason}</Text>
-        <View style={styles.transactionActions}>
-          <TouchableOpacity
-            style={styles.editButton}
-            onPress={() => handleEditTransaction(item)}
-            activeOpacity={0.7}
-          >
-            <FontAwesome5 name="edit" size={16} color={colors.primary} />
-            <Text style={styles.editButtonText}>Edit</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.deleteButton}
-            onPress={() => handleDeleteTransaction(item)}
-            activeOpacity={0.7}
-          >
-            <FontAwesome5 name="trash" size={16} color={colors.dangerText} />
-            <Text style={styles.deleteButtonText}>Delete</Text>
-          </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.deleteButton}
+              onPress={() => handleDeleteTransaction(item)}
+              activeOpacity={0.7}
+            >
+              <FontAwesome5 name="trash" size={14} color={colors.dangerText} />
+            </TouchableOpacity>
+          </View>
         </View>
       </View>
     </View>
@@ -308,12 +406,46 @@ export default function AccountDetailScreen({ route, navigation }: any) {
   const renderEmptyState = () => (
     <View style={styles.emptyState}>
       <FontAwesome5 name="history" size={64} color={colors.textTertiary} />
-      <Text style={styles.emptyStateText}>No transactions yet</Text>
+      <Text style={styles.emptyStateText}>
+        {currentFilter === 'all'
+          ? 'No transactions yet'
+          : currentFilter === 'credit'
+          ? 'No credit transactions'
+          : 'No debit transactions'}
+      </Text>
       <Text style={styles.emptyStateSubtext}>
-        Add your first transaction to get started
+        {currentFilter === 'all'
+          ? 'Add your first transaction to get started'
+          : `No ${currentFilter} transactions found`}
       </Text>
     </View>
   );
+
+  // Get modal title and default buttons based on current filter
+  const getModalConfig = () => {
+    switch (currentFilter) {
+      case 'credit':
+        return {
+          title: 'Add Credit Transaction',
+          showCredit: true,
+          showDebit: false,
+        };
+      case 'debit':
+        return {
+          title: 'Add Debit Transaction',
+          showCredit: false,
+          showDebit: true,
+        };
+      default:
+        return {
+          title: 'Choose Transaction Type',
+          showCredit: true,
+          showDebit: true,
+        };
+    }
+  };
+
+  const modalConfig = getModalConfig();
 
   // Dynamic styles
   const styles = {
@@ -328,7 +460,7 @@ export default function AccountDetailScreen({ route, navigation }: any) {
       paddingTop: Spacing.xl,
       paddingBottom: 40,
     },
-    // Account Card (similar to HomeCard)
+    // Account Summary Card
     accountCard: {
       margin: Spacing.lg,
       marginBottom: Spacing.md,
@@ -392,7 +524,7 @@ export default function AccountDetailScreen({ route, navigation }: any) {
       alignItems: 'center' as const,
     },
     statValue: {
-      fontSize: Typography.fontSize.medium,
+      fontSize: Typography.fontSize.large,
       fontWeight: Typography.fontWeight.bold,
       color: colors.textLight,
       marginBottom: 4,
@@ -428,7 +560,7 @@ export default function AccountDetailScreen({ route, navigation }: any) {
       left: -50,
       zIndex: 0,
     },
-    // Management Box
+    // Transaction Management Box
     managementBox: {
       backgroundColor:
         currentTheme === 'light'
@@ -481,18 +613,62 @@ export default function AccountDetailScreen({ route, navigation }: any) {
       fontWeight: Typography.fontWeight.semibold,
       textAlign: 'center' as const,
     },
-    // Transaction List
+    // Filter Buttons
+    filterContainer: {
+      flexDirection: 'row' as const,
+      paddingHorizontal: Spacing.lg,
+      paddingVertical: Spacing.md,
+      gap: Spacing.sm,
+    },
+    filterButton: {
+      flex: 1,
+      flexDirection: 'row' as const,
+      alignItems: 'center' as const,
+      justifyContent: 'center' as const,
+      paddingVertical: Spacing.md,
+      paddingHorizontal: Spacing.lg,
+      borderRadius: Spacing.borderRadius.medium,
+      backgroundColor:
+        currentTheme === 'light'
+          ? 'rgba(255, 255, 255, 0.7)'
+          : 'rgba(45, 45, 45, 0.7)',
+      borderWidth: 1,
+      borderColor: colors.border,
+      gap: Spacing.xs,
+    },
+    activeFilterButton: {
+      backgroundColor: colors.primary,
+      borderColor: colors.primary,
+    },
+    filterButtonText: {
+      fontSize: Typography.fontSize.medium,
+      fontWeight: Typography.fontWeight.semibold,
+      color: colors.textSecondary,
+    },
+    activeFilterButtonText: {
+      color: colors.textLight,
+    },
+    // Transaction History
     transactionsList: {
-      marginTop: Spacing.xl,
+      marginTop: Spacing.lg,
     },
     transactionsHeader: {
       paddingHorizontal: Spacing.lg,
       paddingVertical: Spacing.md,
+      marginBottom: Spacing.md,
+      flexDirection: 'row' as const,
+      justifyContent: 'space-between' as const,
+      alignItems: 'center' as const,
     },
     transactionsTitle: {
       fontSize: Typography.fontSize.large,
       fontWeight: Typography.fontWeight.semibold,
       color: colors.textPrimary,
+    },
+    filterSummary: {
+      fontSize: Typography.fontSize.small,
+      color: colors.textSecondary,
+      fontStyle: 'italic' as const,
     },
     transactionCard: {
       backgroundColor:
@@ -512,14 +688,12 @@ export default function AccountDetailScreen({ route, navigation }: any) {
     },
     transactionHeader: {
       flexDirection: 'row' as const,
-      alignItems: 'center' as const,
-      marginBottom: Spacing.md,
+      alignItems: 'flex-start' as const,
     },
     transactionIcon: {
-      width: Spacing.height.icon,
-      height: Spacing.height.icon,
-      borderRadius: Spacing.xl,
-      backgroundColor: colors.veryLightGray,
+      width: 40,
+      height: 40,
+      borderRadius: 20,
       justifyContent: 'center' as const,
       alignItems: 'center' as const,
       marginRight: Spacing.md,
@@ -529,12 +703,17 @@ export default function AccountDetailScreen({ route, navigation }: any) {
     },
     transactionType: {
       fontSize: Typography.fontSize.medium,
-      fontWeight: Typography.fontWeight.semibold,
+      fontWeight: Typography.fontWeight.bold,
       color: colors.textPrimary,
       marginBottom: 4,
     },
     transactionDate: {
       fontSize: Typography.fontSize.small,
+      color: colors.textSecondary,
+      marginBottom: 4,
+    },
+    reasonText: {
+      fontSize: Typography.fontSize.regular,
       color: colors.textSecondary,
     },
     transactionAmount: {
@@ -543,49 +722,21 @@ export default function AccountDetailScreen({ route, navigation }: any) {
     amountText: {
       fontSize: Typography.fontSize.large,
       fontWeight: Typography.fontWeight.bold,
-    },
-    transactionBody: {
-      flexDirection: 'row' as const,
-      justifyContent: 'space-between' as const,
-      alignItems: 'center' as const,
-    },
-    reasonText: {
-      flex: 1,
-      fontSize: Typography.fontSize.regular,
-      color: colors.textSecondary,
-      marginRight: Spacing.md,
+      marginBottom: Spacing.sm,
     },
     transactionActions: {
       flexDirection: 'row' as const,
       gap: Spacing.sm,
     },
     editButton: {
-      flexDirection: 'row' as const,
-      alignItems: 'center' as const,
       backgroundColor: colors.veryLightGray,
-      paddingHorizontal: Spacing.md,
-      paddingVertical: Spacing.sm,
-      borderRadius: Spacing.borderRadius.medium,
-      gap: Spacing.xs,
-    },
-    editButtonText: {
-      fontSize: Typography.fontSize.small,
-      color: colors.primary,
-      fontWeight: Typography.fontWeight.medium,
+      padding: Spacing.sm,
+      borderRadius: Spacing.borderRadius.small,
     },
     deleteButton: {
-      flexDirection: 'row' as const,
-      alignItems: 'center' as const,
       backgroundColor: colors.dangerBackground,
-      paddingHorizontal: Spacing.md,
-      paddingVertical: Spacing.sm,
-      borderRadius: Spacing.borderRadius.medium,
-      gap: Spacing.xs,
-    },
-    deleteButtonText: {
-      fontSize: Typography.fontSize.small,
-      color: colors.dangerText,
-      fontWeight: Typography.fontWeight.semibold,
+      padding: Spacing.sm,
+      borderRadius: Spacing.borderRadius.small,
     },
     emptyState: {
       flex: 1,
@@ -617,7 +768,7 @@ export default function AccountDetailScreen({ route, navigation }: any) {
       fontSize: Typography.fontSize.medium,
       color: colors.textSecondary,
     },
-    // Modal styles (same as HomeScreen)
+    // Modal styles
     modalOverlay: {
       flex: 1,
       backgroundColor: colors.overlay,
@@ -682,10 +833,10 @@ export default function AccountDetailScreen({ route, navigation }: any) {
       borderRadius: Spacing.borderRadius.large,
       alignItems: 'center' as const,
     },
-    cashInButton: {
+    creditButton: {
       backgroundColor: colors.success,
     },
-    cashOutButton: {
+    debitButton: {
       backgroundColor: colors.error,
     },
     updateTransactionButton: {
@@ -749,7 +900,7 @@ export default function AccountDetailScreen({ route, navigation }: any) {
           />
         }
       >
-        {/* Account Balance Card */}
+        {/* Account Summary Card */}
         <View style={styles.accountCard}>
           <View style={styles.gradientOverlay} />
           <View style={styles.cardContentContainer}>
@@ -763,20 +914,26 @@ export default function AccountDetailScreen({ route, navigation }: any) {
             <View style={styles.bottomSection}>
               <View style={styles.statItem}>
                 <Text style={styles.statValue}>
-                  {lastTransactionAmounts.lastCashIn > 0
-                    ? `${lastTransactionAmounts.lastCashIn.toFixed(2)} Tk`
-                    : 'No cash in'}
+                  {currentFilter === 'all'
+                    ? totalCredit.toFixed(2)
+                    : filteredCredit.toFixed(2)}{' '}
+                  Tk
                 </Text>
-                <Text style={styles.statLabel}>Last Cash In</Text>
+                <Text style={styles.statLabel}>
+                  {currentFilter === 'all' ? 'Total Credit' : 'Filtered Credit'}
+                </Text>
               </View>
               <View style={styles.divider} />
               <View style={styles.statItem}>
                 <Text style={styles.statValue}>
-                  {lastTransactionAmounts.lastCashOut > 0
-                    ? `${lastTransactionAmounts.lastCashOut.toFixed(2)} Tk`
-                    : 'No cash out'}
+                  {currentFilter === 'all'
+                    ? totalDebit.toFixed(2)
+                    : filteredDebit.toFixed(2)}{' '}
+                  Tk
                 </Text>
-                <Text style={styles.statLabel}>Last Cash Out</Text>
+                <Text style={styles.statLabel}>
+                  {currentFilter === 'all' ? 'Total Debit' : 'Filtered Debit'}
+                </Text>
               </View>
             </View>
           </View>
@@ -786,9 +943,9 @@ export default function AccountDetailScreen({ route, navigation }: any) {
           <View style={styles.decorativeCircle2} />
         </View>
 
-        {/* Money Management Box */}
+        {/* Transaction Management Box */}
         <View style={styles.managementBox}>
-          <Text style={styles.boxTitle}>Manage Money</Text>
+          <Text style={styles.boxTitle}>Add Transaction</Text>
 
           <View style={styles.inputContainer}>
             <TextInput
@@ -804,21 +961,33 @@ export default function AccountDetailScreen({ route, navigation }: any) {
               onPress={handleUpdatePress}
               activeOpacity={0.7}
             >
-              <Text style={styles.updateButtonText}>Update</Text>
+              <Text style={styles.updateButtonText}>Add</Text>
             </TouchableOpacity>
           </View>
         </View>
 
-        {/* Transactions List */}
+        {/* Filter Buttons */}
+        <View style={styles.filterContainer}>
+          {renderFilterButton('all', 'All', 'list')}
+          {renderFilterButton('credit', 'Credit', 'plus')}
+          {renderFilterButton('debit', 'Debit', 'minus')}
+        </View>
+
+        {/* Transaction History */}
         <View style={styles.transactionsList}>
           <View style={styles.transactionsHeader}>
             <Text style={styles.transactionsTitle}>
-              Recent Transactions ({transactions.length})
+              Transaction History ({filteredTransactions.length})
             </Text>
+            {currentFilter !== 'all' && (
+              <Text style={styles.filterSummary}>
+                Showing {currentFilter} only
+              </Text>
+            )}
           </View>
 
           <FlatList
-            data={transactions}
+            data={filteredTransactions}
             renderItem={renderTransaction}
             keyExtractor={item => item.id}
             ListEmptyComponent={renderEmptyState}
@@ -836,7 +1005,7 @@ export default function AccountDetailScreen({ route, navigation }: any) {
         >
           <View style={styles.modalOverlay}>
             <View style={styles.modalContent}>
-              <Text style={styles.modalTitle}>Choose Transaction Type</Text>
+              <Text style={styles.modalTitle}>{modalConfig.title}</Text>
               <Text style={styles.modalAmount}>Amount: {amount} Tk</Text>
 
               <View style={styles.reasonContainer}>
@@ -852,28 +1021,39 @@ export default function AccountDetailScreen({ route, navigation }: any) {
                 />
               </View>
 
-              <View style={styles.modalButtons}>
-                <TouchableOpacity
-                  style={[styles.modalButton, styles.cashInButton]}
-                  onPress={handleCashIn}
-                  activeOpacity={0.7}
-                >
-                  <Text style={styles.modalButtonText}>💰 Cash In</Text>
-                  <Text style={styles.modalButtonSubtext}>
-                    Add money to balance
-                  </Text>
-                </TouchableOpacity>
+              <View
+                style={[
+                  styles.modalButtons,
+                  (!modalConfig.showCredit || !modalConfig.showDebit) && {
+                    justifyContent: 'center',
+                  },
+                ]}
+              >
+                {modalConfig.showCredit && (
+                  <TouchableOpacity
+                    style={[styles.modalButton, styles.creditButton]}
+                    onPress={handleCredit}
+                    activeOpacity={0.7}
+                  >
+                    <Text style={styles.modalButtonText}>💰 Credit</Text>
+                    <Text style={styles.modalButtonSubtext}>
+                      Add money to account
+                    </Text>
+                  </TouchableOpacity>
+                )}
 
-                <TouchableOpacity
-                  style={[styles.modalButton, styles.cashOutButton]}
-                  onPress={handleCashOut}
-                  activeOpacity={0.7}
-                >
-                  <Text style={styles.modalButtonText}>💸 Cash Out</Text>
-                  <Text style={styles.modalButtonSubtext}>
-                    Use money from balance
-                  </Text>
-                </TouchableOpacity>
+                {modalConfig.showDebit && (
+                  <TouchableOpacity
+                    style={[styles.modalButton, styles.debitButton]}
+                    onPress={handleDebit}
+                    activeOpacity={0.7}
+                  >
+                    <Text style={styles.modalButtonText}>💸 Debit</Text>
+                    <Text style={styles.modalButtonSubtext}>
+                      Subtract from account
+                    </Text>
+                  </TouchableOpacity>
+                )}
               </View>
 
               <TouchableOpacity
@@ -899,9 +1079,7 @@ export default function AccountDetailScreen({ route, navigation }: any) {
               <Text style={styles.modalTitle}>Edit Transaction</Text>
               <Text style={styles.modalAmount}>
                 Type:{' '}
-                {editingTransaction?.type === 'cash_in'
-                  ? 'Cash In'
-                  : 'Cash Out'}
+                {editingTransaction?.type === 'cash_in' ? 'Credit' : 'Debit'}
               </Text>
 
               <View style={styles.reasonContainer}>
