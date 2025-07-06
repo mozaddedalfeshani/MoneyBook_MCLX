@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
-  StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
@@ -12,6 +11,7 @@ import {
 import { useFocusEffect } from '@react-navigation/native';
 import Store from '../store/store';
 import { Transaction, AppData } from '../store/types';
+import { HomeScreenStyles } from '../styles/screens/homeScreen';
 import HomeCard from '../components/Cards/HomeCard';
 
 export default function HomeScreen() {
@@ -138,8 +138,8 @@ export default function HomeScreen() {
 
   return (
     <ScrollView
-      style={styles.container}
-      contentContainerStyle={styles.contentContainer}
+      style={HomeScreenStyles.container}
+      contentContainerStyle={HomeScreenStyles.contentContainer}
     >
       <HomeCard
         balance={balance}
@@ -149,12 +149,12 @@ export default function HomeScreen() {
       />
 
       {/* Money Management Box */}
-      <View style={styles.managementBox}>
-        <Text style={styles.boxTitle}>Manage Your Money</Text>
+      <View style={HomeScreenStyles.managementBox}>
+        <Text style={HomeScreenStyles.boxTitle}>Manage Your Money</Text>
 
-        <View style={styles.inputContainer}>
+        <View style={HomeScreenStyles.inputContainer}>
           <TextInput
-            style={styles.input}
+            style={HomeScreenStyles.input}
             placeholder="Enter amount (Tk)"
             value={amount}
             onChangeText={setAmount}
@@ -162,11 +162,11 @@ export default function HomeScreen() {
             placeholderTextColor="#999"
           />
           <TouchableOpacity
-            style={styles.updateButton}
+            style={HomeScreenStyles.updateButton}
             onPress={handleUpdatePress}
             activeOpacity={0.7}
           >
-            <Text style={styles.updateButtonText}>Update</Text>
+            <Text style={HomeScreenStyles.updateButtonText}>Update</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -178,16 +178,22 @@ export default function HomeScreen() {
         visible={modalVisible}
         onRequestClose={closeModal}
       >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Choose Transaction Type</Text>
-            <Text style={styles.modalAmount}>Amount: {amount} Tk</Text>
+        <View style={HomeScreenStyles.modalOverlay}>
+          <View style={HomeScreenStyles.modalContent}>
+            <Text style={HomeScreenStyles.modalTitle}>
+              Choose Transaction Type
+            </Text>
+            <Text style={HomeScreenStyles.modalAmount}>
+              Amount: {amount} Tk
+            </Text>
 
             {/* Reason Input Field */}
-            <View style={styles.reasonContainer}>
-              <Text style={styles.reasonLabel}>Reason (Optional)</Text>
+            <View style={HomeScreenStyles.reasonContainer}>
+              <Text style={HomeScreenStyles.reasonLabel}>
+                Reason (Optional)
+              </Text>
               <TextInput
-                style={styles.reasonInput}
+                style={HomeScreenStyles.reasonInput}
                 placeholder="e.g., Groceries, Salary, Gift..."
                 value={reason}
                 onChangeText={setReason}
@@ -197,36 +203,44 @@ export default function HomeScreen() {
               />
             </View>
 
-            <View style={styles.modalButtons}>
+            <View style={HomeScreenStyles.modalButtons}>
               <TouchableOpacity
-                style={[styles.modalButton, styles.cashInButton]}
+                style={[
+                  HomeScreenStyles.modalButton,
+                  HomeScreenStyles.cashInButton,
+                ]}
                 onPress={handleCashIn}
                 activeOpacity={0.7}
               >
-                <Text style={styles.modalButtonText}>💰 Cash In</Text>
-                <Text style={styles.modalButtonSubtext}>
+                <Text style={HomeScreenStyles.modalButtonText}>💰 Cash In</Text>
+                <Text style={HomeScreenStyles.modalButtonSubtext}>
                   Add money to balance
                 </Text>
               </TouchableOpacity>
 
               <TouchableOpacity
-                style={[styles.modalButton, styles.cashOutButton]}
+                style={[
+                  HomeScreenStyles.modalButton,
+                  HomeScreenStyles.cashOutButton,
+                ]}
                 onPress={handleCashOut}
                 activeOpacity={0.7}
               >
-                <Text style={styles.modalButtonText}>💸 Cash Out</Text>
-                <Text style={styles.modalButtonSubtext}>
+                <Text style={HomeScreenStyles.modalButtonText}>
+                  💸 Cash Out
+                </Text>
+                <Text style={HomeScreenStyles.modalButtonSubtext}>
                   Use money from balance
                 </Text>
               </TouchableOpacity>
             </View>
 
             <TouchableOpacity
-              style={styles.cancelButton}
+              style={HomeScreenStyles.cancelButton}
               onPress={closeModal}
               activeOpacity={0.7}
             >
-              <Text style={styles.cancelButtonText}>Cancel</Text>
+              <Text style={HomeScreenStyles.cancelButtonText}>Cancel</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -234,153 +248,3 @@ export default function HomeScreen() {
     </ScrollView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f8f9fa',
-  },
-  contentContainer: {
-    flexGrow: 1,
-    paddingTop: 20,
-    paddingBottom: 40,
-  },
-  managementBox: {
-    backgroundColor: '#fff',
-    marginHorizontal: 15,
-    marginTop: 20,
-    borderRadius: 15,
-    padding: 20,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 5,
-  },
-  boxTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#333',
-    marginBottom: 15,
-    textAlign: 'center',
-  },
-  inputContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-  },
-  input: {
-    flex: 1,
-    height: 50,
-    borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 10,
-    paddingHorizontal: 15,
-    fontSize: 16,
-    backgroundColor: '#fafafa',
-  },
-  updateButton: {
-    backgroundColor: '#667eea',
-    paddingHorizontal: 20,
-    paddingVertical: 15,
-    borderRadius: 10,
-    minWidth: 80,
-  },
-  updateButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
-    textAlign: 'center',
-  },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
-  },
-  modalContent: {
-    backgroundColor: '#fff',
-    borderRadius: 20,
-    padding: 25,
-    width: '100%',
-    maxWidth: 350,
-    alignItems: 'center',
-  },
-  modalTitle: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: '#333',
-    marginBottom: 10,
-  },
-  modalAmount: {
-    fontSize: 18,
-    fontWeight: '500',
-    color: '#667eea',
-    marginBottom: 20,
-  },
-  reasonContainer: {
-    width: '100%',
-    marginBottom: 20,
-  },
-  reasonLabel: {
-    fontSize: 16,
-    fontWeight: '500',
-    color: '#333',
-    marginBottom: 8,
-  },
-  reasonInput: {
-    width: '100%',
-    minHeight: 50,
-    maxHeight: 80,
-    borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 10,
-    paddingHorizontal: 15,
-    paddingVertical: 12,
-    fontSize: 16,
-    backgroundColor: '#fafafa',
-    textAlignVertical: 'top',
-  },
-  modalButtons: {
-    width: '100%',
-    gap: 15,
-  },
-  modalButton: {
-    padding: 20,
-    borderRadius: 15,
-    alignItems: 'center',
-    width: '100%',
-  },
-  cashInButton: {
-    backgroundColor: '#4CAF50',
-  },
-  cashOutButton: {
-    backgroundColor: '#FF6B6B',
-  },
-  modalButtonText: {
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: '600',
-    marginBottom: 5,
-  },
-  modalButtonSubtext: {
-    color: '#fff',
-    fontSize: 14,
-    opacity: 0.9,
-  },
-  cancelButton: {
-    marginTop: 15,
-    padding: 15,
-    width: '100%',
-    alignItems: 'center',
-  },
-  cancelButtonText: {
-    color: '#999',
-    fontSize: 16,
-    fontWeight: '500',
-  },
-});

@@ -2,7 +2,6 @@ import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
-  StyleSheet,
   FlatList,
   TouchableOpacity,
   Alert,
@@ -13,6 +12,8 @@ import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import { useFocusEffect } from '@react-navigation/native';
 import Store from '../store/store';
 import { Transaction, AppData } from '../store/types';
+import { ProfileScreenStyles } from '../styles/screens/profileScreen';
+import { Colors } from '../styles/theme/colors';
 
 export default function ProfileScreen() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -59,9 +60,13 @@ export default function ProfileScreen() {
 
   const deleteTransaction = async (transactionToDelete: Transaction) => {
     try {
-      const newData = await Store.deleteTransaction(balance, transactions, transactionToDelete);
+      const newData = await Store.deleteTransaction(
+        balance,
+        transactions,
+        transactionToDelete,
+      );
       updateLocalState(newData);
-      
+
       Alert.alert(
         'Transaction Deleted',
         `Transaction deleted successfully!\nNew balance: ${newData.balance.toFixed(
@@ -91,26 +96,28 @@ export default function ProfileScreen() {
   }, []);
 
   const renderTransaction = ({ item }: { item: Transaction }) => (
-    <View style={styles.transactionCard}>
-      <View style={styles.transactionHeader}>
-        <View style={styles.transactionIcon}>
+    <View style={ProfileScreenStyles.transactionCard}>
+      <View style={ProfileScreenStyles.transactionHeader}>
+        <View style={ProfileScreenStyles.transactionIcon}>
           <FontAwesome5
             name={item.type === 'cash_in' ? 'arrow-down' : 'arrow-up'}
             size={20}
-            color={item.type === 'cash_in' ? '#4CAF50' : '#FF6B6B'}
+            color={item.type === 'cash_in' ? Colors.success : Colors.error}
           />
         </View>
-        <View style={styles.transactionDetails}>
-          <Text style={styles.transactionType}>
+        <View style={ProfileScreenStyles.transactionDetails}>
+          <Text style={ProfileScreenStyles.transactionType}>
             {item.type === 'cash_in' ? '💰 Cash In' : '💸 Cash Out'}
           </Text>
-          <Text style={styles.transactionDate}>{item.date}</Text>
+          <Text style={ProfileScreenStyles.transactionDate}>{item.date}</Text>
         </View>
-        <View style={styles.transactionAmount}>
+        <View style={ProfileScreenStyles.transactionAmount}>
           <Text
             style={[
-              styles.amountText,
-              { color: item.type === 'cash_in' ? '#4CAF50' : '#FF6B6B' },
+              ProfileScreenStyles.amountText,
+              {
+                color: item.type === 'cash_in' ? Colors.success : Colors.error,
+              },
             ]}
           >
             {item.type === 'cash_in' ? '+' : '-'}
@@ -119,25 +126,27 @@ export default function ProfileScreen() {
         </View>
       </View>
 
-      <View style={styles.transactionBody}>
-        <Text style={styles.reasonText}>{item.reason}</Text>
+      <View style={ProfileScreenStyles.transactionBody}>
+        <Text style={ProfileScreenStyles.reasonText}>{item.reason}</Text>
         <TouchableOpacity
-          style={styles.deleteButton}
+          style={ProfileScreenStyles.deleteButton}
           onPress={() => handleDeleteTransaction(item)}
           activeOpacity={0.7}
         >
-          <FontAwesome5 name="trash" size={16} color="#FF6B6B" />
-          <Text style={styles.deleteButtonText}>Delete</Text>
+          <FontAwesome5 name="trash" size={16} color={Colors.dangerText} />
+          <Text style={ProfileScreenStyles.deleteButtonText}>Delete</Text>
         </TouchableOpacity>
       </View>
     </View>
   );
 
   const renderEmptyState = () => (
-    <View style={styles.emptyState}>
+    <View style={ProfileScreenStyles.emptyState}>
       <FontAwesome5 name="history" size={64} color="#ccc" />
-      <Text style={styles.emptyStateText}>No transactions yet</Text>
-      <Text style={styles.emptyStateSubtext}>
+      <Text style={ProfileScreenStyles.emptyStateText}>
+        No transactions yet
+      </Text>
+      <Text style={ProfileScreenStyles.emptyStateSubtext}>
         Your transaction history will appear here
       </Text>
     </View>
@@ -145,21 +154,25 @@ export default function ProfileScreen() {
 
   if (isLoading) {
     return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#007bff" />
-        <Text style={styles.loadingText}>Loading transaction history...</Text>
+      <View style={ProfileScreenStyles.loadingContainer}>
+        <ActivityIndicator size="large" color={Colors.primary} />
+        <Text style={ProfileScreenStyles.loadingText}>
+          Loading transaction history...
+        </Text>
       </View>
     );
   }
 
   return (
-    <View style={styles.container}>
+    <View style={ProfileScreenStyles.container}>
       {/* Header with balance info */}
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Transaction History</Text>
-        <View style={styles.balanceContainer}>
-          <Text style={styles.balanceLabel}>Current Balance</Text>
-          <Text style={styles.balanceAmount}>{balance.toFixed(2)} Tk</Text>
+      <View style={ProfileScreenStyles.header}>
+        <Text style={ProfileScreenStyles.headerTitle}>Transaction History</Text>
+        <View style={ProfileScreenStyles.balanceContainer}>
+          <Text style={ProfileScreenStyles.balanceLabel}>Current Balance</Text>
+          <Text style={ProfileScreenStyles.balanceAmount}>
+            {balance.toFixed(2)} Tk
+          </Text>
         </View>
       </View>
 
@@ -168,13 +181,13 @@ export default function ProfileScreen() {
         data={transactions}
         renderItem={renderTransaction}
         keyExtractor={item => item.id}
-        contentContainerStyle={styles.listContainer}
+        contentContainerStyle={ProfileScreenStyles.listContainer}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
             onRefresh={onRefresh}
-            colors={['#007bff']}
-            tintColor="#007bff"
+            colors={[Colors.primary]}
+            tintColor={Colors.primary}
           />
         }
         ListEmptyComponent={renderEmptyState}
@@ -183,146 +196,3 @@ export default function ProfileScreen() {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f8f9fa',
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#f8f9fa',
-  },
-  loadingText: {
-    marginTop: 16,
-    fontSize: 16,
-    color: '#666',
-  },
-  header: {
-    backgroundColor: '#fff',
-    paddingHorizontal: 20,
-    paddingVertical: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: '#eee',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  headerTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 10,
-  },
-  balanceContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  balanceLabel: {
-    fontSize: 16,
-    color: '#666',
-  },
-  balanceAmount: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#007bff',
-  },
-  listContainer: {
-    padding: 16,
-    paddingBottom: 100,
-  },
-  transactionCard: {
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  transactionHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  transactionIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: '#f0f0f0',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 12,
-  },
-  transactionDetails: {
-    flex: 1,
-  },
-  transactionType: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#333',
-  },
-  transactionDate: {
-    fontSize: 12,
-    color: '#666',
-    marginTop: 2,
-  },
-  transactionAmount: {
-    alignItems: 'flex-end',
-  },
-  amountText: {
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-  transactionBody: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  reasonText: {
-    flex: 1,
-    fontSize: 14,
-    color: '#666',
-    fontStyle: 'italic',
-  },
-  deleteButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#ffe6e6',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 8,
-    marginLeft: 12,
-  },
-  deleteButtonText: {
-    fontSize: 12,
-    color: '#FF6B6B',
-    marginLeft: 4,
-    fontWeight: '500',
-  },
-  emptyState: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingTop: 100,
-  },
-  emptyStateText: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#666',
-    marginTop: 16,
-  },
-  emptyStateSubtext: {
-    fontSize: 14,
-    color: '#999',
-    marginTop: 8,
-    textAlign: 'center',
-  },
-});
