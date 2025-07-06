@@ -8,8 +8,8 @@ import { useTheme } from '../contexts';
 
 // Import our screen components
 import HomeScreen from '../screens/HomeScreen';
-import ProfileScreen from '../screens/ProfileScreen';
 import SettingsScreen from '../screens/SettingsScreen';
+import HistoryScreen from '../screens/HistoryScreen';
 import TableViewNavigator from './TableViewNavigator';
 
 // Create the bottom tab navigator
@@ -58,7 +58,7 @@ export default function TabNavigator() {
       />
       <Tab.Screen
         name="History"
-        component={ProfileScreen}
+        component={HistoryScreen}
         options={{
           tabBarIcon: ({ color, size }) => {
             let iconName: string = 'history';
@@ -66,6 +66,7 @@ export default function TabNavigator() {
           },
         }}
       />
+
       <Tab.Screen
         name="Settings"
         component={SettingsScreen}

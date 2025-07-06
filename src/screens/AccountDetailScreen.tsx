@@ -10,16 +10,13 @@ import {
   FlatList,
   RefreshControl,
   ActivityIndicator,
-  Platform,
-  StatusBar,
   StyleSheet,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import { useFocusEffect } from '@react-navigation/native';
 import { TransactionService } from '../database/services/TransactionService';
-import { AccountService } from '../database/services/AccountService';
-import { Transaction, TransactionType } from '../database/models/Transaction';
+import { Transaction } from '../database/models/Transaction';
 import { useTheme } from '../contexts';
 
 // Typography styles moved from centralized styles
@@ -284,7 +281,7 @@ export default function AccountDetailScreen({ route, navigation }: any) {
     applyFilter(filter, transactions);
   };
 
-  const loadAccountData = async () => {
+  const loadAccountData = useCallback(async () => {
     try {
       setIsLoading(true);
       const [accountBalance, accountTransactions] = await Promise.all([
@@ -302,7 +299,7 @@ export default function AccountDetailScreen({ route, navigation }: any) {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [accountId, currentFilter]);
 
   const handleUpdatePress = () => {
     if (!amount || parseFloat(amount) <= 0) {
@@ -465,12 +462,12 @@ export default function AccountDetailScreen({ route, navigation }: any) {
   const onRefresh = useCallback(() => {
     setRefreshing(true);
     loadAccountData().then(() => setRefreshing(false));
-  }, []);
+  }, [loadAccountData]);
 
   useFocusEffect(
     useCallback(() => {
       loadAccountData();
-    }, []),
+    }, [loadAccountData]),
   );
 
   useEffect(() => {
@@ -478,7 +475,7 @@ export default function AccountDetailScreen({ route, navigation }: any) {
     navigation.setOptions({
       title: accountName,
     });
-  }, [accountId, accountName, navigation]);
+  }, [accountId, accountName, navigation, loadAccountData]);
 
   const renderFilterButton = (
     filter: FilterType,

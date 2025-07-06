@@ -26,6 +26,7 @@ The app features a modern design with:
 ## Database Architecture 🏛️
 
 ### WatermelonDB Integration
+
 MoneyBook now uses **WatermelonDB**, a high-performance React Native database built on SQLite:
 
 - **🚀 Performance**: Optimized for mobile with lazy loading and efficient queries
@@ -35,6 +36,7 @@ MoneyBook now uses **WatermelonDB**, a high-performance React Native database bu
 - **💾 Persistence**: Robust SQLite storage with backup capabilities
 
 ### Database Schema
+
 ```sql
 CREATE TABLE transactions (
   id TEXT PRIMARY KEY,
@@ -72,12 +74,14 @@ CREATE TABLE transactions (
 ### Installation
 
 1. **Clone the repository**
+
    ```bash
    git clone <repository-url>
    cd MoneyBook
    ```
 
 2. **Install dependencies**
+
    ```bash
    yarn install
    # or
@@ -92,6 +96,7 @@ CREATE TABLE transactions (
 ### Running the App
 
 1. **Start Metro bundler**
+
    ```bash
    yarn start
    # or
@@ -99,6 +104,7 @@ CREATE TABLE transactions (
    ```
 
 2. **Run on Android**
+
    ```bash
    yarn android
    # or
@@ -117,6 +123,7 @@ CREATE TABLE transactions (
 ### Android
 
 1. **Build debug APK**
+
    ```bash
    cd android
    ./gradlew assembleDebug
@@ -153,7 +160,6 @@ src/
 ├── navigation/         # Navigation configuration
 ├── screens/            # Screen components
 │   ├── Home/          # Home screen
-│   ├── Profile/       # History screen
 │   └── Settings/      # Settings screen
 ├── store/             # Data management layer
 │   ├── slices/        # Store slices (Theme)
@@ -169,6 +175,7 @@ src/
 ## Database Migration 🔄
 
 ### Automatic Migration
+
 The app automatically migrates existing data from AsyncStorage to WatermelonDB:
 
 - **Seamless**: Users don't lose any existing transaction data
@@ -177,6 +184,7 @@ The app automatically migrates existing data from AsyncStorage to WatermelonDB:
 - **Logging**: Comprehensive migration logging for debugging
 
 ### Migration Process
+
 1. **Detection**: Check if migration has already been completed
 2. **Data Loading**: Load existing transactions from AsyncStorage
 3. **Transfer**: Convert and insert data into WatermelonDB
@@ -186,6 +194,7 @@ The app automatically migrates existing data from AsyncStorage to WatermelonDB:
 ## App Icons 🎨
 
 ### Transparent Adaptive Icons
+
 MoneyBook features professionally designed app icons that adapt to any theme:
 
 - **🌈 Theme Adaptive**: Icons automatically adapt to light/dark system themes
@@ -197,12 +206,14 @@ MoneyBook features professionally designed app icons that adapt to any theme:
 ## Features in Detail 📋
 
 ### Transaction Management
+
 - Add cash in/out transactions with validation
 - Optional reason field (up to 100 characters)
 - Real-time balance calculation with database optimization
 - Success notifications with new balance
 
 ### Transaction History
+
 - Chronological list of all transactions from database
 - Color-coded entries (Green for Cash In, Red for Cash Out)
 - Delete functionality with confirmation and balance adjustment
@@ -210,12 +221,14 @@ MoneyBook features professionally designed app icons that adapt to any theme:
 - Empty state when no transactions exist
 
 ### Theme System
+
 - Light and dark theme support with persistent storage
 - Real-time theme switching across all components
 - Consistent color scheme with centralized theme management
 - Adaptive app icons that change with system theme
 
 ### Database Performance
+
 - **Lazy Loading**: Only load transactions when needed
 - **Indexed Queries**: Fast lookups with database indexes
 - **Background Operations**: Non-blocking database operations
@@ -225,16 +238,19 @@ MoneyBook features professionally designed app icons that adapt to any theme:
 ## Version History 📝
 
 - **v1.0.0**: Initial release with AsyncStorage
+
   - Basic money management features
   - Transaction history with AsyncStorage
   - Theme switching capabilities
 
 - **v1.1.0**: Icon and UI improvements
+
   - Updated app icon design
   - Enhanced UI components
   - Better navigation experience
 
 - **v1.2.0**: Transparent icon adaptation
+
   - Theme-adaptive transparent app icons
   - Enhanced dark/light mode support
   - Improved visual consistency
@@ -252,7 +268,7 @@ MoneyBook features professionally designed app icons that adapt to any theme:
 ```
 output/
 ├── MoneyBook-v1.0.0-release.apk          # AsyncStorage (53MB)
-├── MoneyBook-v1.1.0-release.apk          # Icon updates (53MB) 
+├── MoneyBook-v1.1.0-release.apk          # Icon updates (53MB)
 ├── MoneyBook-v1.2.0-transparent-release.apk # Transparent icons (53MB)
 └── MoneyBook-v2.0.0-WatermelonDB-release.apk # WatermelonDB (54MB) ⭐
 ```
@@ -277,4 +293,4 @@ If you encounter any issues or have questions, please open an issue on the repos
 
 Made with ❤️ using React Native and WatermelonDB
 
-*Now powered by professional-grade database technology for superior performance and reliability.*
+_Now powered by professional-grade database technology for superior performance and reliability._
