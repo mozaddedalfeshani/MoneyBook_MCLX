@@ -1,97 +1,205 @@
-This is a new [**React Native**](https://reactnative.dev) project, bootstrapped using [`@react-native-community/cli`](https://github.com/react-native-community/cli).
+# MoneyBook 💰
 
-# Getting Started
+A beautiful and modern React Native money management app that helps you track your finances with ease.
 
-> **Note**: Make sure you have completed the [Set Up Your Environment](https://reactnative.dev/docs/set-up-your-environment) guide before proceeding.
+## Features ✨
 
-## Step 1: Start Metro
+- **💸 Transaction Management**: Easy cash in/out transactions with amount validation
+- **📊 Real-time Balance**: Live balance updates with persistent storage
+- **📝 Transaction History**: Complete transaction log with timestamps and reasons
+- **🎨 Modern UI**: Beautiful gradient cards with smooth animations
+- **🌙 Dark Mode**: Light/dark theme toggle with persistent preference
+- **💾 Offline Storage**: All data stored locally using AsyncStorage
+- **🔄 Pull to Refresh**: Refresh transaction history with pull-down gesture
+- **❌ Delete Transactions**: Remove transactions with confirmation dialogs
+- **📱 Responsive Design**: Optimized for all screen sizes
 
-First, you will need to run **Metro**, the JavaScript build tool for React Native.
+## Screenshots 📸
 
-To start the Metro dev server, run the following command from the root of your React Native project:
+The app features a modern design with:
 
-```sh
-# Using npm
-npm start
+- **Home Screen**: Gradient balance card with transaction input
+- **History Screen**: Beautiful transaction cards with icons and colors
+- **Settings Screen**: Clean theme toggle with sun/moon icons
 
-# OR using Yarn
-yarn start
-```
+## Tech Stack 🛠️
 
-## Step 2: Build and run your app
+- **React Native** - Cross-platform mobile development
+- **TypeScript** - Type-safe JavaScript
+- **React Navigation** - Tab-based navigation
+- **AsyncStorage** - Local data persistence
+- **React Native Vector Icons** - Beautiful icons
+- **Centralized Styling** - Theme-based design system
 
-With Metro running, open a new terminal window/pane from the root of your React Native project, and use one of the following commands to build and run your Android or iOS app:
+## Getting Started 🚀
+
+### Prerequisites
+
+- Node.js (v16 or later)
+- React Native CLI
+- Android Studio (for Android development)
+- Xcode (for iOS development - macOS only)
+
+### Installation
+
+1. **Clone the repository**
+
+   ```bash
+   git clone <repository-url>
+   cd MoneyBook
+   ```
+
+2. **Install dependencies**
+
+   ```bash
+   npm install
+   # or
+   yarn install
+   ```
+
+3. **Install iOS dependencies** (iOS only)
+   ```bash
+   cd ios && pod install && cd ..
+   ```
+
+### Running the App
+
+1. **Start Metro bundler**
+
+   ```bash
+   npm start
+   # or
+   yarn start
+   ```
+
+2. **Run on Android**
+
+   ```bash
+   npm run android
+   # or
+   yarn android
+   ```
+
+3. **Run on iOS**
+   ```bash
+   npm run ios
+   # or
+   yarn ios
+   ```
+
+## Building for Production 🏗️
 
 ### Android
 
-```sh
-# Using npm
-npm run android
+1. **Build debug APK**
 
-# OR using Yarn
-yarn android
-```
+   ```bash
+   cd android
+   ./gradlew assembleDebug
+   ```
+
+2. **Build release APK**
+   ```bash
+   cd android
+   ./gradlew assembleRelease
+   ```
+
+Built APKs will be available in the `output/` folder.
 
 ### iOS
 
-For iOS, remember to install CocoaPods dependencies (this only needs to be run on first clone or after updating native deps).
+1. **Build for iOS**
+   ```bash
+   npx react-native run-ios --configuration Release
+   ```
 
-The first time you create a new project, run the Ruby bundler to install CocoaPods itself:
+## Project Structure 📁
 
-```sh
-bundle install
+```
+src/
+├── components/          # Reusable UI components
+│   ├── cards/          # Card components
+│   └── ui/             # UI elements
+├── navigation/         # Navigation configuration
+├── screens/            # Screen components
+│   ├── Home/          # Home screen
+│   ├── Profile/       # History screen
+│   └── Settings/      # Settings screen
+├── store/             # Data management
+│   ├── slices/        # Store slices
+│   └── types/         # TypeScript interfaces
+├── styles/            # Centralized styling
+│   ├── theme/         # Theme configuration
+│   ├── common/        # Common styles
+│   └── components/    # Component styles
+├── types/             # Global TypeScript types
+└── utils/             # Utility functions
 ```
 
-Then, and every time you update your native dependencies, run:
+## Data Architecture 🏛️
 
-```sh
-bundle exec pod install
-```
+The app uses a centralized store system with:
 
-For more information, please visit [CocoaPods Getting Started guide](https://guides.cocoapods.org/using/getting-started.html).
+- **TransactionStore**: Manages all transaction operations
+- **ThemeStore**: Handles theme persistence and switching
+- **StorageService**: AsyncStorage wrapper for data persistence
+- **Type Safety**: Full TypeScript support with interfaces
 
-```sh
-# Using npm
-npm run ios
+## Features in Detail 📋
 
-# OR using Yarn
-yarn ios
-```
+### Transaction Management
 
-If everything is set up correctly, you should see your new app running in the Android Emulator, iOS Simulator, or your connected device.
+- Add cash in/out transactions with validation
+- Optional reason field (up to 100 characters)
+- Real-time balance calculation
+- Success notifications with new balance
 
-This is one way to run your app — you can also build it directly from Android Studio or Xcode.
+### Transaction History
 
-## Step 3: Modify your app
+- Chronological list of all transactions
+- Color-coded entries (Green for Cash In, Red for Cash Out)
+- Delete functionality with confirmation
+- Smart balance adjustment on deletion
+- Empty state when no transactions exist
 
-Now that you have successfully run the app, let's make changes!
+### Theme System
 
-Open `App.tsx` in your text editor of choice and make some changes. When you save, your app will automatically update and reflect these changes — this is powered by [Fast Refresh](https://reactnative.dev/docs/fast-refresh).
+- Light and dark theme support
+- Persistent theme preference
+- Real-time theme switching
+- Consistent color scheme across all screens
 
-When you want to forcefully reload, for example to reset the state of your app, you can perform a full reload:
+### Data Persistence
 
-- **Android**: Press the <kbd>R</kbd> key twice or select **"Reload"** from the **Dev Menu**, accessed via <kbd>Ctrl</kbd> + <kbd>M</kbd> (Windows/Linux) or <kbd>Cmd ⌘</kbd> + <kbd>M</kbd> (macOS).
-- **iOS**: Press <kbd>R</kbd> in iOS Simulator.
+- All data stored locally using AsyncStorage
+- No internet connection required
+- Automatic data loading on app start
+- Robust error handling
 
-## Congratulations! :tada:
+## Version History 📝
 
-You've successfully run and modified your React Native App. :partying_face:
+- **v1.0.0** - Initial release with full money management features
+- Beautiful UI with gradient cards and modern design
+- Complete transaction system with history
+- Theme switching capabilities
+- Production-ready builds
 
-### Now what?
+## Contributing 🤝
 
-- If you want to add this new React Native code to an existing application, check out the [Integration guide](https://reactnative.dev/docs/integration-with-existing-apps).
-- If you're curious to learn more about React Native, check out the [docs](https://reactnative.dev/docs/getting-started).
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests if applicable
+5. Submit a pull request
 
-# Troubleshooting
+## License 📄
 
-If you're having issues getting the above steps to work, see the [Troubleshooting](https://reactnative.dev/docs/troubleshooting) page.
+This project is licensed under the MIT License.
 
-# Learn More
+## Support 💬
 
-To learn more about React Native, take a look at the following resources:
+If you encounter any issues or have questions, please open an issue on the repository.
 
-- [React Native Website](https://reactnative.dev) - learn more about React Native.
-- [Getting Started](https://reactnative.dev/docs/environment-setup) - an **overview** of React Native and how setup your environment.
-- [Learn the Basics](https://reactnative.dev/docs/getting-started) - a **guided tour** of the React Native **basics**.
-- [Blog](https://reactnative.dev/blog) - read the latest official React Native **Blog** posts.
-- [`@facebook/react-native`](https://github.com/facebook/react-native) - the Open Source; GitHub **repository** for React Native.
+---
+
+Made with ❤️ using React Native
