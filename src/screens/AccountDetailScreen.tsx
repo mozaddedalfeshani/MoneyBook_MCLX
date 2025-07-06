@@ -10,6 +10,9 @@ import {
   FlatList,
   RefreshControl,
   ActivityIndicator,
+  Platform,
+  StatusBar,
+  StyleSheet,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
@@ -18,9 +21,175 @@ import { TransactionService } from '../database/services/TransactionService';
 import { AccountService } from '../database/services/AccountService';
 import { Transaction, TransactionType } from '../database/models/Transaction';
 import { useTheme } from '../contexts';
-import { Typography } from '../styles/theme/typography';
-import { Spacing } from '../styles/theme/spacing';
-import { getShadows } from '../styles/theme/shadows';
+
+// Typography styles moved from centralized styles
+const Typography = {
+  // Font Sizes
+  fontSize: {
+    tiny: 10,
+    small: 12,
+    regular: 14,
+    medium: 16,
+    large: 18,
+    xl: 20,
+    xxl: 24,
+    xxxl: 36,
+  },
+
+  // Font Weights
+  fontWeight: {
+    light: '300' as const,
+    regular: '400' as const,
+    medium: '500' as const,
+    semibold: '600' as const,
+    bold: '700' as const,
+  },
+
+  // Line Heights
+  lineHeight: {
+    tight: 1.2,
+    normal: 1.5,
+    loose: 1.8,
+  },
+
+  // Letter Spacing
+  letterSpacing: {
+    tight: -0.5,
+    normal: 0,
+    wide: 0.5,
+  },
+
+  // Font Families (if needed for custom fonts)
+  fontFamily: {
+    regular: 'System',
+    medium: 'System',
+    bold: 'System',
+  },
+};
+
+// Spacing styles moved from centralized styles
+const Spacing = {
+  // Base spacing unit
+  base: 8,
+
+  // Margin/Padding sizes
+  xs: 4,
+  sm: 8,
+  md: 12,
+  lg: 16,
+  xl: 20,
+  xxl: 24,
+  xxxl: 32,
+
+  // Specific spacing values
+  margin: {
+    xs: 4,
+    sm: 8,
+    md: 12,
+    lg: 16,
+    xl: 20,
+    xxl: 24,
+    xxxl: 32,
+  },
+
+  padding: {
+    xs: 4,
+    sm: 8,
+    md: 12,
+    lg: 16,
+    xl: 20,
+    xxl: 24,
+    xxxl: 32,
+  },
+
+  // Border radius
+  borderRadius: {
+    small: 8,
+    medium: 10,
+    large: 12,
+    xl: 15,
+    xxl: 20,
+  },
+
+  // Heights
+  height: {
+    input: 50,
+    button: 50,
+    card: 200,
+    icon: 40,
+  },
+
+  // Widths
+  width: {
+    divider: 1,
+    border: 1,
+  },
+
+  // Gaps
+  gap: {
+    small: 8,
+    medium: 10,
+    large: 12,
+    xl: 15,
+  },
+};
+
+// Shadows styles moved from centralized styles
+const getShadows = (colors: any) => ({
+  // Small shadow
+  small: {
+    shadowColor: colors.shadowPrimary,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+
+  // Medium shadow
+  medium: {
+    shadowColor: colors.shadowPrimary,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 5,
+  },
+
+  // Large shadow
+  large: {
+    shadowColor: colors.shadowSecondary,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    elevation: 15,
+  },
+
+  // Card shadow
+  card: {
+    shadowColor: colors.shadowPrimary,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+
+  // Header shadow
+  header: {
+    shadowColor: colors.shadowPrimary,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+
+  // Button shadow
+  button: {
+    shadowColor: colors.shadowPrimary,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+});
 
 interface RouteParams {
   accountId: string;
@@ -448,7 +617,7 @@ export default function AccountDetailScreen({ route, navigation }: any) {
   const modalConfig = getModalConfig();
 
   // Dynamic styles
-  const styles = {
+  const styles = StyleSheet.create({
     gradientContainer: {
       flex: 1,
     },
@@ -465,12 +634,12 @@ export default function AccountDetailScreen({ route, navigation }: any) {
       margin: Spacing.lg,
       marginBottom: Spacing.md,
       borderRadius: Spacing.borderRadius.xxl,
-      overflow: 'hidden' as const,
-      position: 'relative' as const,
+      overflow: 'hidden',
+      position: 'relative',
       ...shadows.large,
     },
     gradientOverlay: {
-      position: 'absolute' as const,
+      position: 'absolute',
       top: 0,
       left: 0,
       right: 0,
@@ -481,11 +650,11 @@ export default function AccountDetailScreen({ route, navigation }: any) {
     cardContentContainer: {
       padding: Spacing.xxl,
       paddingBottom: Spacing.xl,
-      position: 'relative' as const,
+      position: 'relative',
       zIndex: 1,
     },
     balanceSection: {
-      alignItems: 'center' as const,
+      alignItems: 'center',
       marginBottom: Spacing.xxl,
     },
     accountNameLabel: {
@@ -509,19 +678,19 @@ export default function AccountDetailScreen({ route, navigation }: any) {
     lastUpdated: {
       fontSize: Typography.fontSize.small,
       color: colors.overlayLight,
-      fontStyle: 'italic' as const,
+      fontStyle: 'italic',
     },
     bottomSection: {
-      flexDirection: 'row' as const,
-      justifyContent: 'space-between' as const,
-      alignItems: 'center' as const,
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
       paddingTop: Spacing.lg,
       borderTopWidth: 1,
       borderTopColor: colors.overlayLight,
     },
     statItem: {
       flex: 1,
-      alignItems: 'center' as const,
+      alignItems: 'center',
     },
     statValue: {
       fontSize: Typography.fontSize.large,
@@ -532,7 +701,7 @@ export default function AccountDetailScreen({ route, navigation }: any) {
     statLabel: {
       fontSize: Typography.fontSize.small,
       color: colors.overlayLight,
-      textAlign: 'center' as const,
+      textAlign: 'center',
     },
     divider: {
       width: 1,
@@ -541,7 +710,7 @@ export default function AccountDetailScreen({ route, navigation }: any) {
       marginHorizontal: Spacing.lg,
     },
     decorativeCircle1: {
-      position: 'absolute' as const,
+      position: 'absolute',
       width: 150,
       height: 150,
       borderRadius: 75,
@@ -551,7 +720,7 @@ export default function AccountDetailScreen({ route, navigation }: any) {
       zIndex: 0,
     },
     decorativeCircle2: {
-      position: 'absolute' as const,
+      position: 'absolute',
       width: 100,
       height: 100,
       borderRadius: 50,
@@ -582,11 +751,11 @@ export default function AccountDetailScreen({ route, navigation }: any) {
       fontWeight: Typography.fontWeight.semibold,
       color: colors.textPrimary,
       marginBottom: Spacing.lg,
-      textAlign: 'center' as const,
+      textAlign: 'center',
     },
     inputContainer: {
-      flexDirection: 'row' as const,
-      alignItems: 'center' as const,
+      flexDirection: 'row',
+      alignItems: 'center',
       gap: Spacing.gap.medium,
     },
     input: {
@@ -611,20 +780,20 @@ export default function AccountDetailScreen({ route, navigation }: any) {
       color: colors.textLight,
       fontSize: Typography.fontSize.medium,
       fontWeight: Typography.fontWeight.semibold,
-      textAlign: 'center' as const,
+      textAlign: 'center',
     },
     // Filter Buttons
     filterContainer: {
-      flexDirection: 'row' as const,
+      flexDirection: 'row',
       paddingHorizontal: Spacing.lg,
       paddingVertical: Spacing.md,
       gap: Spacing.sm,
     },
     filterButton: {
       flex: 1,
-      flexDirection: 'row' as const,
-      alignItems: 'center' as const,
-      justifyContent: 'center' as const,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
       paddingVertical: Spacing.md,
       paddingHorizontal: Spacing.lg,
       borderRadius: Spacing.borderRadius.medium,
@@ -656,9 +825,9 @@ export default function AccountDetailScreen({ route, navigation }: any) {
       paddingHorizontal: Spacing.lg,
       paddingVertical: Spacing.md,
       marginBottom: Spacing.md,
-      flexDirection: 'row' as const,
-      justifyContent: 'space-between' as const,
-      alignItems: 'center' as const,
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
     },
     transactionsTitle: {
       fontSize: Typography.fontSize.large,
@@ -668,7 +837,7 @@ export default function AccountDetailScreen({ route, navigation }: any) {
     filterSummary: {
       fontSize: Typography.fontSize.small,
       color: colors.textSecondary,
-      fontStyle: 'italic' as const,
+      fontStyle: 'italic',
     },
     transactionCard: {
       backgroundColor:
@@ -687,15 +856,15 @@ export default function AccountDetailScreen({ route, navigation }: any) {
           : 'rgba(255, 255, 255, 0.1)',
     },
     transactionHeader: {
-      flexDirection: 'row' as const,
-      alignItems: 'flex-start' as const,
+      flexDirection: 'row',
+      alignItems: 'flex-start',
     },
     transactionIcon: {
       width: 40,
       height: 40,
       borderRadius: 20,
-      justifyContent: 'center' as const,
-      alignItems: 'center' as const,
+      justifyContent: 'center',
+      alignItems: 'center',
       marginRight: Spacing.md,
     },
     transactionDetails: {
@@ -717,7 +886,7 @@ export default function AccountDetailScreen({ route, navigation }: any) {
       color: colors.textSecondary,
     },
     transactionAmount: {
-      alignItems: 'flex-end' as const,
+      alignItems: 'flex-end',
     },
     amountText: {
       fontSize: Typography.fontSize.large,
@@ -725,7 +894,7 @@ export default function AccountDetailScreen({ route, navigation }: any) {
       marginBottom: Spacing.sm,
     },
     transactionActions: {
-      flexDirection: 'row' as const,
+      flexDirection: 'row',
       gap: Spacing.sm,
     },
     editButton: {
@@ -740,8 +909,8 @@ export default function AccountDetailScreen({ route, navigation }: any) {
     },
     emptyState: {
       flex: 1,
-      justifyContent: 'center' as const,
-      alignItems: 'center' as const,
+      justifyContent: 'center',
+      alignItems: 'center',
       paddingVertical: Spacing.xxl,
       marginHorizontal: Spacing.lg,
     },
@@ -751,17 +920,17 @@ export default function AccountDetailScreen({ route, navigation }: any) {
       color: colors.textSecondary,
       marginTop: Spacing.lg,
       marginBottom: Spacing.md,
-      textAlign: 'center' as const,
+      textAlign: 'center',
     },
     emptyStateSubtext: {
       fontSize: Typography.fontSize.medium,
       color: colors.textTertiary,
-      textAlign: 'center' as const,
+      textAlign: 'center',
     },
     loadingContainer: {
       flex: 1,
-      justifyContent: 'center' as const,
-      alignItems: 'center' as const,
+      justifyContent: 'center',
+      alignItems: 'center',
     },
     loadingText: {
       marginTop: Spacing.lg,
@@ -772,24 +941,24 @@ export default function AccountDetailScreen({ route, navigation }: any) {
     modalOverlay: {
       flex: 1,
       backgroundColor: colors.overlay,
-      justifyContent: 'center' as const,
-      alignItems: 'center' as const,
+      justifyContent: 'center',
+      alignItems: 'center',
       padding: Spacing.xl,
     },
     modalContent: {
       backgroundColor: colors.white,
       borderRadius: Spacing.borderRadius.xxl,
       padding: Spacing.xxl,
-      width: '100%' as const,
+      width: '100%',
       maxWidth: 350,
-      alignItems: 'center' as const,
+      alignItems: 'center',
     },
     modalTitle: {
       fontSize: Typography.fontSize.xl,
       fontWeight: Typography.fontWeight.bold,
       color: colors.textPrimary,
       marginBottom: Spacing.lg,
-      textAlign: 'center' as const,
+      textAlign: 'center',
     },
     modalAmount: {
       fontSize: Typography.fontSize.large,
@@ -798,7 +967,7 @@ export default function AccountDetailScreen({ route, navigation }: any) {
       marginBottom: Spacing.xl,
     },
     reasonContainer: {
-      width: '100%' as const,
+      width: '100%',
       marginBottom: Spacing.xl,
     },
     reasonLabel: {
@@ -817,12 +986,12 @@ export default function AccountDetailScreen({ route, navigation }: any) {
       backgroundColor: colors.veryLightGray,
       color: colors.textPrimary,
       minHeight: 60,
-      textAlignVertical: 'top' as const,
+      textAlignVertical: 'top',
     },
     modalButtons: {
-      flexDirection: 'row' as const,
-      justifyContent: 'space-between' as const,
-      width: '100%' as const,
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      width: '100%',
       gap: Spacing.gap.medium,
       marginBottom: Spacing.xl,
     },
@@ -831,7 +1000,7 @@ export default function AccountDetailScreen({ route, navigation }: any) {
       paddingVertical: Spacing.lg,
       paddingHorizontal: Spacing.lg,
       borderRadius: Spacing.borderRadius.large,
-      alignItems: 'center' as const,
+      alignItems: 'center',
     },
     creditButton: {
       backgroundColor: colors.success,
@@ -845,25 +1014,29 @@ export default function AccountDetailScreen({ route, navigation }: any) {
     modalButtonText: {
       color: colors.textLight,
       fontSize: Typography.fontSize.medium,
-      fontWeight: Typography.fontWeight.bold,
-      marginBottom: 4,
-    },
-    modalButtonSubtext: {
-      color: colors.textLight,
-      fontSize: Typography.fontSize.small,
-      textAlign: 'center' as const,
-    },
-    cancelButton: {
-      paddingVertical: Spacing.md,
-      paddingHorizontal: Spacing.xl,
-      borderRadius: Spacing.borderRadius.medium,
-    },
-    cancelButtonText: {
-      color: colors.textSecondary,
-      fontSize: Typography.fontSize.medium,
       fontWeight: Typography.fontWeight.semibold,
     },
-  };
+    actionButtons: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      width: '100%',
+      gap: Spacing.gap.medium,
+    },
+    actionButton: {
+      flex: 1,
+      paddingVertical: Spacing.md,
+      borderRadius: Spacing.borderRadius.medium,
+      alignItems: 'center',
+    },
+    cancelButton: {
+      backgroundColor: colors.gray,
+    },
+    cancelButtonText: {
+      color: colors.textLight,
+      fontSize: Typography.fontSize.medium,
+      fontWeight: Typography.fontWeight.medium,
+    },
+  });
 
   if (isLoading) {
     return (
@@ -1036,9 +1209,6 @@ export default function AccountDetailScreen({ route, navigation }: any) {
                     activeOpacity={0.7}
                   >
                     <Text style={styles.modalButtonText}>💰 Credit</Text>
-                    <Text style={styles.modalButtonSubtext}>
-                      Add money to account
-                    </Text>
                   </TouchableOpacity>
                 )}
 
@@ -1049,9 +1219,6 @@ export default function AccountDetailScreen({ route, navigation }: any) {
                     activeOpacity={0.7}
                   >
                     <Text style={styles.modalButtonText}>💸 Debit</Text>
-                    <Text style={styles.modalButtonSubtext}>
-                      Subtract from account
-                    </Text>
                   </TouchableOpacity>
                 )}
               </View>
@@ -1114,7 +1281,6 @@ export default function AccountDetailScreen({ route, navigation }: any) {
                   activeOpacity={0.7}
                 >
                   <Text style={styles.modalButtonText}>Update</Text>
-                  <Text style={styles.modalButtonSubtext}>Save changes</Text>
                 </TouchableOpacity>
               </View>
 

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   View,
   Text,
@@ -7,27 +7,212 @@ import {
   Modal,
   Alert,
   ScrollView,
+  StyleSheet,
+  Platform,
+  StatusBar,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import Store, { LegacyTransaction, AppData } from '../store/store';
 import { useTheme } from '../contexts';
-import { Typography } from '../styles/theme/typography';
-import { Spacing } from '../styles/theme/spacing';
-import { getShadows } from '../styles/theme/shadows';
 import HomeCard from '../components/cards/HomeCard';
+import { TransactionService } from '../database/services/TransactionService';
+import { Transaction } from '../database/models/Transaction';
+import { HomeCard as HomeCardComponent } from '../components';
+
+// Typography styles moved from centralized styles
+const Typography = {
+  // Font Sizes
+  fontSize: {
+    tiny: 10,
+    small: 12,
+    regular: 14,
+    medium: 16,
+    large: 18,
+    xl: 20,
+    xxl: 24,
+    xxxl: 36,
+  },
+
+  // Font Weights
+  fontWeight: {
+    light: '300' as const,
+    regular: '400' as const,
+    medium: '500' as const,
+    semibold: '600' as const,
+    bold: '700' as const,
+  },
+
+  // Line Heights
+  lineHeight: {
+    tight: 1.2,
+    normal: 1.5,
+    loose: 1.8,
+  },
+
+  // Letter Spacing
+  letterSpacing: {
+    tight: -0.5,
+    normal: 0,
+    wide: 0.5,
+  },
+
+  // Font Families (if needed for custom fonts)
+  fontFamily: {
+    regular: 'System',
+    medium: 'System',
+    bold: 'System',
+  },
+};
+
+// Spacing styles moved from centralized styles
+const Spacing = {
+  // Base spacing unit
+  base: 8,
+
+  // Margin/Padding sizes
+  xs: 4,
+  sm: 8,
+  md: 12,
+  lg: 16,
+  xl: 20,
+  xxl: 24,
+  xxxl: 32,
+
+  // Specific spacing values
+  margin: {
+    xs: 4,
+    sm: 8,
+    md: 12,
+    lg: 16,
+    xl: 20,
+    xxl: 24,
+    xxxl: 32,
+  },
+
+  padding: {
+    xs: 4,
+    sm: 8,
+    md: 12,
+    lg: 16,
+    xl: 20,
+    xxl: 24,
+    xxxl: 32,
+  },
+
+  // Border radius
+  borderRadius: {
+    small: 8,
+    medium: 10,
+    large: 12,
+    xl: 15,
+    xxl: 20,
+  },
+
+  // Heights
+  height: {
+    input: 50,
+    button: 50,
+    card: 200,
+    icon: 40,
+  },
+
+  // Widths
+  width: {
+    divider: 1,
+    border: 1,
+  },
+
+  // Gaps
+  gap: {
+    small: 8,
+    medium: 10,
+    large: 12,
+    xl: 15,
+  },
+};
+
+// Shadows styles moved from centralized styles
+const getShadows = (colors: any) => ({
+  // Small shadow
+  small: {
+    shadowColor: colors.shadowPrimary,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+
+  // Medium shadow
+  medium: {
+    shadowColor: colors.shadowPrimary,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 5,
+  },
+
+  // Large shadow
+  large: {
+    shadowColor: colors.shadowSecondary,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    elevation: 15,
+  },
+
+  // Card shadow
+  card: {
+    shadowColor: colors.shadowPrimary,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+
+  // Header shadow
+  header: {
+    shadowColor: colors.shadowPrimary,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+
+  // Button shadow
+  button: {
+    shadowColor: colors.shadowPrimary,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+});
 
 export default function HomeScreen() {
   const { colors } = useTheme();
   const shadows = getShadows(colors);
   const [balance, setBalance] = useState<number>(0);
-  const [transactions, setTransactions] = useState<LegacyTransaction[]>([]);
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [amount, setAmount] = useState<string>('');
   const [reason, setReason] = useState<string>('');
   const [modalVisible, setModalVisible] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
-  // Dynamic styles based on current theme
-  const styles = {
+  const calculateStats = useMemo(() => {
+    const lastCashIn =
+      transactions
+        .filter(t => t.type === 'cash_in')
+        .sort((a, b) => b.timestamp - a.timestamp)[0]?.amount || 0;
+
+    const lastCashOut =
+      transactions
+        .filter(t => t.type === 'cash_out')
+        .sort((a, b) => b.timestamp - a.timestamp)[0]?.amount || 0;
+
+    return { lastCashIn, lastCashOut };
+  }, [transactions]);
+
+  const styles = StyleSheet.create({
     container: {
       flex: 1,
       backgroundColor: colors.background,
@@ -173,7 +358,7 @@ export default function HomeScreen() {
       fontSize: Typography.fontSize.medium,
       fontWeight: Typography.fontWeight.semibold,
     },
-  };
+  });
 
   // Load data from store
   const loadData = async () => {
@@ -313,7 +498,7 @@ export default function HomeScreen() {
       style={styles.container}
       contentContainerStyle={styles.contentContainer}
     >
-      <HomeCard
+      <HomeCardComponent
         balance={balance}
         isLoading={isLoading}
         lastCashIn={lastTransactionAmounts.lastCashIn}

@@ -1,10 +1,120 @@
 import React from 'react';
-import { View, Text, Switch, Alert } from 'react-native';
+import { View, Text, Switch, Alert, StyleSheet } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import { useTheme } from '../contexts';
-import { Typography } from '../styles/theme/typography';
-import { Spacing } from '../styles/theme/spacing';
+
+// Typography styles moved from centralized styles
+const Typography = {
+  // Font Sizes
+  fontSize: {
+    tiny: 10,
+    small: 12,
+    regular: 14,
+    medium: 16,
+    large: 18,
+    xl: 20,
+    xxl: 24,
+    xxxl: 36,
+  },
+
+  // Font Weights
+  fontWeight: {
+    light: '300' as const,
+    regular: '400' as const,
+    medium: '500' as const,
+    semibold: '600' as const,
+    bold: '700' as const,
+  },
+
+  // Line Heights
+  lineHeight: {
+    tight: 1.2,
+    normal: 1.5,
+    loose: 1.8,
+  },
+
+  // Letter Spacing
+  letterSpacing: {
+    tight: -0.5,
+    normal: 0,
+    wide: 0.5,
+  },
+
+  // Font Families (if needed for custom fonts)
+  fontFamily: {
+    regular: 'System',
+    medium: 'System',
+    bold: 'System',
+  },
+};
+
+// Spacing styles moved from centralized styles
+const Spacing = {
+  // Base spacing unit
+  base: 8,
+
+  // Margin/Padding sizes
+  xs: 4,
+  sm: 8,
+  md: 12,
+  lg: 16,
+  xl: 20,
+  xxl: 24,
+  xxxl: 32,
+
+  // Specific spacing values
+  margin: {
+    xs: 4,
+    sm: 8,
+    md: 12,
+    lg: 16,
+    xl: 20,
+    xxl: 24,
+    xxxl: 32,
+  },
+
+  padding: {
+    xs: 4,
+    sm: 8,
+    md: 12,
+    lg: 16,
+    xl: 20,
+    xxl: 24,
+    xxxl: 32,
+  },
+
+  // Border radius
+  borderRadius: {
+    small: 8,
+    medium: 10,
+    large: 12,
+    xl: 15,
+    xxl: 20,
+  },
+
+  // Heights
+  height: {
+    input: 50,
+    button: 50,
+    card: 200,
+    icon: 40,
+  },
+
+  // Widths
+  width: {
+    divider: 1,
+    border: 1,
+  },
+
+  // Gaps
+  gap: {
+    small: 8,
+    medium: 10,
+    large: 12,
+    xl: 15,
+  },
+};
 
 export default function SettingsScreen() {
   const { currentTheme, colors, toggleTheme, isLoading } = useTheme();
@@ -29,13 +139,12 @@ export default function SettingsScreen() {
       ? ['#f8f9ff', '#f0f2ff', '#e8f0fe'] // Very light blue-purple gradient
       : ['#2a2a2a', '#252525', '#1f1f1f']; // Subtle dark gradient
 
-  const styles = {
+  const styles = StyleSheet.create({
     gradientContainer: {
       flex: 1,
     },
     container: {
       flex: 1,
-      paddingTop: 60, // Add padding for status bar since header is removed
       paddingHorizontal: Spacing.xl,
     },
     header: {
@@ -122,7 +231,7 @@ export default function SettingsScreen() {
       textShadowOffset: { width: 0, height: 1 },
       textShadowRadius: 1,
     },
-  };
+  });
 
   if (isLoading) {
     return (

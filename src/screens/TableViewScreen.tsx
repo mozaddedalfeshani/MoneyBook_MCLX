@@ -9,6 +9,9 @@ import {
   ActivityIndicator,
   TextInput,
   Modal,
+  Platform,
+  StatusBar,
+  StyleSheet,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
@@ -18,9 +21,175 @@ import {
   AccountWithStats,
 } from '../database/services/AccountService';
 import { useTheme } from '../contexts';
-import { Typography } from '../styles/theme/typography';
-import { Spacing } from '../styles/theme/spacing';
-import { getShadows } from '../styles/theme/shadows';
+
+// Typography styles moved from centralized styles
+const Typography = {
+  // Font Sizes
+  fontSize: {
+    tiny: 10,
+    small: 12,
+    regular: 14,
+    medium: 16,
+    large: 18,
+    xl: 20,
+    xxl: 24,
+    xxxl: 36,
+  },
+
+  // Font Weights
+  fontWeight: {
+    light: '300' as const,
+    regular: '400' as const,
+    medium: '500' as const,
+    semibold: '600' as const,
+    bold: '700' as const,
+  },
+
+  // Line Heights
+  lineHeight: {
+    tight: 1.2,
+    normal: 1.5,
+    loose: 1.8,
+  },
+
+  // Letter Spacing
+  letterSpacing: {
+    tight: -0.5,
+    normal: 0,
+    wide: 0.5,
+  },
+
+  // Font Families (if needed for custom fonts)
+  fontFamily: {
+    regular: 'System',
+    medium: 'System',
+    bold: 'System',
+  },
+};
+
+// Spacing styles moved from centralized styles
+const Spacing = {
+  // Base spacing unit
+  base: 8,
+
+  // Margin/Padding sizes
+  xs: 4,
+  sm: 8,
+  md: 12,
+  lg: 16,
+  xl: 20,
+  xxl: 24,
+  xxxl: 32,
+
+  // Specific spacing values
+  margin: {
+    xs: 4,
+    sm: 8,
+    md: 12,
+    lg: 16,
+    xl: 20,
+    xxl: 24,
+    xxxl: 32,
+  },
+
+  padding: {
+    xs: 4,
+    sm: 8,
+    md: 12,
+    lg: 16,
+    xl: 20,
+    xxl: 24,
+    xxxl: 32,
+  },
+
+  // Border radius
+  borderRadius: {
+    small: 8,
+    medium: 10,
+    large: 12,
+    xl: 15,
+    xxl: 20,
+  },
+
+  // Heights
+  height: {
+    input: 50,
+    button: 50,
+    card: 200,
+    icon: 40,
+  },
+
+  // Widths
+  width: {
+    divider: 1,
+    border: 1,
+  },
+
+  // Gaps
+  gap: {
+    small: 8,
+    medium: 10,
+    large: 12,
+    xl: 15,
+  },
+};
+
+// Shadows styles moved from centralized styles
+const getShadows = (colors: any) => ({
+  // Small shadow
+  small: {
+    shadowColor: colors.shadowPrimary,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+
+  // Medium shadow
+  medium: {
+    shadowColor: colors.shadowPrimary,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 5,
+  },
+
+  // Large shadow
+  large: {
+    shadowColor: colors.shadowSecondary,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    elevation: 15,
+  },
+
+  // Card shadow
+  card: {
+    shadowColor: colors.shadowPrimary,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+
+  // Header shadow
+  header: {
+    shadowColor: colors.shadowPrimary,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+
+  // Button shadow
+  button: {
+    shadowColor: colors.shadowPrimary,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+});
 
 export default function TableViewScreen({ navigation }: any) {
   const { colors, currentTheme } = useTheme();
@@ -213,7 +382,7 @@ export default function TableViewScreen({ navigation }: any) {
   );
 
   // Dynamic styles
-  const styles = {
+  const styles = StyleSheet.create({
     gradientContainer: {
       flex: 1,
     },
@@ -455,7 +624,7 @@ export default function TableViewScreen({ navigation }: any) {
     cancelButtonText: {
       color: colors.textSecondary,
     },
-  };
+  });
 
   if (isLoading) {
     return (
