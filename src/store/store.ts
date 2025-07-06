@@ -1,4 +1,5 @@
 import { TransactionService } from '../database/services/TransactionService';
+import { AccountService } from '../database/services/AccountService';
 import { MigrationService } from '../database/services/MigrationService';
 import { Transaction } from '../database/models/Transaction';
 
@@ -18,12 +19,41 @@ export interface AppData {
 }
 
 export class Store {
+  private static defaultAccountId: string | null = null;
+
   // Initialize store and run migration if needed
   static async initialize(): Promise<void> {
     try {
       await MigrationService.migrateData();
+      // Cache the default account ID for legacy compatibility
+      this.defaultAccountId = await this.getDefaultAccountId();
     } catch (error) {
       console.error('Error during store initialization:', error);
+    }
+  }
+
+  // Get the default account ID (creates one if none exists)
+  private static async getDefaultAccountId(): Promise<string> {
+    if (this.defaultAccountId) {
+      return this.defaultAccountId;
+    }
+
+    try {
+      // Get existing accounts
+      const accounts = await AccountService.getAllAccounts();
+
+      if (accounts.length > 0) {
+        this.defaultAccountId = accounts[0].id;
+        return this.defaultAccountId;
+      }
+
+      // No accounts exist, create a default one
+      const defaultAccount = await AccountService.createAccount('Main Account');
+      this.defaultAccountId = defaultAccount.id;
+      return this.defaultAccountId;
+    } catch (error) {
+      console.error('Error getting default account:', error);
+      throw error;
     }
   }
 
@@ -41,12 +71,13 @@ export class Store {
     };
   }
 
-  // Load all data (balance and transactions)
+  // Load all data (balance and transactions) for the default account (legacy compatibility)
   static async loadData(): Promise<AppData> {
     try {
+      const accountId = await this.getDefaultAccountId();
       const [balance, transactions] = await Promise.all([
-        TransactionService.getCurrentBalance(),
-        TransactionService.getAllTransactions(),
+        TransactionService.getAccountBalance(accountId),
+        TransactionService.getAccountTransactions(accountId),
       ]);
 
       const legacyTransactions = transactions.map(this.convertToLegacyFormat);
@@ -61,7 +92,7 @@ export class Store {
     }
   }
 
-  // Add cash in transaction
+  // Add cash in transaction to default account (legacy compatibility)
   static async addCashIn(
     currentBalance: number,
     currentTransactions: LegacyTransaction[],
@@ -69,7 +100,13 @@ export class Store {
     reason: string,
   ): Promise<AppData> {
     try {
-      await TransactionService.addTransaction('cash_in', amount, reason);
+      const accountId = await this.getDefaultAccountId();
+      await TransactionService.addTransaction(
+        accountId,
+        'cash_in',
+        amount,
+        reason,
+      );
       return await this.loadData();
     } catch (error) {
       console.error('Error adding cash in:', error);
@@ -77,7 +114,7 @@ export class Store {
     }
   }
 
-  // Add cash out transaction
+  // Add cash out transaction to default account (legacy compatibility)
   static async addCashOut(
     currentBalance: number,
     currentTransactions: LegacyTransaction[],
@@ -85,13 +122,19 @@ export class Store {
     reason: string,
   ): Promise<AppData> {
     try {
-      const balance = await TransactionService.getCurrentBalance();
+      const accountId = await this.getDefaultAccountId();
+      const balance = await TransactionService.getAccountBalance(accountId);
 
       if (balance < amount) {
         throw new Error('Insufficient balance');
       }
 
-      await TransactionService.addTransaction('cash_out', amount, reason);
+      await TransactionService.addTransaction(
+        accountId,
+        'cash_out',
+        amount,
+        reason,
+      );
       return await this.loadData();
     } catch (error) {
       console.error('Error adding cash out:', error);
@@ -99,7 +142,7 @@ export class Store {
     }
   }
 
-  // Delete transaction
+  // Delete transaction from default account (legacy compatibility)
   static async deleteTransaction(
     currentBalance: number,
     currentTransactions: LegacyTransaction[],
@@ -107,9 +150,8 @@ export class Store {
   ): Promise<AppData> {
     try {
       // Find the WatermelonDB transaction by ID
-      const allTransactions = await TransactionService.getAllTransactions();
-      const transaction = allTransactions.find(
-        t => t.id === transactionToDelete.id,
+      const transaction = await TransactionService.getTransactionById(
+        transactionToDelete.id,
       );
 
       if (transaction) {
@@ -123,7 +165,7 @@ export class Store {
     }
   }
 
-  // Get last transaction amounts for statistics
+  // Get last transaction amounts for statistics from default account (legacy compatibility)
   static async getLastTransactionAmounts(
     transactions: LegacyTransaction[],
   ): Promise<{
@@ -131,19 +173,164 @@ export class Store {
     lastCashOut: number;
   }> {
     try {
-      return await TransactionService.getLastTransactionAmounts();
+      const accountId = await this.getDefaultAccountId();
+      return await TransactionService.getAccountLastTransactionAmounts(
+        accountId,
+      );
     } catch (error) {
       console.error('Error getting last transaction amounts:', error);
       return { lastCashIn: 0, lastCashOut: 0 };
     }
   }
 
-  // Clear all data (for reset functionality)
+  // Clear all data for default account (legacy compatibility)
   static async clearAllData(): Promise<void> {
     try {
-      await TransactionService.clearAllTransactions();
+      const accountId = await this.getDefaultAccountId();
+      await TransactionService.clearAccountTransactions(accountId);
     } catch (error) {
       console.error('Error clearing all data:', error);
+      throw error;
+    }
+  }
+
+  // NEW METHODS FOR ACCOUNT-BASED SYSTEM
+
+  // Get all accounts with statistics
+  static async getAllAccountsWithStats() {
+    try {
+      return await AccountService.getAllAccountsWithStats();
+    } catch (error) {
+      console.error('Error getting accounts with stats:', error);
+      throw error;
+    }
+  }
+
+  // Create a new account
+  static async createAccount(name: string) {
+    try {
+      return await AccountService.createAccount(name);
+    } catch (error) {
+      console.error('Error creating account:', error);
+      throw error;
+    }
+  }
+
+  // Update account name
+  static async updateAccount(accountId: string, newName: string) {
+    try {
+      const account = await AccountService.getAccountById(accountId);
+      if (!account) {
+        throw new Error('Account not found');
+      }
+      return await AccountService.updateAccount(account, newName);
+    } catch (error) {
+      console.error('Error updating account:', error);
+      throw error;
+    }
+  }
+
+  // Delete account and all its transactions
+  static async deleteAccount(accountId: string) {
+    try {
+      const account = await AccountService.getAccountById(accountId);
+      if (!account) {
+        throw new Error('Account not found');
+      }
+      await AccountService.deleteAccount(account);
+    } catch (error) {
+      console.error('Error deleting account:', error);
+      throw error;
+    }
+  }
+
+  // Get account data
+  static async getAccountData(accountId: string): Promise<{
+    balance: number;
+    transactions: Transaction[];
+    lastTransactionAmounts: {
+      lastCashIn: number;
+      lastCashOut: number;
+    };
+  }> {
+    try {
+      const [balance, transactions, lastTransactionAmounts] = await Promise.all(
+        [
+          TransactionService.getAccountBalance(accountId),
+          TransactionService.getAccountTransactions(accountId),
+          TransactionService.getAccountLastTransactionAmounts(accountId),
+        ],
+      );
+
+      return {
+        balance,
+        transactions,
+        lastTransactionAmounts,
+      };
+    } catch (error) {
+      console.error('Error getting account data:', error);
+      throw error;
+    }
+  }
+
+  // Add transaction to specific account
+  static async addAccountTransaction(
+    accountId: string,
+    type: 'cash_in' | 'cash_out',
+    amount: number,
+    reason: string,
+  ) {
+    try {
+      return await TransactionService.addTransaction(
+        accountId,
+        type,
+        amount,
+        reason,
+      );
+    } catch (error) {
+      console.error('Error adding account transaction:', error);
+      throw error;
+    }
+  }
+
+  // Update transaction
+  static async updateTransaction(
+    transactionId: string,
+    type: 'cash_in' | 'cash_out',
+    amount: number,
+    reason: string,
+  ) {
+    try {
+      const transaction = await TransactionService.getTransactionById(
+        transactionId,
+      );
+      if (!transaction) {
+        throw new Error('Transaction not found');
+      }
+      return await TransactionService.updateTransaction(
+        transaction,
+        type,
+        amount,
+        reason,
+      );
+    } catch (error) {
+      console.error('Error updating transaction:', error);
+      throw error;
+    }
+  }
+
+  // Delete specific transaction
+  static async deleteAccountTransaction(transactionId: string) {
+    try {
+      const transaction = await TransactionService.getTransactionById(
+        transactionId,
+      );
+      if (!transaction) {
+        throw new Error('Transaction not found');
+      }
+      await TransactionService.deleteTransaction(transaction);
+    } catch (error) {
+      console.error('Error deleting account transaction:', error);
       throw error;
     }
   }
