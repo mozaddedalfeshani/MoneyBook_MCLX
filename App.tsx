@@ -20,13 +20,7 @@ function App() {
         screenOptions={() => ({
           tabBarActiveTintColor: '#007bff',
           tabBarInactiveTintColor: 'gray',
-          headerStyle: {
-            backgroundColor: '#007bff',
-          },
-          headerTintColor: '#fff',
-          headerTitleStyle: {
-            fontWeight: 'bold',
-          },
+          headerShown: false,
         })}
       >
         <Tab.Screen
