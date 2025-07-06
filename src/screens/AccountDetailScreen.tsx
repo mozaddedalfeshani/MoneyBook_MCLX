@@ -18,6 +18,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import { TransactionService } from '../database/services/TransactionService';
 import { Transaction } from '../database/models/Transaction';
 import { useTheme } from '../contexts';
+import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 
 // iOS Typography System
 const Typography = {
@@ -753,8 +754,10 @@ export default function AccountDetailScreen({ route, navigation }: any) {
           : 'rgba(45, 45, 45, 0.9)',
       marginHorizontal: Spacing.lg,
       marginTop: Spacing.xl,
-      borderRadius: Spacing.borderRadius.xl,
-      padding: Spacing.xl,
+      borderRadius: 10,
+      paddingLeft: Spacing.sm,
+      paddingRight: Spacing.sm,
+      paddingVertical: Spacing.md,
       ...shadows.medium,
       borderWidth: 1,
       borderColor:
@@ -780,7 +783,7 @@ export default function AccountDetailScreen({ route, navigation }: any) {
       borderWidth: Spacing.width.border,
       borderColor: colors.border,
       borderRadius: Spacing.borderRadius.medium,
-      paddingHorizontal: Spacing.lg,
+      paddingHorizontal: Spacing.sm,
       fontSize: Typography.fontSize.body,
       backgroundColor: colors.veryLightGray,
       color: colors.textPrimary,
@@ -788,7 +791,7 @@ export default function AccountDetailScreen({ route, navigation }: any) {
     updateButton: {
       backgroundColor: colors.secondary,
       paddingHorizontal: Spacing.xl,
-      paddingVertical: Spacing.lg,
+      paddingVertical: Spacing.sm,
       borderRadius: Spacing.borderRadius.medium,
       minWidth: 80,
     },
@@ -810,8 +813,8 @@ export default function AccountDetailScreen({ route, navigation }: any) {
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'center',
-      paddingVertical: Spacing.md,
-      paddingHorizontal: Spacing.lg,
+      paddingVertical: Spacing.sm,
+      paddingHorizontal: Spacing.sm,
       borderRadius: Spacing.borderRadius.medium,
       backgroundColor:
         currentTheme === 'light'
@@ -1139,7 +1142,7 @@ export default function AccountDetailScreen({ route, navigation }: any) {
           <View style={styles.inputContainer}>
             <TextInput
               style={styles.input}
-              placeholder="Enter amount (Tk)"
+              placeholder="Amount (Tk)"
               placeholderTextColor={colors.textSecondary}
               value={amount}
               onChangeText={setAmount}
@@ -1150,7 +1153,13 @@ export default function AccountDetailScreen({ route, navigation }: any) {
               onPress={handleUpdatePress}
               activeOpacity={0.7}
             >
-              <Text style={styles.updateButtonText}>Add</Text>
+              <Text style={styles.updateButtonText}>
+                <MaterialIcons
+                  name="history-edu"
+                  size={25}
+                  color={colors.textLight}
+                />
+              </Text>
             </TouchableOpacity>
           </View>
         </View>
