@@ -1,6 +1,6 @@
-import { TransactionStore } from './transactionStore';
+import { TransactionStore } from './slices/transactionStore';
 import { StorageService } from './storage';
-import { Transaction, AppData, TransactionStats } from './types';
+import { Transaction, AppData, TransactionStats } from './types/types';
 
 // Main store interface that combines all functionality
 const Store = {

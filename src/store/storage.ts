@@ -1,5 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { AppData, Transaction } from './types';
+import { AppData, Transaction } from './types/types';
 
 const STORAGE_KEY = 'appData';
 

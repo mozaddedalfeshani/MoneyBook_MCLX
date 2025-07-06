@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, Switch, Alert } from 'react-native';
+import { View, Text, Switch, Alert } from 'react-native';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
-import { ThemeStore, ThemeType } from '../store/themeStore';
+import { ThemeStore, ThemeType } from '../store/slices/themeStore';
 import { getColors } from '../styles/theme/colors';
 import { Typography } from '../styles/theme/typography';
 import { Spacing } from '../styles/theme/spacing';

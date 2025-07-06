@@ -1,8 +1,6 @@
-import { Text, View, Dimensions } from 'react-native';
+import { Text, View } from 'react-native';
 import React from 'react';
 import { HomeCardStyles } from '../../styles/components/homeCard';
-
-const { width } = Dimensions.get('window');
 
 interface HomeCardProps {
   balance: number;
