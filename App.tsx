@@ -40,7 +40,7 @@ function App() {
           }}
         />
         <Tab.Screen
-          name="Profile"
+          name="History"
           component={ProfileScreen}
           options={{
             tabBarIcon: ({ color, size }) => {
@@ -55,7 +55,7 @@ function App() {
           options={{
             tabBarIcon: ({ color, size }) => {
               let iconName = 'setting';
-              return <AntDesign name={iconName} size={size} />;
+              return <AntDesign name={iconName} size={size} color={color} />;
             },
           }}
         />

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   StyleSheet,
@@ -10,18 +10,26 @@ import {
   ScrollView,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useFocusEffect } from '@react-navigation/native';
 import HomeCard from '../components/Cards/HomeCard';
 
-interface TransactionData {
+interface Transaction {
+  id: string;
+  type: 'cash_in' | 'cash_out';
+  amount: number;
+  reason: string;
+  date: string;
+  timestamp: number;
+}
+
+interface AppData {
   balance: number;
-  lastCashIn: number;
-  lastCashOut: number;
+  transactions: Transaction[];
 }
 
 export default function HomeScreen() {
   const [balance, setBalance] = useState<number>(0);
-  const [lastCashIn, setLastCashIn] = useState<number>(0);
-  const [lastCashOut, setLastCashOut] = useState<number>(0);
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [amount, setAmount] = useState<string>('');
   const [reason, setReason] = useState<string>('');
   const [modalVisible, setModalVisible] = useState<boolean>(false);
@@ -35,12 +43,11 @@ export default function HomeScreen() {
   const loadData = async () => {
     try {
       setIsLoading(true);
-      const savedData = await AsyncStorage.getItem('transactionData');
+      const savedData = await AsyncStorage.getItem('appData');
       if (savedData !== null) {
-        const data: TransactionData = JSON.parse(savedData);
+        const data: AppData = JSON.parse(savedData);
         setBalance(data.balance || 0);
-        setLastCashIn(data.lastCashIn || 0);
-        setLastCashOut(data.lastCashOut || 0);
+        setTransactions(data.transactions || []);
       }
     } catch (error) {
       console.error('Error loading data:', error);
@@ -52,26 +59,49 @@ export default function HomeScreen() {
 
   const saveData = async (
     newBalance: number,
-    newLastCashIn: number,
-    newLastCashOut: number,
+    newTransactions: Transaction[],
   ) => {
     try {
-      const transactionData: TransactionData = {
+      const appData: AppData = {
         balance: newBalance,
-        lastCashIn: newLastCashIn,
-        lastCashOut: newLastCashOut,
+        transactions: newTransactions,
       };
-      await AsyncStorage.setItem(
-        'transactionData',
-        JSON.stringify(transactionData),
-      );
+      await AsyncStorage.setItem('appData', JSON.stringify(appData));
       setBalance(newBalance);
-      setLastCashIn(newLastCashIn);
-      setLastCashOut(newLastCashOut);
+      setTransactions(newTransactions);
     } catch (error) {
       console.error('Error saving data:', error);
       Alert.alert('Error', 'Failed to save transaction data');
     }
+  };
+
+  const generateTransactionId = () => {
+    return Date.now().toString() + Math.random().toString(36).substr(2, 9);
+  };
+
+  const formatDate = (timestamp: number) => {
+    const date = new Date(timestamp);
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  };
+
+  const getLastTransactionAmounts = () => {
+    const lastCashIn =
+      transactions
+        .filter(t => t.type === 'cash_in')
+        .sort((a, b) => b.timestamp - a.timestamp)[0]?.amount || 0;
+
+    const lastCashOut =
+      transactions
+        .filter(t => t.type === 'cash_out')
+        .sort((a, b) => b.timestamp - a.timestamp)[0]?.amount || 0;
+
+    return { lastCashIn, lastCashOut };
   };
 
   const handleUpdatePress = () => {
@@ -88,7 +118,18 @@ export default function HomeScreen() {
   const handleCashIn = async () => {
     const cashInAmount = parseFloat(amount);
     const newBalance = balance + cashInAmount;
-    await saveData(newBalance, cashInAmount, lastCashOut);
+
+    const newTransaction: Transaction = {
+      id: generateTransactionId(),
+      type: 'cash_in',
+      amount: cashInAmount,
+      reason: reason.trim() || 'No reason provided',
+      date: formatDate(Date.now()),
+      timestamp: Date.now(),
+    };
+
+    const newTransactions = [newTransaction, ...transactions];
+    await saveData(newBalance, newTransactions);
     setModalVisible(false);
     setAmount('');
     setReason('');
@@ -111,8 +152,20 @@ export default function HomeScreen() {
       );
       return;
     }
+
     const newBalance = balance - cashOutAmount;
-    await saveData(newBalance, lastCashIn, cashOutAmount);
+
+    const newTransaction: Transaction = {
+      id: generateTransactionId(),
+      type: 'cash_out',
+      amount: cashOutAmount,
+      reason: reason.trim() || 'No reason provided',
+      date: formatDate(Date.now()),
+      timestamp: Date.now(),
+    };
+
+    const newTransactions = [newTransaction, ...transactions];
+    await saveData(newBalance, newTransactions);
     setModalVisible(false);
     setAmount('');
     setReason('');
@@ -130,6 +183,15 @@ export default function HomeScreen() {
     setModalVisible(false);
     setReason(''); // Clear reason when closing
   };
+
+  const { lastCashIn, lastCashOut } = getLastTransactionAmounts();
+
+  // Reload data when navigating back from the History screen
+  useFocusEffect(
+    useCallback(() => {
+      loadData();
+    }, []),
+  );
 
   return (
     <ScrollView
