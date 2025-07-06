@@ -13,11 +13,12 @@ import Store, { LegacyTransaction, AppData } from '../store/store';
 import { useTheme } from '../contexts';
 import { Typography } from '../styles/theme/typography';
 import { Spacing } from '../styles/theme/spacing';
-import { Shadows } from '../styles/theme/shadows';
+import { getShadows } from '../styles/theme/shadows';
 import HomeCard from '../components/cards/HomeCard';
 
 export default function HomeScreen() {
   const { colors } = useTheme();
+  const shadows = getShadows(colors);
   const [balance, setBalance] = useState<number>(0);
   const [transactions, setTransactions] = useState<LegacyTransaction[]>([]);
   const [amount, setAmount] = useState<string>('');
@@ -37,12 +38,12 @@ export default function HomeScreen() {
       paddingBottom: 40,
     },
     managementBox: {
-      backgroundColor: colors.white,
+      backgroundColor: colors.secondaryLight,
       marginHorizontal: Spacing.lg,
       marginTop: Spacing.xl,
       borderRadius: Spacing.borderRadius.xl,
       padding: Spacing.xl,
-      ...Shadows.medium,
+      ...shadows.medium,
     },
     boxTitle: {
       fontSize: Typography.fontSize.large,
@@ -92,7 +93,7 @@ export default function HomeScreen() {
       backgroundColor: colors.white,
       borderRadius: Spacing.borderRadius.xxl,
       padding: Spacing.xxl,
-      width: '100%',
+      width: '100%' as const,
       maxWidth: 350,
       alignItems: 'center' as const,
     },
@@ -110,7 +111,7 @@ export default function HomeScreen() {
       marginBottom: Spacing.xl,
     },
     reasonContainer: {
-      width: '100%',
+      width: '100%' as const,
       marginBottom: Spacing.xl,
     },
     reasonLabel: {
@@ -134,8 +135,8 @@ export default function HomeScreen() {
     modalButtons: {
       flexDirection: 'row' as const,
       justifyContent: 'space-between' as const,
-      width: '100%',
-      gap: Spacing.lg,
+      width: '100%' as const,
+      gap: Spacing.gap.medium,
       marginBottom: Spacing.xl,
     },
     modalButton: {

@@ -1,9 +1,9 @@
-import { Colors } from './colors';
+import { getColors, ThemeType } from './colors';
 
-export const Shadows = {
+export const getShadows = (colors: ReturnType<typeof getColors>) => ({
   // Small shadow
   small: {
-    shadowColor: Colors.shadowPrimary,
+    shadowColor: colors.shadowPrimary,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
@@ -12,7 +12,7 @@ export const Shadows = {
 
   // Medium shadow
   medium: {
-    shadowColor: Colors.shadowPrimary,
+    shadowColor: colors.shadowPrimary,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 8,
@@ -21,7 +21,7 @@ export const Shadows = {
 
   // Large shadow
   large: {
-    shadowColor: Colors.shadowSecondary,
+    shadowColor: colors.shadowSecondary,
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.3,
     shadowRadius: 12,
@@ -30,7 +30,7 @@ export const Shadows = {
 
   // Card shadow
   card: {
-    shadowColor: Colors.shadowPrimary,
+    shadowColor: colors.shadowPrimary,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
@@ -39,7 +39,7 @@ export const Shadows = {
 
   // Header shadow
   header: {
-    shadowColor: Colors.shadowPrimary,
+    shadowColor: colors.shadowPrimary,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
@@ -48,10 +48,13 @@ export const Shadows = {
 
   // Button shadow
   button: {
-    shadowColor: Colors.shadowPrimary,
+    shadowColor: colors.shadowPrimary,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 2,
   },
-};
+});
+
+// Default shadows for backward compatibility
+export const Shadows = getShadows(getColors('light'));

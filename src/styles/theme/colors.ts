@@ -69,12 +69,12 @@ const DarkColors = {
   warning: '#FFA726',
   info: '#29B6F6',
 
-  // Neutral colors
-  white: '#FFFFFF',
+  // Neutral colors (Fixed for dark theme)
+  white: '#2D2D2D', // Dark surface color instead of white
   black: '#000000',
   gray: '#CCCCCC',
   lightGray: '#AAAAAA',
-  veryLightGray: '#2D2D2D',
+  veryLightGray: '#3A3A3A', // Darker input background
   background: '#1A1A1A',
   border: '#444444',
   borderLight: '#333333',

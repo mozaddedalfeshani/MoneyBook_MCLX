@@ -3,7 +3,7 @@ import React from 'react';
 import { useTheme } from '../../contexts';
 import { Typography } from '../../styles/theme/typography';
 import { Spacing } from '../../styles/theme/spacing';
-import { Shadows } from '../../styles/theme/shadows';
+import { getShadows } from '../../styles/theme/shadows';
 
 interface HomeCardProps {
   balance: number;
@@ -19,6 +19,7 @@ const HomeCard: React.FC<HomeCardProps> = ({
   lastCashOut,
 }) => {
   const { colors } = useTheme();
+  const shadows = getShadows(colors);
 
   // Dynamic styles based on current theme
   const styles = {
@@ -30,7 +31,7 @@ const HomeCard: React.FC<HomeCardProps> = ({
       borderRadius: Spacing.borderRadius.xxl,
       overflow: 'hidden' as const,
       position: 'relative' as const,
-      ...Shadows.large,
+      ...shadows.large,
     },
     gradientOverlay: {
       position: 'absolute' as const,

@@ -14,10 +14,11 @@ import Store, { LegacyTransaction, AppData } from '../store/store';
 import { useTheme } from '../contexts';
 import { Typography } from '../styles/theme/typography';
 import { Spacing } from '../styles/theme/spacing';
-import { Shadows } from '../styles/theme/shadows';
+import { getShadows } from '../styles/theme/shadows';
 
 export default function ProfileScreen() {
   const { colors } = useTheme();
+  const shadows = getShadows(colors);
   const [transactions, setTransactions] = useState<LegacyTransaction[]>([]);
   const [balance, setBalance] = useState<number>(0);
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -46,7 +47,7 @@ export default function ProfileScreen() {
       paddingVertical: Spacing.xl,
       borderBottomWidth: Spacing.width.border,
       borderBottomColor: colors.borderLight,
-      ...Shadows.header,
+      ...shadows.header,
     },
     headerTitle: {
       fontSize: Typography.fontSize.xxl,
@@ -77,7 +78,7 @@ export default function ProfileScreen() {
       borderRadius: Spacing.borderRadius.large,
       padding: Spacing.lg,
       marginBottom: Spacing.md,
-      ...Shadows.card,
+      ...shadows.card,
     },
     transactionHeader: {
       flexDirection: 'row' as const,

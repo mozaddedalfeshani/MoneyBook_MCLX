@@ -1,12 +1,15 @@
-export { Colors } from './colors';
+export { Colors, getColors } from './colors';
 export { Typography } from './typography';
 export { Spacing } from './spacing';
-export { Shadows } from './shadows';
+export { Shadows, getShadows } from './shadows';
 
-// Combined theme object
-export const Theme = {
-  colors: Colors,
+// Combined theme object factory
+export const getTheme = (colors: ReturnType<typeof getColors>) => ({
+  colors,
   typography: Typography,
   spacing: Spacing,
-  shadows: Shadows,
-};
+  shadows: getShadows(colors),
+});
+
+// Default theme for backward compatibility
+export const Theme = getTheme(getColors('light'));
