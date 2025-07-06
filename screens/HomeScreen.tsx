@@ -23,6 +23,7 @@ export default function HomeScreen() {
   const [lastCashIn, setLastCashIn] = useState<number>(0);
   const [lastCashOut, setLastCashOut] = useState<number>(0);
   const [amount, setAmount] = useState<string>('');
+  const [reason, setReason] = useState<string>('');
   const [modalVisible, setModalVisible] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
@@ -90,9 +91,14 @@ export default function HomeScreen() {
     await saveData(newBalance, cashInAmount, lastCashOut);
     setModalVisible(false);
     setAmount('');
+    setReason('');
+
+    const reasonText = reason.trim() ? ` (${reason.trim()})` : '';
     Alert.alert(
       'Success',
-      `Cash In successful! New balance: ${newBalance.toFixed(2)} Tk`,
+      `Cash In successful! New balance: ${newBalance.toFixed(
+        2,
+      )} Tk${reasonText}`,
     );
   };
 
@@ -109,14 +115,20 @@ export default function HomeScreen() {
     await saveData(newBalance, lastCashIn, cashOutAmount);
     setModalVisible(false);
     setAmount('');
+    setReason('');
+
+    const reasonText = reason.trim() ? ` (${reason.trim()})` : '';
     Alert.alert(
       'Success',
-      `Cash Out successful! New balance: ${newBalance.toFixed(2)} Tk`,
+      `Cash Out successful! New balance: ${newBalance.toFixed(
+        2,
+      )} Tk${reasonText}`,
     );
   };
 
   const closeModal = () => {
     setModalVisible(false);
+    setReason(''); // Clear reason when closing
   };
 
   return (
@@ -165,6 +177,20 @@ export default function HomeScreen() {
           <View style={styles.modalContent}>
             <Text style={styles.modalTitle}>Choose Transaction Type</Text>
             <Text style={styles.modalAmount}>Amount: {amount} Tk</Text>
+
+            {/* Reason Input Field */}
+            <View style={styles.reasonContainer}>
+              <Text style={styles.reasonLabel}>Reason (Optional)</Text>
+              <TextInput
+                style={styles.reasonInput}
+                placeholder="e.g., Groceries, Salary, Gift..."
+                value={reason}
+                onChangeText={setReason}
+                placeholderTextColor="#999"
+                multiline={true}
+                maxLength={100}
+              />
+            </View>
 
             <View style={styles.modalButtons}>
               <TouchableOpacity
@@ -289,7 +315,30 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '500',
     color: '#667eea',
-    marginBottom: 25,
+    marginBottom: 20,
+  },
+  reasonContainer: {
+    width: '100%',
+    marginBottom: 20,
+  },
+  reasonLabel: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: '#333',
+    marginBottom: 8,
+  },
+  reasonInput: {
+    width: '100%',
+    minHeight: 50,
+    maxHeight: 80,
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 10,
+    paddingHorizontal: 15,
+    paddingVertical: 12,
+    fontSize: 16,
+    backgroundColor: '#fafafa',
+    textAlignVertical: 'top',
   },
   modalButtons: {
     width: '100%',
