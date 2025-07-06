@@ -1,5 +1,5 @@
-import { Transaction, AppData, TransactionStats } from './types';
-import { StorageService } from './storage';
+import { Transaction, AppData, TransactionStats } from '../types/types';
+import { StorageService } from '../storage';
 
 export class TransactionStore {
   // Generate unique transaction ID

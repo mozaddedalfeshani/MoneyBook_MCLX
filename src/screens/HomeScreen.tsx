@@ -10,9 +10,9 @@ import {
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import Store from '../store/store';
-import { Transaction, AppData } from '../store/types';
-import { HomeScreenStyles } from '../styles/screens/homeScreen';
-import HomeCard from '../components/Cards/HomeCard';
+import { Transaction, AppData } from '../store/types/types';
+import { HomeScreenStyles } from '../styles/components/homeScreen';
+import HomeCard from '../components/cards/HomeCard';
 
 export default function HomeScreen() {
   const [balance, setBalance] = useState<number>(0);

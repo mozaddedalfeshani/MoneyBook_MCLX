@@ -11,8 +11,8 @@ import {
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import { useFocusEffect } from '@react-navigation/native';
 import Store from '../store/store';
-import { Transaction, AppData } from '../store/types';
-import { ProfileScreenStyles } from '../styles/screens/profileScreen';
+import { Transaction, AppData } from '../store/types/types';
+import { ProfileScreenStyles } from '../styles/components/profileScreen';
 import { Colors } from '../styles/theme/colors';
 
 export default function ProfileScreen() {
