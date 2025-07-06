@@ -1,4 +1,4 @@
-package com.muradianlearning
+package com.moneybook
 
 import android.app.Application
 import com.facebook.react.PackageList
