@@ -8,7 +8,6 @@ import {
   RefreshControl,
   ActivityIndicator,
   StyleSheet,
-  ScrollView,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
@@ -18,45 +17,6 @@ import { TransactionService } from '../database/services/TransactionService';
 import { AccountService } from '../database/services/AccountService';
 import { Account } from '../database/models/Account';
 import { useTheme } from '../contexts';
-
-// Typography styles
-const Typography = {
-  fontSize: {
-    tiny: 10,
-    small: 12,
-    regular: 14,
-    medium: 16,
-    large: 18,
-    xl: 20,
-    xxl: 24,
-    xxxl: 36,
-  },
-  fontWeight: {
-    light: '300' as const,
-    regular: '400' as const,
-    medium: '500' as const,
-    semibold: '600' as const,
-    bold: '700' as const,
-  },
-};
-
-// Spacing styles
-const Spacing = {
-  xs: 4,
-  sm: 8,
-  md: 12,
-  lg: 16,
-  xl: 20,
-  xxl: 24,
-  xxxl: 32,
-  borderRadius: {
-    small: 8,
-    medium: 10,
-    large: 12,
-    xl: 15,
-    xxl: 20,
-  },
-};
 
 interface TransactionWithAccount {
   id: string;
@@ -97,25 +57,6 @@ export default function HistoryScreen({ navigation }: any) {
     currentTheme === 'light'
       ? ['#f0faff', '#e6f7ff', '#f8fbff']
       : ['#2a2a2a', '#252525', '#1f1f1f'];
-
-  const getShadows = (colors: any) => ({
-    card: {
-      shadowColor: colors.shadowPrimary,
-      shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.1,
-      shadowRadius: 4,
-      elevation: 3,
-    },
-    fab: {
-      shadowColor: colors.shadowSecondary,
-      shadowOffset: { width: 0, height: 4 },
-      shadowOpacity: 0.3,
-      shadowRadius: 8,
-      elevation: 8,
-    },
-  });
-
-  const shadows = getShadows(colors);
 
   const calculateFilteredTotals = (
     transactionList: TransactionWithAccount[],
@@ -227,7 +168,17 @@ export default function HistoryScreen({ navigation }: any) {
   }, [navigation, loadData]);
 
   const renderTransaction = ({ item }: { item: TransactionWithAccount }) => (
-    <View style={styles.transactionCard}>
+    <View
+      style={[
+        styles.transactionCard,
+        {
+          backgroundColor:
+            currentTheme === 'light'
+              ? 'rgba(255, 255, 255, 0.9)'
+              : 'rgba(45, 45, 45, 0.9)',
+        },
+      ]}
+    >
       <View style={styles.transactionHeader}>
         <View
           style={[
@@ -247,12 +198,20 @@ export default function HistoryScreen({ navigation }: any) {
           />
         </View>
         <View style={styles.transactionDetails}>
-          <Text style={styles.accountName}>{item.accountName}</Text>
-          <Text style={styles.transactionType}>
+          <Text style={[styles.accountName, { color: colors.primary }]}>
+            {item.accountName}
+          </Text>
+          <Text style={[styles.transactionType, { color: colors.textPrimary }]}>
             {item.type === 'cash_in' ? '💰 Credit' : '💸 Debit'}
           </Text>
-          <Text style={styles.transactionDate}>{item.dateString}</Text>
-          <Text style={styles.reasonText}>{item.reason}</Text>
+          <Text
+            style={[styles.transactionDate, { color: colors.textSecondary }]}
+          >
+            {item.dateString}
+          </Text>
+          <Text style={[styles.reasonText, { color: colors.textSecondary }]}>
+            {item.reason}
+          </Text>
         </View>
         <View style={styles.transactionAmount}>
           <Text
@@ -278,12 +237,18 @@ export default function HistoryScreen({ navigation }: any) {
       visible={filterModalVisible}
       onRequestClose={() => setFilterModalVisible(false)}
     >
-      <View style={styles.modalOverlay}>
-        <View style={styles.modalContent}>
-          <Text style={styles.modalTitle}>Filter Transactions</Text>
+      <View style={[styles.modalOverlay, { backgroundColor: colors.overlay }]}>
+        <View style={[styles.modalContent, { backgroundColor: colors.white }]}>
+          <Text style={[styles.modalTitle, { color: colors.textPrimary }]}>
+            Filter Transactions
+          </Text>
 
           <View style={styles.filterSection}>
-            <Text style={styles.filterSectionTitle}>Transaction Type</Text>
+            <Text
+              style={[styles.filterSectionTitle, { color: colors.textPrimary }]}
+            >
+              Transaction Type
+            </Text>
             <View style={styles.filterOptions}>
               {[
                 { key: 'all', label: 'All Types', icon: 'list' },
@@ -294,7 +259,10 @@ export default function HistoryScreen({ navigation }: any) {
                   key={option.key}
                   style={[
                     styles.filterOption,
-                    currentFilter === option.key && styles.activeFilterOption,
+                    { backgroundColor: colors.veryLightGray },
+                    currentFilter === option.key && {
+                      backgroundColor: colors.primary,
+                    },
                   ]}
                   onPress={() => setCurrentFilter(option.key as FilterType)}
                 >
@@ -310,8 +278,11 @@ export default function HistoryScreen({ navigation }: any) {
                   <Text
                     style={[
                       styles.filterOptionText,
-                      currentFilter === option.key &&
-                        styles.activeFilterOptionText,
+                      { color: colors.textSecondary },
+                      currentFilter === option.key && {
+                        color: colors.textLight,
+                        fontWeight: '600',
+                      },
                     ]}
                   >
                     {option.label}
@@ -322,12 +293,19 @@ export default function HistoryScreen({ navigation }: any) {
           </View>
 
           <View style={styles.filterSection}>
-            <Text style={styles.filterSectionTitle}>Account</Text>
+            <Text
+              style={[styles.filterSectionTitle, { color: colors.textPrimary }]}
+            >
+              Account
+            </Text>
             <View style={styles.filterOptions}>
               <TouchableOpacity
                 style={[
                   styles.filterOption,
-                  selectedAccount === 'all' && styles.activeFilterOption,
+                  { backgroundColor: colors.veryLightGray },
+                  selectedAccount === 'all' && {
+                    backgroundColor: colors.primary,
+                  },
                 ]}
                 onPress={() => setSelectedAccount('all')}
               >
@@ -343,7 +321,11 @@ export default function HistoryScreen({ navigation }: any) {
                 <Text
                   style={[
                     styles.filterOptionText,
-                    selectedAccount === 'all' && styles.activeFilterOptionText,
+                    { color: colors.textSecondary },
+                    selectedAccount === 'all' && {
+                      color: colors.textLight,
+                      fontWeight: '600',
+                    },
                   ]}
                 >
                   All Accounts
@@ -355,7 +337,10 @@ export default function HistoryScreen({ navigation }: any) {
                   key={account.id}
                   style={[
                     styles.filterOption,
-                    selectedAccount === account.id && styles.activeFilterOption,
+                    { backgroundColor: colors.veryLightGray },
+                    selectedAccount === account.id && {
+                      backgroundColor: colors.primary,
+                    },
                   ]}
                   onPress={() => setSelectedAccount(account.id)}
                 >
@@ -371,8 +356,11 @@ export default function HistoryScreen({ navigation }: any) {
                   <Text
                     style={[
                       styles.filterOptionText,
-                      selectedAccount === account.id &&
-                        styles.activeFilterOptionText,
+                      { color: colors.textSecondary },
+                      selectedAccount === account.id && {
+                        color: colors.textLight,
+                        fontWeight: '600',
+                      },
                     ]}
                   >
                     {account.name}
@@ -384,17 +372,25 @@ export default function HistoryScreen({ navigation }: any) {
 
           <View style={styles.modalButtons}>
             <TouchableOpacity
-              style={styles.applyButton}
+              style={[styles.applyButton, { backgroundColor: colors.primary }]}
               onPress={() => handleFilterChange(currentFilter, selectedAccount)}
             >
-              <Text style={styles.applyButtonText}>Apply Filters</Text>
+              <Text
+                style={[styles.applyButtonText, { color: colors.textLight }]}
+              >
+                Apply Filters
+              </Text>
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={styles.cancelButton}
+              style={[styles.cancelButton, { backgroundColor: colors.gray }]}
               onPress={() => setFilterModalVisible(false)}
             >
-              <Text style={styles.cancelButtonText}>Cancel</Text>
+              <Text
+                style={[styles.cancelButtonText, { color: colors.textLight }]}
+              >
+                Cancel
+              </Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -405,302 +401,16 @@ export default function HistoryScreen({ navigation }: any) {
   const renderEmptyState = () => (
     <View style={styles.emptyState}>
       <FontAwesome5 name="history" size={64} color={colors.textTertiary} />
-      <Text style={styles.emptyStateText}>No transactions found</Text>
-      <Text style={styles.emptyStateSubtext}>
+      <Text style={[styles.emptyStateText, { color: colors.textSecondary }]}>
+        No transactions found
+      </Text>
+      <Text style={[styles.emptyStateSubtext, { color: colors.textTertiary }]}>
         {currentFilter !== 'all' || selectedAccount !== 'all'
           ? 'Try adjusting your filters'
           : 'Add your first transaction to get started'}
       </Text>
     </View>
   );
-
-  const getFilterSummary = () => {
-    const parts = [];
-
-    if (currentFilter !== 'all') {
-      parts.push(
-        currentFilter.charAt(0).toUpperCase() + currentFilter.slice(1),
-      );
-    }
-
-    if (selectedAccount !== 'all') {
-      const accountName = accounts.find(
-        acc => acc.id === selectedAccount,
-      )?.name;
-      if (accountName) {
-        parts.push(accountName);
-      }
-    }
-
-    return parts.length > 0 ? parts.join(' • ') : 'All Transactions';
-  };
-
-  const styles = StyleSheet.create({
-    gradientContainer: {
-      flex: 1,
-    },
-    container: {
-      flex: 1,
-    },
-    // Summary Card
-    summaryCard: {
-      margin: Spacing.lg,
-      marginBottom: Spacing.md,
-      borderRadius: Spacing.borderRadius.xxl,
-      overflow: 'hidden',
-      position: 'relative',
-      ...shadows.card,
-    },
-    gradientOverlay: {
-      position: 'absolute',
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      backgroundColor: colors.secondary,
-      opacity: 0.9,
-    },
-    cardContentContainer: {
-      padding: Spacing.xxl,
-      position: 'relative',
-      zIndex: 1,
-    },
-    summaryTitle: {
-      fontSize: Typography.fontSize.large,
-      fontWeight: Typography.fontWeight.semibold,
-      color: colors.textLight,
-      textAlign: 'center',
-      marginBottom: Spacing.lg,
-    },
-    filterSummaryText: {
-      fontSize: Typography.fontSize.medium,
-      color: colors.overlayLight,
-      textAlign: 'center',
-      marginBottom: Spacing.xl,
-      fontStyle: 'italic',
-    },
-    statsRow: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-    },
-    statItem: {
-      flex: 1,
-      alignItems: 'center',
-    },
-    statValue: {
-      fontSize: Typography.fontSize.large,
-      fontWeight: Typography.fontWeight.bold,
-      color: colors.textLight,
-      marginBottom: 4,
-    },
-    statLabel: {
-      fontSize: Typography.fontSize.small,
-      color: colors.overlayLight,
-      textAlign: 'center',
-    },
-    divider: {
-      width: 1,
-      height: 40,
-      backgroundColor: colors.overlayLight,
-      marginHorizontal: Spacing.lg,
-    },
-    // Transaction List
-    transactionsList: {
-      flex: 1,
-      marginTop: Spacing.lg,
-    },
-    transactionsHeader: {
-      paddingHorizontal: Spacing.lg,
-      paddingVertical: Spacing.md,
-      marginBottom: Spacing.md,
-    },
-    transactionsTitle: {
-      fontSize: Typography.fontSize.large,
-      fontWeight: Typography.fontWeight.semibold,
-      color: colors.textPrimary,
-      textAlign: 'center',
-    },
-    transactionCard: {
-      backgroundColor:
-        currentTheme === 'light'
-          ? 'rgba(255, 255, 255, 0.9)'
-          : 'rgba(45, 45, 45, 0.9)',
-      borderRadius: Spacing.borderRadius.large,
-      padding: Spacing.lg,
-      marginHorizontal: Spacing.lg,
-      marginBottom: Spacing.md,
-      ...shadows.card,
-    },
-    transactionHeader: {
-      flexDirection: 'row',
-      alignItems: 'flex-start',
-    },
-    transactionIcon: {
-      width: 40,
-      height: 40,
-      borderRadius: 20,
-      justifyContent: 'center',
-      alignItems: 'center',
-      marginRight: Spacing.md,
-    },
-    transactionDetails: {
-      flex: 1,
-    },
-    accountName: {
-      fontSize: Typography.fontSize.medium,
-      fontWeight: Typography.fontWeight.semibold,
-      color: colors.primary,
-      marginBottom: 2,
-    },
-    transactionType: {
-      fontSize: Typography.fontSize.medium,
-      fontWeight: Typography.fontWeight.bold,
-      color: colors.textPrimary,
-      marginBottom: 4,
-    },
-    transactionDate: {
-      fontSize: Typography.fontSize.small,
-      color: colors.textSecondary,
-      marginBottom: 4,
-    },
-    reasonText: {
-      fontSize: Typography.fontSize.regular,
-      color: colors.textSecondary,
-    },
-    transactionAmount: {
-      alignItems: 'flex-end',
-    },
-    amountText: {
-      fontSize: Typography.fontSize.large,
-      fontWeight: Typography.fontWeight.bold,
-    },
-    // Floating Action Button
-    fab: {
-      position: 'absolute',
-      bottom: insets.bottom + 90, // Safe area bottom + tab bar height
-      right: 20,
-      width: 56,
-      height: 56,
-      borderRadius: 28,
-      backgroundColor: colors.primary,
-      justifyContent: 'center',
-      alignItems: 'center',
-      ...shadows.fab,
-    },
-    fabIcon: {
-      color: colors.textLight,
-    },
-    // Empty State
-    emptyState: {
-      flex: 1,
-      justifyContent: 'center',
-      alignItems: 'center',
-      paddingVertical: Spacing.xxl,
-      marginHorizontal: Spacing.lg,
-    },
-    emptyStateText: {
-      fontSize: Typography.fontSize.large,
-      fontWeight: Typography.fontWeight.semibold,
-      color: colors.textSecondary,
-      marginTop: Spacing.lg,
-      marginBottom: Spacing.md,
-      textAlign: 'center',
-    },
-    emptyStateSubtext: {
-      fontSize: Typography.fontSize.medium,
-      color: colors.textTertiary,
-      textAlign: 'center',
-    },
-    loadingContainer: {
-      flex: 1,
-      justifyContent: 'center',
-      alignItems: 'center',
-    },
-    loadingText: {
-      marginTop: Spacing.lg,
-      fontSize: Typography.fontSize.medium,
-      color: colors.textSecondary,
-    },
-    // Modal styles
-    modalOverlay: {
-      flex: 1,
-      backgroundColor: colors.overlay,
-      justifyContent: 'center',
-      alignItems: 'center',
-      padding: Spacing.xl,
-    },
-    modalContent: {
-      backgroundColor: colors.white,
-      borderRadius: Spacing.borderRadius.xxl,
-      padding: Spacing.xxl,
-      width: '100%',
-      maxWidth: 400,
-    },
-    modalTitle: {
-      fontSize: Typography.fontSize.xl,
-      fontWeight: Typography.fontWeight.bold,
-      color: colors.textPrimary,
-      marginBottom: Spacing.xl,
-      textAlign: 'center',
-    },
-    filterSection: {
-      marginBottom: Spacing.xl,
-    },
-    filterSectionTitle: {
-      fontSize: Typography.fontSize.medium,
-      fontWeight: Typography.fontWeight.semibold,
-      color: colors.textPrimary,
-      marginBottom: Spacing.md,
-    },
-    filterOptions: {
-      gap: Spacing.sm,
-    },
-    filterOption: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      paddingVertical: Spacing.md,
-      paddingHorizontal: Spacing.lg,
-      borderRadius: Spacing.borderRadius.medium,
-      backgroundColor: colors.veryLightGray,
-      gap: Spacing.sm,
-    },
-    activeFilterOption: {
-      backgroundColor: colors.primary,
-    },
-    filterOptionText: {
-      fontSize: Typography.fontSize.medium,
-      color: colors.textSecondary,
-    },
-    activeFilterOptionText: {
-      color: colors.textLight,
-      fontWeight: Typography.fontWeight.semibold,
-    },
-    modalButtons: {
-      gap: Spacing.md,
-    },
-    applyButton: {
-      backgroundColor: colors.primary,
-      paddingVertical: Spacing.lg,
-      borderRadius: Spacing.borderRadius.medium,
-      alignItems: 'center',
-    },
-    applyButtonText: {
-      color: colors.textLight,
-      fontSize: Typography.fontSize.medium,
-      fontWeight: Typography.fontWeight.semibold,
-    },
-    cancelButton: {
-      backgroundColor: colors.gray,
-      paddingVertical: Spacing.md,
-      borderRadius: Spacing.borderRadius.medium,
-      alignItems: 'center',
-    },
-    cancelButtonText: {
-      color: colors.textLight,
-      fontSize: Typography.fontSize.medium,
-    },
-  });
 
   if (isLoading) {
     return (
@@ -712,7 +422,9 @@ export default function HistoryScreen({ navigation }: any) {
       >
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={colors.primary} />
-          <Text style={styles.loadingText}>Loading transaction history...</Text>
+          <Text style={[styles.loadingText, { color: colors.textSecondary }]}>
+            Loading transaction history...
+          </Text>
         </View>
       </LinearGradient>
     );
@@ -728,32 +440,79 @@ export default function HistoryScreen({ navigation }: any) {
       <View style={styles.container}>
         {/* Summary Card */}
         <View style={styles.summaryCard}>
-          <View style={styles.gradientOverlay} />
+          <View
+            style={[
+              styles.gradientOverlay,
+              { backgroundColor: colors.secondary },
+            ]}
+          />
           <View style={styles.cardContentContainer}>
-            <Text style={styles.summaryTitle}>Transaction Summary</Text>
-            <Text style={styles.filterSummaryText}>{getFilterSummary()}</Text>
+            <Text style={[styles.summaryTitle, { color: colors.textLight }]}>
+              Transaction Summary
+            </Text>
 
-            <View style={styles.statsRow}>
-              <View style={styles.statItem}>
-                <Text style={styles.statValue}>
+            {/* Grid Stats Layout */}
+            <View style={styles.statsGridRow}>
+              <View style={styles.statGridItem}>
+                <FontAwesome5
+                  name="arrow-up"
+                  size={22}
+                  color={colors.success}
+                  style={{ marginBottom: 2 }}
+                />
+                <Text
+                  style={[styles.statValueGrid, { color: colors.textLight }]}
+                >
                   {filteredCredit.toFixed(2)} Tk
                 </Text>
-                <Text style={styles.statLabel}>Total Credit</Text>
+                <Text
+                  style={[styles.statLabelGrid, { color: colors.overlayLight }]}
+                >
+                  Credit
+                </Text>
               </View>
-              <View style={styles.divider} />
-              <View style={styles.statItem}>
-                <Text style={styles.statValue}>
+              <View style={styles.statGridItem}>
+                <FontAwesome5
+                  name="arrow-down"
+                  size={22}
+                  color={colors.error}
+                  style={{ marginBottom: 2 }}
+                />
+                <Text
+                  style={[styles.statValueGrid, { color: colors.textLight }]}
+                >
                   {filteredDebit.toFixed(2)} Tk
                 </Text>
-                <Text style={styles.statLabel}>Total Debit</Text>
-              </View>
-              <View style={styles.divider} />
-              <View style={styles.statItem}>
-                <Text style={styles.statValue}>
-                  {filteredTransactions.length}
+                <Text
+                  style={[styles.statLabelGrid, { color: colors.overlayLight }]}
+                >
+                  Debit
                 </Text>
-                <Text style={styles.statLabel}>Transactions</Text>
               </View>
+            </View>
+            <View style={styles.transactionsStatRow}>
+              <FontAwesome5
+                name="list"
+                size={20}
+                color={colors.textLight}
+                style={{ marginRight: 6 }}
+              />
+              <Text
+                style={[
+                  styles.transactionsStatValue,
+                  { color: colors.textLight },
+                ]}
+              >
+                {filteredTransactions.length}
+              </Text>
+              <Text
+                style={[
+                  styles.transactionsStatLabel,
+                  { color: colors.overlayLight },
+                ]}
+              >
+                Transactions
+              </Text>
             </View>
           </View>
         </View>
@@ -761,7 +520,9 @@ export default function HistoryScreen({ navigation }: any) {
         {/* Transaction List */}
         <View style={styles.transactionsList}>
           <View style={styles.transactionsHeader}>
-            <Text style={styles.transactionsTitle}>
+            <Text
+              style={[styles.transactionsTitle, { color: colors.textPrimary }]}
+            >
               All Transactions ({filteredTransactions.length})
             </Text>
           </View>
@@ -788,11 +549,11 @@ export default function HistoryScreen({ navigation }: any) {
 
         {/* Floating Action Button */}
         <TouchableOpacity
-          style={styles.fab}
+          style={[styles.fab, { backgroundColor: colors.primary }]}
           onPress={() => setFilterModalVisible(true)}
           activeOpacity={0.8}
         >
-          <FontAwesome5 name="filter" size={24} style={styles.fabIcon} />
+          <FontAwesome5 name="filter" size={24} color={colors.textLight} />
         </TouchableOpacity>
 
         {/* Filter Modal */}
@@ -801,3 +562,250 @@ export default function HistoryScreen({ navigation }: any) {
     </LinearGradient>
   );
 }
+
+const styles = StyleSheet.create({
+  gradientContainer: {
+    flex: 1,
+  },
+  container: {
+    flex: 1,
+  },
+  // Summary Card
+  summaryCard: {
+    margin: 16,
+    marginBottom: 12,
+    borderRadius: 20,
+    overflow: 'hidden',
+    position: 'relative',
+  },
+  gradientOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    opacity: 0.9,
+  },
+  cardContentContainer: {
+    padding: 10,
+    position: 'relative',
+    zIndex: 1,
+  },
+  summaryTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    textAlign: 'center',
+    marginBottom: 16,
+  },
+  statsGridRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-end',
+    marginTop: 10,
+    marginBottom: 8,
+    gap: 12,
+  },
+  statGridItem: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 6,
+    borderRadius: 10,
+  },
+  statValueGrid: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 2,
+  },
+  statLabelGrid: {
+    fontSize: 14,
+    textAlign: 'center',
+    opacity: 0.85,
+  },
+  transactionsStatRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 8,
+    gap: 2,
+  },
+  transactionsStatValue: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginRight: 4,
+  },
+  transactionsStatLabel: {
+    fontSize: 15,
+    opacity: 0.85,
+  },
+  // Transaction List
+  transactionsList: {
+    flex: 1,
+    marginTop: 16,
+  },
+  transactionsHeader: {
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    marginBottom: 12,
+  },
+  transactionsTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    textAlign: 'center',
+  },
+  transactionCard: {
+    borderRadius: 12,
+    padding: 16,
+    marginHorizontal: 16,
+    marginBottom: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 0,
+  },
+  transactionHeader: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+  },
+  transactionIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+  },
+  transactionDetails: {
+    flex: 1,
+  },
+  accountName: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 2,
+  },
+  transactionType: {
+    fontSize: 16,
+    fontWeight: '700',
+    marginBottom: 4,
+  },
+  transactionDate: {
+    fontSize: 12,
+    marginBottom: 4,
+  },
+  reasonText: {
+    fontSize: 14,
+  },
+  transactionAmount: {
+    alignItems: 'flex-end',
+  },
+  amountText: {
+    fontSize: 18,
+    fontWeight: '700',
+  },
+  // Floating Action Button
+  fab: {
+    position: 'absolute',
+    bottom: 120, // Safe area bottom + tab bar height
+    right: 20,
+    width: 50,
+    height: 50,
+    borderRadius: 28,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  // Empty State
+  emptyState: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 32,
+    marginHorizontal: 16,
+  },
+  emptyStateText: {
+    fontSize: 18,
+    fontWeight: '600',
+    marginTop: 16,
+    marginBottom: 12,
+    textAlign: 'center',
+  },
+  emptyStateSubtext: {
+    fontSize: 16,
+    textAlign: 'center',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    marginTop: 16,
+    fontSize: 16,
+  },
+  // Modal styles
+  modalOverlay: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  modalContent: {
+    borderRadius: 20,
+    padding: 24,
+    width: '100%',
+    maxWidth: 400,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+  filterSection: {
+    marginBottom: 20,
+  },
+  filterSectionTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 12,
+  },
+  filterOptions: {
+    gap: 8,
+  },
+  filterOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 10,
+    gap: 8,
+  },
+  filterOptionText: {
+    fontSize: 16,
+  },
+  modalButtons: {
+    gap: 12,
+  },
+  applyButton: {
+    paddingVertical: 16,
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  applyButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  cancelButton: {
+    paddingVertical: 12,
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  cancelButtonText: {
+    fontSize: 16,
+  },
+});
