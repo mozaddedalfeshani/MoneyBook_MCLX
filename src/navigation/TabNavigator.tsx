@@ -18,7 +18,7 @@ import SettingsNavigator from './SettingsNavigator';
 const Tab = createBottomTabNavigator();
 
 export default function TabNavigator() {
-  const { colors } = useTheme();
+  const { colors, currentTheme } = useTheme();
   const insets = useSafeAreaInsets();
 
   return (
@@ -27,27 +27,31 @@ export default function TabNavigator() {
         tabBarActiveTintColor: colors.primary,
         tabBarInactiveTintColor: colors.textTertiary,
         tabBarStyle: {
-          backgroundColor: colors.white,
+          backgroundColor:
+            currentTheme === 'light' ? colors.white : colors.background,
           backdropFilter: 'blur(10px)',
           borderTopWidth: 0, // Remove top border
-          height: 80 + insets.bottom, // Increased height to show labels + safe area
+          height: 70, // Fixed height without safe area
           paddingTop: 5, // Add top padding
-          paddingBottom: Math.max(insets.bottom, 10), // Ensure proper bottom padding
+          paddingBottom: 10, // Fixed bottom padding
           paddingLeft: 0,
           paddingRight: 0,
-          marginHorizontal: 14,
-          marginBottom: 0, // Remove bottom margin to prevent issues
+          marginHorizontal: 16,
+          marginBottom: insets.bottom + 16, // Margin from bottom edge
           marginTop: 0,
           borderRadius: 16,
-          shadowColor: '#000',
+          shadowColor: currentTheme === 'light' ? '#000' : colors.shadowPrimary,
           shadowOffset: {
             width: 0,
-            height: -2,
+            height: 4,
           },
-          shadowOpacity: 0.08,
-          shadowRadius: 8,
-          elevation: 6,
-          // Remove position: 'absolute' to fix keyboard behavior
+          shadowOpacity: currentTheme === 'light' ? 0.15 : 0.25,
+          shadowRadius: 12,
+          elevation: 8,
+          position: 'absolute', // Make it floating
+          left: 0,
+          right: 0,
+          bottom: 0,
         },
         tabBarLabelStyle: {
           fontSize: 13,
