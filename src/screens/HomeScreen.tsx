@@ -208,6 +208,15 @@ export default function HomeScreen({ navigation }: any) {
     },
     {
       id: 2,
+      title: 'Calculator',
+      description: 'Quick calculations',
+      icon: 'calculator',
+      iconType: 'fontawesome',
+      color: colors.warning,
+      screen: 'Calculator',
+    },
+    {
+      id: 3,
       title: 'History',
       description: 'View transactions',
       icon: 'history',
@@ -217,7 +226,7 @@ export default function HomeScreen({ navigation }: any) {
       nested: 'History',
     },
     {
-      id: 3,
+      id: 4,
       title: 'Settings',
       description: 'App preferences',
       icon: 'settings',

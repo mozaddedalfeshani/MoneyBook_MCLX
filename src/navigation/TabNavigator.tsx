@@ -10,7 +10,7 @@ import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import { useTheme } from '../contexts';
 
 // Import our screen components
-import HomeScreen from '../screens/HomeScreen';
+import HomeNavigator from './HomeNavigator';
 import TableViewNavigator from './TableViewNavigator';
 import SettingsNavigator from './SettingsNavigator';
 
@@ -71,7 +71,7 @@ export default function TabNavigator() {
     >
       <Tab.Screen
         name="Home"
-        component={HomeScreen}
+        component={HomeNavigator}
         options={{
           tabBarIcon: ({ color, size }) => {
             let iconName: string = 'home';
