@@ -3,6 +3,7 @@ import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import AntDesign from 'react-native-vector-icons/AntDesign';
+import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 
 // Import our screen components
 import HomeScreen from './screens/HomeScreen';
@@ -16,20 +17,7 @@ function App() {
   return (
     <NavigationContainer>
       <Tab.Navigator
-        screenOptions={({ route }) => ({
-          tabBarIcon: ({ color, size }) => {
-            let iconName: string = 'home';
-
-            if (route.name === 'Home') {
-              iconName = 'tachometer';
-            } else if (route.name === 'Profile') {
-              iconName = 'user';
-            } else if (route.name === 'Settings') {
-              iconName = 'cog';
-            }
-
-            return <AntDesign name={iconName} size={size} color={color} />;
-          },
+        screenOptions={() => ({
           tabBarActiveTintColor: '#007bff',
           tabBarInactiveTintColor: 'gray',
           headerStyle: {
@@ -41,9 +29,36 @@ function App() {
           },
         })}
       >
-        <Tab.Screen name="Home" component={HomeScreen} />
-        <Tab.Screen name="Profile" component={ProfileScreen} />
-        <Tab.Screen name="Settings" component={SettingsScreen} />
+        <Tab.Screen
+          name="Home"
+          component={HomeScreen}
+          options={{
+            tabBarIcon: ({ color, size }) => {
+              let iconName: string = 'home';
+              return <AntDesign name={iconName} size={size} color={color} />;
+            },
+          }}
+        />
+        <Tab.Screen
+          name="Profile"
+          component={ProfileScreen}
+          options={{
+            tabBarIcon: ({ color, size }) => {
+              let iconName: string = 'history';
+              return <FontAwesome5 name={iconName} size={size} color={color} />;
+            },
+          }}
+        />
+        <Tab.Screen
+          name="Settings"
+          component={SettingsScreen}
+          options={{
+            tabBarIcon: ({ color, size }) => {
+              let iconName = 'setting';
+              return <AntDesign name={iconName} size={size} />;
+            },
+          }}
+        />
       </Tab.Navigator>
     </NavigationContainer>
   );
