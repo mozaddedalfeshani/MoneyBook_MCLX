@@ -838,11 +838,12 @@ export default function AccountDetailScreen({ route, navigation }: any) {
     },
     // Transaction History
     transactionsList: {
-      marginTop: Spacing.lg,
+      marginBottom: Spacing.xxxl,
+      marginTop: Spacing.sm,
     },
     transactionsHeader: {
       paddingHorizontal: Spacing.lg,
-      paddingVertical: Spacing.md,
+      paddingVertical: Spacing.sm,
       marginBottom: Spacing.md,
       flexDirection: 'row',
       justifyContent: 'space-between',
