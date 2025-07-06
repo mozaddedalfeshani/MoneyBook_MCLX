@@ -11,16 +11,169 @@ import {
 import { useFocusEffect } from '@react-navigation/native';
 import Store from '../store/store';
 import { Transaction, AppData } from '../store/types/types';
-import { HomeScreenStyles } from '../styles/components/homeScreen';
+import { useTheme } from '../contexts';
+import { Typography } from '../styles/theme/typography';
+import { Spacing } from '../styles/theme/spacing';
+import { Shadows } from '../styles/theme/shadows';
 import HomeCard from '../components/cards/HomeCard';
 
 export default function HomeScreen() {
+  const { colors } = useTheme();
   const [balance, setBalance] = useState<number>(0);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [amount, setAmount] = useState<string>('');
   const [reason, setReason] = useState<string>('');
   const [modalVisible, setModalVisible] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+
+  // Dynamic styles based on current theme
+  const styles = {
+    container: {
+      flex: 1,
+      backgroundColor: colors.background,
+    },
+    contentContainer: {
+      flexGrow: 1,
+      paddingTop: Spacing.xl,
+      paddingBottom: 40,
+    },
+    managementBox: {
+      backgroundColor: colors.white,
+      marginHorizontal: Spacing.lg,
+      marginTop: Spacing.xl,
+      borderRadius: Spacing.borderRadius.xl,
+      padding: Spacing.xl,
+      ...Shadows.medium,
+    },
+    boxTitle: {
+      fontSize: Typography.fontSize.large,
+      fontWeight: Typography.fontWeight.semibold,
+      color: colors.textPrimary,
+      marginBottom: Spacing.lg,
+      textAlign: 'center' as const,
+    },
+    inputContainer: {
+      flexDirection: 'row' as const,
+      alignItems: 'center' as const,
+      gap: Spacing.gap.medium,
+    },
+    input: {
+      flex: 1,
+      height: Spacing.height.input,
+      borderWidth: Spacing.width.border,
+      borderColor: colors.border,
+      borderRadius: Spacing.borderRadius.medium,
+      paddingHorizontal: Spacing.lg,
+      fontSize: Typography.fontSize.medium,
+      backgroundColor: colors.veryLightGray,
+      color: colors.textPrimary,
+    },
+    updateButton: {
+      backgroundColor: colors.secondary,
+      paddingHorizontal: Spacing.xl,
+      paddingVertical: Spacing.lg,
+      borderRadius: Spacing.borderRadius.medium,
+      minWidth: 80,
+    },
+    updateButtonText: {
+      color: colors.textLight,
+      fontSize: Typography.fontSize.medium,
+      fontWeight: Typography.fontWeight.semibold,
+      textAlign: 'center' as const,
+    },
+    // Modal styles
+    modalOverlay: {
+      flex: 1,
+      backgroundColor: colors.overlay,
+      justifyContent: 'center' as const,
+      alignItems: 'center' as const,
+      padding: Spacing.xl,
+    },
+    modalContent: {
+      backgroundColor: colors.white,
+      borderRadius: Spacing.borderRadius.xxl,
+      padding: Spacing.xxl,
+      width: '100%',
+      maxWidth: 350,
+      alignItems: 'center' as const,
+    },
+    modalTitle: {
+      fontSize: Typography.fontSize.xl,
+      fontWeight: Typography.fontWeight.bold,
+      color: colors.textPrimary,
+      marginBottom: Spacing.lg,
+      textAlign: 'center' as const,
+    },
+    modalAmount: {
+      fontSize: Typography.fontSize.large,
+      fontWeight: Typography.fontWeight.semibold,
+      color: colors.primary,
+      marginBottom: Spacing.xl,
+    },
+    reasonContainer: {
+      width: '100%',
+      marginBottom: Spacing.xl,
+    },
+    reasonLabel: {
+      fontSize: Typography.fontSize.medium,
+      fontWeight: Typography.fontWeight.semibold,
+      color: colors.textPrimary,
+      marginBottom: Spacing.md,
+    },
+    reasonInput: {
+      borderWidth: Spacing.width.border,
+      borderColor: colors.border,
+      borderRadius: Spacing.borderRadius.medium,
+      paddingHorizontal: Spacing.lg,
+      paddingVertical: Spacing.md,
+      fontSize: Typography.fontSize.medium,
+      backgroundColor: colors.veryLightGray,
+      color: colors.textPrimary,
+      minHeight: 60,
+      textAlignVertical: 'top' as const,
+    },
+    modalButtons: {
+      flexDirection: 'row' as const,
+      justifyContent: 'space-between' as const,
+      width: '100%',
+      gap: Spacing.lg,
+      marginBottom: Spacing.xl,
+    },
+    modalButton: {
+      flex: 1,
+      paddingVertical: Spacing.lg,
+      paddingHorizontal: Spacing.lg,
+      borderRadius: Spacing.borderRadius.large,
+      alignItems: 'center' as const,
+    },
+    cashInButton: {
+      backgroundColor: colors.success,
+    },
+    cashOutButton: {
+      backgroundColor: colors.error,
+    },
+    modalButtonText: {
+      color: colors.textLight,
+      fontSize: Typography.fontSize.medium,
+      fontWeight: Typography.fontWeight.bold,
+      marginBottom: 4,
+    },
+    modalButtonSubtext: {
+      color: colors.textLight,
+      fontSize: Typography.fontSize.small,
+      textAlign: 'center' as const,
+    },
+    cancelButton: {
+      paddingVertical: Spacing.md,
+      paddingHorizontal: Spacing.xl,
+      borderRadius: Spacing.borderRadius.medium,
+    },
+    cancelButtonText: {
+      color: colors.textSecondary,
+      fontSize: Typography.fontSize.medium,
+      fontWeight: Typography.fontWeight.semibold,
+    },
+  };
 
   // Load data from store
   const loadData = async () => {
@@ -138,8 +291,8 @@ export default function HomeScreen() {
 
   return (
     <ScrollView
-      style={HomeScreenStyles.container}
-      contentContainerStyle={HomeScreenStyles.contentContainer}
+      style={styles.container}
+      contentContainerStyle={styles.contentContainer}
     >
       <HomeCard
         balance={balance}
@@ -149,24 +302,24 @@ export default function HomeScreen() {
       />
 
       {/* Money Management Box */}
-      <View style={HomeScreenStyles.managementBox}>
-        <Text style={HomeScreenStyles.boxTitle}>Manage Your Money</Text>
+      <View style={styles.managementBox}>
+        <Text style={styles.boxTitle}>Manage Your Money</Text>
 
-        <View style={HomeScreenStyles.inputContainer}>
+        <View style={styles.inputContainer}>
           <TextInput
-            style={HomeScreenStyles.input}
+            style={styles.input}
             placeholder="Enter amount (Tk)"
+            placeholderTextColor={colors.textSecondary}
             value={amount}
             onChangeText={setAmount}
             keyboardType="numeric"
-            placeholderTextColor="#999"
           />
           <TouchableOpacity
-            style={HomeScreenStyles.updateButton}
+            style={styles.updateButton}
             onPress={handleUpdatePress}
             activeOpacity={0.7}
           >
-            <Text style={HomeScreenStyles.updateButtonText}>Update</Text>
+            <Text style={styles.updateButtonText}>Update</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -178,69 +331,55 @@ export default function HomeScreen() {
         visible={modalVisible}
         onRequestClose={closeModal}
       >
-        <View style={HomeScreenStyles.modalOverlay}>
-          <View style={HomeScreenStyles.modalContent}>
-            <Text style={HomeScreenStyles.modalTitle}>
-              Choose Transaction Type
-            </Text>
-            <Text style={HomeScreenStyles.modalAmount}>
-              Amount: {amount} Tk
-            </Text>
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Choose Transaction Type</Text>
+            <Text style={styles.modalAmount}>Amount: {amount} Tk</Text>
 
             {/* Reason Input Field */}
-            <View style={HomeScreenStyles.reasonContainer}>
-              <Text style={HomeScreenStyles.reasonLabel}>
-                Reason (Optional)
-              </Text>
+            <View style={styles.reasonContainer}>
+              <Text style={styles.reasonLabel}>Reason (Optional)</Text>
               <TextInput
-                style={HomeScreenStyles.reasonInput}
+                style={styles.reasonInput}
                 placeholder="e.g., Groceries, Salary, Gift..."
+                placeholderTextColor={colors.textSecondary}
                 value={reason}
                 onChangeText={setReason}
-                placeholderTextColor="#999"
                 multiline={true}
                 maxLength={100}
               />
             </View>
 
-            <View style={HomeScreenStyles.modalButtons}>
+            <View style={styles.modalButtons}>
               <TouchableOpacity
-                style={[
-                  HomeScreenStyles.modalButton,
-                  HomeScreenStyles.cashInButton,
-                ]}
+                style={[styles.modalButton, styles.cashInButton]}
                 onPress={handleCashIn}
                 activeOpacity={0.7}
               >
-                <Text style={HomeScreenStyles.modalButtonText}>💰 Cash In</Text>
-                <Text style={HomeScreenStyles.modalButtonSubtext}>
+                <Text style={styles.modalButtonText}>💰 Cash In</Text>
+                <Text style={styles.modalButtonSubtext}>
                   Add money to balance
                 </Text>
               </TouchableOpacity>
 
               <TouchableOpacity
-                style={[
-                  HomeScreenStyles.modalButton,
-                  HomeScreenStyles.cashOutButton,
-                ]}
+                style={[styles.modalButton, styles.cashOutButton]}
                 onPress={handleCashOut}
                 activeOpacity={0.7}
               >
-                <Text style={HomeScreenStyles.modalButtonText}>
-                  💸 Cash Out
-                </Text>
-                <Text style={HomeScreenStyles.modalButtonSubtext}>
+                <Text style={styles.modalButtonText}>💸 Cash Out</Text>
+                <Text style={styles.modalButtonSubtext}>
                   Use money from balance
                 </Text>
               </TouchableOpacity>
             </View>
 
             <TouchableOpacity
-              style={HomeScreenStyles.cancelButton}
+              style={styles.cancelButton}
               onPress={closeModal}
               activeOpacity={0.7}
             >
-              <Text style={HomeScreenStyles.cancelButtonText}>Cancel</Text>
+              <Text style={styles.cancelButtonText}>Cancel</Text>
             </TouchableOpacity>
           </View>
         </View>
