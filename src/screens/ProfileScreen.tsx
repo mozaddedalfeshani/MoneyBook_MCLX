@@ -8,6 +8,7 @@ import {
   RefreshControl,
   ActivityIndicator,
 } from 'react-native';
+import LinearGradient from 'react-native-linear-gradient';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import { useFocusEffect } from '@react-navigation/native';
 import Store, { LegacyTransaction, AppData } from '../store/store';
@@ -17,43 +18,67 @@ import { Spacing } from '../styles/theme/spacing';
 import { getShadows } from '../styles/theme/shadows';
 
 export default function ProfileScreen() {
-  const { colors } = useTheme();
+  const { colors, currentTheme } = useTheme();
   const shadows = getShadows(colors);
   const [transactions, setTransactions] = useState<LegacyTransaction[]>([]);
   const [balance, setBalance] = useState<number>(0);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [refreshing, setRefreshing] = useState<boolean>(false);
 
+  // Theme-compatible gradient colors - Much lighter and subtle
+  const gradientColors =
+    currentTheme === 'light'
+      ? ['#f0faff', '#e6f7ff', '#f8fbff'] // Very light blue gradient
+      : ['#2a2a2a', '#252525', '#1f1f1f']; // Subtle dark gradient
+
   // Dynamic styles based on current theme
   const styles = {
+    gradientContainer: {
+      flex: 1,
+    },
     container: {
       flex: 1,
-      backgroundColor: colors.background,
     },
     loadingContainer: {
       flex: 1,
       justifyContent: 'center' as const,
       alignItems: 'center' as const,
-      backgroundColor: colors.background,
     },
     loadingText: {
       marginTop: Spacing.lg,
       fontSize: Typography.fontSize.medium,
       color: colors.textSecondary,
+      textShadowColor:
+        currentTheme === 'light' ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.1)',
+      textShadowOffset: { width: 0, height: 1 },
+      textShadowRadius: 1,
     },
     header: {
-      backgroundColor: colors.white,
+      backgroundColor:
+        currentTheme === 'light'
+          ? 'rgba(255, 255, 255, 0.95)'
+          : 'rgba(45, 45, 45, 0.95)',
       paddingHorizontal: Spacing.xl,
       paddingVertical: Spacing.xl,
       borderBottomWidth: Spacing.width.border,
       borderBottomColor: colors.borderLight,
       ...shadows.header,
+      backdropFilter: 'blur(10px)',
+      borderWidth: 1,
+      borderColor:
+        currentTheme === 'light'
+          ? 'rgba(255, 255, 255, 0.5)'
+          : 'rgba(255, 255, 255, 0.1)',
     },
     headerTitle: {
       fontSize: Typography.fontSize.xxl,
       fontWeight: Typography.fontWeight.bold,
       color: colors.textPrimary,
       marginBottom: Spacing.gap.medium,
+      textShadowColor:
+        currentTheme === 'light' ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.1)',
+      textShadowOffset: { width: 0, height: 1 },
+      textShadowRadius: 2,
     },
     balanceContainer: {
       flexDirection: 'row' as const,
@@ -63,22 +88,38 @@ export default function ProfileScreen() {
     balanceLabel: {
       fontSize: Typography.fontSize.medium,
       color: colors.textSecondary,
+      textShadowColor:
+        currentTheme === 'light' ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.1)',
+      textShadowOffset: { width: 0, height: 1 },
+      textShadowRadius: 1,
     },
     balanceAmount: {
       fontSize: Typography.fontSize.xl,
       fontWeight: Typography.fontWeight.bold,
       color: colors.primary,
+      textShadowColor:
+        currentTheme === 'light' ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.1)',
+      textShadowOffset: { width: 0, height: 1 },
+      textShadowRadius: 2,
     },
     listContainer: {
       padding: Spacing.lg,
       paddingBottom: 100,
     },
     transactionCard: {
-      backgroundColor: colors.white,
+      backgroundColor:
+        currentTheme === 'light'
+          ? 'rgba(255, 255, 255, 0.9)'
+          : 'rgba(45, 45, 45, 0.9)',
       borderRadius: Spacing.borderRadius.large,
       padding: Spacing.lg,
       marginBottom: Spacing.md,
       ...shadows.card,
+      borderWidth: 1,
+      borderColor:
+        currentTheme === 'light'
+          ? 'rgba(255, 255, 255, 0.5)'
+          : 'rgba(255, 255, 255, 0.1)',
     },
     transactionHeader: {
       flexDirection: 'row' as const,
@@ -151,11 +192,19 @@ export default function ProfileScreen() {
       color: colors.textSecondary,
       marginTop: Spacing.lg,
       marginBottom: Spacing.md,
+      textShadowColor:
+        currentTheme === 'light' ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.1)',
+      textShadowOffset: { width: 0, height: 1 },
+      textShadowRadius: 1,
     },
     emptyStateSubtext: {
       fontSize: Typography.fontSize.medium,
       color: colors.textTertiary,
       textAlign: 'center' as const,
+      textShadowColor:
+        currentTheme === 'light' ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.1)',
+      textShadowOffset: { width: 0, height: 1 },
+      textShadowRadius: 1,
     },
   };
 
@@ -292,41 +341,55 @@ export default function ProfileScreen() {
 
   if (isLoading) {
     return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color={colors.primary} />
-        <Text style={styles.loadingText}>Loading transaction history...</Text>
-      </View>
+      <LinearGradient
+        colors={gradientColors}
+        style={styles.gradientContainer}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+      >
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={colors.primary} />
+          <Text style={styles.loadingText}>Loading transaction history...</Text>
+        </View>
+      </LinearGradient>
     );
   }
 
   return (
-    <View style={styles.container}>
-      {/* Header with balance info */}
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Transaction History</Text>
-        <View style={styles.balanceContainer}>
-          <Text style={styles.balanceLabel}>Current Balance</Text>
-          <Text style={styles.balanceAmount}>{balance.toFixed(2)} Tk</Text>
+    <LinearGradient
+      colors={gradientColors}
+      style={styles.gradientContainer}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 1 }}
+    >
+      <View style={styles.container}>
+        {/* Header with balance info */}
+        <View style={styles.header}>
+          <Text style={styles.headerTitle}>Transaction History</Text>
+          <View style={styles.balanceContainer}>
+            <Text style={styles.balanceLabel}>Current Balance</Text>
+            <Text style={styles.balanceAmount}>{balance.toFixed(2)} Tk</Text>
+          </View>
         </View>
-      </View>
 
-      {/* Transaction List */}
-      <FlatList
-        data={transactions}
-        renderItem={renderTransaction}
-        keyExtractor={item => item.id}
-        contentContainerStyle={styles.listContainer}
-        refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={onRefresh}
-            colors={[colors.primary]}
-            tintColor={colors.primary}
-          />
-        }
-        ListEmptyComponent={renderEmptyState}
-        showsVerticalScrollIndicator={false}
-      />
-    </View>
+        {/* Transaction List */}
+        <FlatList
+          data={transactions}
+          renderItem={renderTransaction}
+          keyExtractor={item => item.id}
+          contentContainerStyle={styles.listContainer}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              colors={[colors.primary]}
+              tintColor={colors.primary}
+            />
+          }
+          ListEmptyComponent={renderEmptyState}
+          showsVerticalScrollIndicator={false}
+        />
+      </View>
+    </LinearGradient>
   );
 }
