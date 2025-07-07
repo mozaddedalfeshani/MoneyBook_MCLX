@@ -53,10 +53,11 @@ export class TransactionService {
     type: TransactionType,
     amount: number,
     reason: string,
+    customDate?: Date,
   ): Promise<Transaction> {
-    const now = new Date();
-    const dateString = now.toLocaleString();
-    const timestamp = now.getTime();
+    const transactionDate = customDate || new Date();
+    const dateString = transactionDate.toLocaleString();
+    const timestamp = transactionDate.getTime();
 
     return await database.write(async () => {
       return await this.transactionsCollection.create(transaction => {
@@ -76,12 +77,17 @@ export class TransactionService {
     type: TransactionType,
     amount: number,
     reason: string,
+    customDate?: Date,
   ): Promise<Transaction> {
     return await database.write(async () => {
       return await transaction.update(record => {
         record.type = type;
         record.amount = amount;
         record.reason = reason;
+        if (customDate) {
+          record.dateString = customDate.toLocaleString();
+          record.timestamp = customDate.getTime();
+        }
       });
     });
   }

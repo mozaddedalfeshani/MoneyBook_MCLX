@@ -26,6 +26,7 @@ import { TransactionService } from '../database/services/TransactionService';
 import { Transaction } from '../database/models/Transaction';
 import { useTheme } from '../contexts';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+import DatePicker from 'react-native-date-picker';
 
 // Get device dimensions
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
@@ -261,6 +262,14 @@ export default function AccountDetailScreen({ route, navigation }: any) {
   const [filteredCredit, setFilteredCredit] = useState<number>(0);
   const [filteredDebit, setFilteredDebit] = useState<number>(0);
 
+  // Date picker states
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const [showDatePicker, setShowDatePicker] = useState<boolean>(false);
+  const [useCustomDate, setUseCustomDate] = useState<boolean>(false);
+  const [editSelectedDate, setEditSelectedDate] = useState<Date>(new Date());
+  const [editShowDatePicker, setEditShowDatePicker] = useState<boolean>(false);
+  const [editUseCustomDate, setEditUseCustomDate] = useState<boolean>(false);
+
   // Theme-compatible gradient colors
   const gradientColors =
     balance < 0
@@ -364,16 +373,21 @@ export default function AccountDetailScreen({ route, navigation }: any) {
   const handleCredit = async () => {
     try {
       const creditAmount = parseFloat(amount);
+      const transactionDate = useCustomDate ? selectedDate : new Date();
+
       await TransactionService.addTransaction(
         accountId,
         'cash_in',
         creditAmount,
         reason,
+        transactionDate,
       );
       await loadAccountData();
       setModalVisible(false);
       setAmount('');
       setReason('');
+      setUseCustomDate(false);
+      setSelectedDate(new Date());
 
       const reasonText = reason.trim() ? ` (${reason.trim()})` : '';
       Alert.alert(
@@ -410,16 +424,22 @@ export default function AccountDetailScreen({ route, navigation }: any) {
               text: 'Proceed',
               style: 'destructive',
               onPress: async () => {
+                const transactionDate = useCustomDate
+                  ? selectedDate
+                  : new Date();
                 await TransactionService.addTransaction(
                   accountId,
                   'cash_out',
                   debitAmount,
                   reason,
+                  transactionDate,
                 );
                 await loadAccountData();
                 setModalVisible(false);
                 setAmount('');
                 setReason('');
+                setUseCustomDate(false);
+                setSelectedDate(new Date());
 
                 const reasonText = reason.trim() ? ` (${reason.trim()})` : '';
                 Alert.alert(
@@ -435,16 +455,20 @@ export default function AccountDetailScreen({ route, navigation }: any) {
         return;
       }
 
+      const transactionDate = useCustomDate ? selectedDate : new Date();
       await TransactionService.addTransaction(
         accountId,
         'cash_out',
         debitAmount,
         reason,
+        transactionDate,
       );
       await loadAccountData();
       setModalVisible(false);
       setAmount('');
       setReason('');
+      setUseCustomDate(false);
+      setSelectedDate(new Date());
 
       const reasonText = reason.trim() ? ` (${reason.trim()})` : '';
       Alert.alert(
@@ -463,6 +487,8 @@ export default function AccountDetailScreen({ route, navigation }: any) {
     setEditingTransaction(transaction);
     setAmount(transaction.amount.toString());
     setReason(transaction.reason);
+    setEditSelectedDate(new Date(transaction.timestamp));
+    setEditUseCustomDate(false);
     setEditModalVisible(true);
   };
 
@@ -478,12 +504,14 @@ export default function AccountDetailScreen({ route, navigation }: any) {
     try {
       const newAmount = parseFloat(amount);
       const newType = editingTransaction.type; // Keep same type for simplicity
+      const transactionDate = editUseCustomDate ? editSelectedDate : undefined;
 
       await TransactionService.updateTransaction(
         editingTransaction,
         newType,
         newAmount,
         reason,
+        transactionDate,
       );
 
       await loadAccountData();
@@ -491,6 +519,8 @@ export default function AccountDetailScreen({ route, navigation }: any) {
       setEditingTransaction(null);
       setAmount('');
       setReason('');
+      setEditUseCustomDate(false);
+      setEditSelectedDate(new Date());
 
       Alert.alert('Success', 'Transaction updated successfully!');
     } catch (error) {
@@ -534,6 +564,9 @@ export default function AccountDetailScreen({ route, navigation }: any) {
     setModalVisible(false);
     setReason('');
     setAmount('');
+    setUseCustomDate(false);
+    setSelectedDate(new Date());
+    setShowDatePicker(false);
   };
 
   const closeEditModal = () => {
@@ -541,6 +574,17 @@ export default function AccountDetailScreen({ route, navigation }: any) {
     setEditingTransaction(null);
     setReason('');
     setAmount('');
+    setEditUseCustomDate(false);
+    setEditSelectedDate(new Date());
+    setEditShowDatePicker(false);
+  };
+
+  const formatDate = (date: Date) => {
+    return (
+      date.toLocaleDateString() +
+      ' ' +
+      date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    );
   };
 
   const onRefresh = useCallback(() => {
@@ -1213,6 +1257,55 @@ export default function AccountDetailScreen({ route, navigation }: any) {
       width: '100%',
       alignItems: 'center',
     },
+    // Date picker styles
+    datePickerContainer: {
+      width: '100%',
+      marginBottom: Spacing.xl,
+    },
+    datePickerLabel: {
+      fontSize: Typography.fontSize.medium,
+      fontWeight: Typography.fontWeight.semibold,
+      color: colors.textPrimary,
+      marginBottom: Spacing.md,
+    },
+    dateToggleContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginBottom: Spacing.md,
+    },
+    dateToggleText: {
+      fontSize: Typography.fontSize.medium,
+      color: colors.textPrimary,
+      marginRight: Spacing.sm,
+    },
+    dateDisplayContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      borderWidth: Spacing.width.border,
+      borderColor: colors.border,
+      borderRadius: Spacing.borderRadius.medium,
+      paddingHorizontal: Spacing.lg,
+      paddingVertical: Spacing.md,
+      backgroundColor: colors.veryLightGray,
+    },
+    dateDisplayText: {
+      flex: 1,
+      fontSize: Typography.fontSize.medium,
+      color: colors.textPrimary,
+      paddingVertical: Spacing.sm,
+    },
+    datePickerButton: {
+      backgroundColor: colors.primary,
+      paddingHorizontal: Spacing.md,
+      paddingVertical: Spacing.sm,
+      borderRadius: Spacing.borderRadius.small,
+      marginLeft: Spacing.sm,
+    },
+    datePickerButtonText: {
+      color: colors.textLight,
+      fontSize: Typography.fontSize.small,
+      fontWeight: Typography.fontWeight.medium,
+    },
   });
 
   if (isLoading) {
@@ -1455,6 +1548,54 @@ export default function AccountDetailScreen({ route, navigation }: any) {
                         />
                       </View>
 
+                      {/* Date Picker Section */}
+                      <View style={styles.datePickerContainer}>
+                        <Text style={styles.datePickerLabel}>
+                          Transaction Date
+                        </Text>
+
+                        <View style={styles.dateToggleContainer}>
+                          <Text style={styles.dateToggleText}>
+                            Use custom date:
+                          </Text>
+                          <TouchableOpacity
+                            style={[
+                              styles.datePickerButton,
+                              !useCustomDate && {
+                                backgroundColor: colors.gray,
+                              },
+                            ]}
+                            onPress={() => setUseCustomDate(!useCustomDate)}
+                            activeOpacity={0.7}
+                          >
+                            <Text style={styles.datePickerButtonText}>
+                              {useCustomDate ? 'ON' : 'OFF'}
+                            </Text>
+                          </TouchableOpacity>
+                        </View>
+
+                        {useCustomDate && (
+                          <View style={styles.dateDisplayContainer}>
+                            <Text style={styles.dateDisplayText}>
+                              {formatDate(selectedDate)}
+                            </Text>
+                            <TouchableOpacity
+                              style={styles.datePickerButton}
+                              onPress={() => setShowDatePicker(true)}
+                              activeOpacity={0.7}
+                            >
+                              <Text style={styles.datePickerButtonText}>
+                                <FontAwesome5
+                                  name="calendar-alt"
+                                  size={12}
+                                  color={colors.textLight}
+                                />
+                              </Text>
+                            </TouchableOpacity>
+                          </View>
+                        )}
+                      </View>
+
                       <View
                         style={[
                           styles.modalButtons,
@@ -1499,6 +1640,22 @@ export default function AccountDetailScreen({ route, navigation }: any) {
                 </View>
               </TouchableWithoutFeedback>
             </Modal>
+
+            {/* Date Picker Modal for Add Transaction */}
+            <DatePicker
+              modal
+              open={showDatePicker}
+              date={selectedDate}
+              mode="date"
+              maximumDate={new Date()}
+              onConfirm={date => {
+                setShowDatePicker(false);
+                setSelectedDate(date);
+              }}
+              onCancel={() => {
+                setShowDatePicker(false);
+              }}
+            />
 
             {/* Edit Transaction Modal */}
             <Modal
@@ -1548,6 +1705,62 @@ export default function AccountDetailScreen({ route, navigation }: any) {
                         />
                       </View>
 
+                      {/* Edit Date Picker Section */}
+                      <View style={styles.datePickerContainer}>
+                        <Text style={styles.datePickerLabel}>
+                          Transaction Date
+                        </Text>
+
+                        <View style={styles.dateToggleContainer}>
+                          <Text style={styles.dateToggleText}>
+                            Update date:
+                          </Text>
+                          <TouchableOpacity
+                            style={[
+                              styles.datePickerButton,
+                              !editUseCustomDate && {
+                                backgroundColor: colors.gray,
+                              },
+                            ]}
+                            onPress={() =>
+                              setEditUseCustomDate(!editUseCustomDate)
+                            }
+                            activeOpacity={0.7}
+                          >
+                            <Text style={styles.datePickerButtonText}>
+                              {editUseCustomDate ? 'ON' : 'OFF'}
+                            </Text>
+                          </TouchableOpacity>
+                        </View>
+
+                        <View style={styles.dateDisplayContainer}>
+                          <Text style={styles.dateDisplayText}>
+                            Current: {formatDate(editSelectedDate)}
+                          </Text>
+                        </View>
+
+                        {editUseCustomDate && (
+                          <View style={styles.dateDisplayContainer}>
+                            <Text style={styles.dateDisplayText}>
+                              New: {formatDate(editSelectedDate)}
+                            </Text>
+                            <TouchableOpacity
+                              style={styles.datePickerButton}
+                              onPress={() => setEditShowDatePicker(true)}
+                              activeOpacity={0.7}
+                            >
+                              <Text style={styles.datePickerButtonText}>
+                                <FontAwesome5
+                                  name="calendar-alt"
+                                  size={12}
+                                  color={colors.textLight}
+                                />
+                              </Text>
+                            </TouchableOpacity>
+                          </View>
+                        )}
+                      </View>
+
                       <View style={styles.modalButtons}>
                         <TouchableOpacity
                           style={[
@@ -1573,6 +1786,22 @@ export default function AccountDetailScreen({ route, navigation }: any) {
                 </View>
               </TouchableWithoutFeedback>
             </Modal>
+
+            {/* Date Picker Modal for Edit Transaction */}
+            <DatePicker
+              modal
+              open={editShowDatePicker}
+              date={editSelectedDate}
+              mode="date"
+              maximumDate={new Date()}
+              onConfirm={date => {
+                setEditShowDatePicker(false);
+                setEditSelectedDate(date);
+              }}
+              onCancel={() => {
+                setEditShowDatePicker(false);
+              }}
+            />
           </ScrollView>
         </KeyboardAvoidingView>
       </LinearGradient>
