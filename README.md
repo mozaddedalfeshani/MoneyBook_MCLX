@@ -1,36 +1,43 @@
 # MoneyBook 💰
 
-A beautiful and modern React Native money management app with **WatermelonDB** database for superior performance and scalability.
+A beautiful and modern React Native money management app with **WatermelonDB** database and **Account Management** for superior organization and performance.
 
 ## Features ✨
 
-- **💸 Transaction Management**: Easy cash in/out transactions with validation
-- **📊 Real-time Balance**: Live balance updates with persistent storage
-- **📝 Transaction History**: Complete transaction log with timestamps and reasons
-- **🎨 Modern UI**: Beautiful gradient cards with smooth animations
+- **🏦 Account Management**: Create and manage multiple accounts with individual balances
+- **💸 Transaction Management**: Easy cash in/out transactions with validation and custom dates
+- **📊 Real-time Balance**: Live balance updates per account with persistent storage
+- **📝 Transaction History**: Complete transaction log with timestamps, reasons, and filtering
+- **🎨 Modern UI**: Beautiful gradient cards with smooth animations and responsive design
 - **🌙 Dark Mode**: Light/dark theme toggle with persistent preference
 - **💾 SQLite Database**: Robust WatermelonDB with automatic migration from AsyncStorage
 - **🔄 Pull to Refresh**: Refresh transaction history with pull-down gesture
 - **❌ Delete Transactions**: Remove transactions with confirmation dialogs
-- **📱 Responsive Design**: Optimized for all screen sizes
+- **✏️ Edit Transactions**: Modify existing transactions with date picker support
+- **📅 Custom Date Selection**: Add transactions with custom dates using date picker
+- **🔍 Transaction Filtering**: Filter by credit, debit, or all transactions
+- **📱 Responsive Design**: Optimized for all screen sizes with adaptive layouts
 - **✨ Transparent Icons**: Theme-adaptive app icons for all system contexts
+- **⚠️ Negative Balance Alerts**: Visual warnings for accounts running negative
 
 ## Screenshots 📸
 
 The app features a modern design with:
 
 - **Home Screen**: Gradient balance card with transaction input
+- **Account Detail Screen**: Comprehensive account management with transaction filtering
 - **History Screen**: Beautiful transaction cards with icons and colors
 - **Settings Screen**: Clean theme toggle with sun/moon icons
+- **Transaction Modals**: Intuitive forms for adding and editing transactions
 
 ## Database Architecture 🏛️
 
 ### WatermelonDB Integration
 
-MoneyBook now uses **WatermelonDB**, a high-performance React Native database built on SQLite:
+MoneyBook uses **WatermelonDB**, a high-performance React Native database built on SQLite:
 
 - **🚀 Performance**: Optimized for mobile with lazy loading and efficient queries
-- **📊 Scalability**: Handles thousands of transactions without performance degradation
+- **📊 Scalability**: Handles thousands of transactions across multiple accounts
 - **🔒 Reliability**: ACID transactions with data integrity guarantees
 - **🔄 Migration**: Automatic data migration from AsyncStorage to WatermelonDB
 - **💾 Persistence**: Robust SQLite storage with backup capabilities
@@ -38,15 +45,26 @@ MoneyBook now uses **WatermelonDB**, a high-performance React Native database bu
 ### Database Schema
 
 ```sql
+-- Accounts table
+CREATE TABLE accounts (
+  id TEXT PRIMARY KEY,
+  name TEXT NOT NULL,
+  created_at INTEGER,
+  updated_at INTEGER
+);
+
+-- Transactions table
 CREATE TABLE transactions (
   id TEXT PRIMARY KEY,
+  account_id TEXT NOT NULL,
   type TEXT NOT NULL,           -- 'cash_in' or 'cash_out'
   amount REAL NOT NULL,
   reason TEXT,
   date TEXT,
   timestamp INTEGER,
   created_at INTEGER,
-  updated_at INTEGER
+  updated_at INTEGER,
+  FOREIGN KEY (account_id) REFERENCES accounts (id)
 );
 ```
 
@@ -55,9 +73,11 @@ CREATE TABLE transactions (
 - **React Native** - Cross-platform mobile development
 - **TypeScript** - Type-safe JavaScript
 - **WatermelonDB** - High-performance SQLite database with reactive queries
-- **React Navigation** - Tab-based navigation
+- **React Navigation** - Tab and stack-based navigation
 - **AsyncStorage** - Theme and migration state storage
-- **React Native Vector Icons** - Beautiful icons
+- **React Native Vector Icons** - Beautiful icons (FontAwesome5, MaterialIcons)
+- **React Native Date Picker** - Custom date selection for transactions
+- **React Native Linear Gradient** - Beautiful gradient backgrounds
 - **Centralized Styling** - Theme-based design system with dark/light mode
 - **Babel Decorators** - ES7 decorators for WatermelonDB models
 
@@ -65,7 +85,7 @@ CREATE TABLE transactions (
 
 ### Prerequisites
 
-- Node.js (v16 or later)
+- Node.js (v18 or later)
 - React Native CLI
 - Android Studio (for Android development)
 - Xcode (for iOS development - macOS only)
@@ -149,20 +169,25 @@ Built APKs will be available in the `output/` folder.
 ```
 src/
 ├── components/          # Reusable UI components
-│   ├── cards/          # Card components
+│   ├── cards/          # Card components & Transaction Modals
+│   │   ├── AddTransactionModal.tsx    # Add transaction modal
+│   │   ├── EditTransactionModal.tsx   # Edit transaction modal
+│   │   └── HomeCard.tsx              # Home balance card
 │   └── ui/             # UI elements
 ├── contexts/           # React contexts (Theme)
 ├── database/           # WatermelonDB configuration
-│   ├── models/         # Database models
-│   ├── services/       # Database services
+│   ├── models/         # Database models (Account, Transaction)
+│   ├── services/       # Database services (Account, Transaction, Migration)
 │   ├── index.ts        # Database setup
 │   └── schema.ts       # Database schema
 ├── navigation/         # Navigation configuration
 ├── screens/            # Screen components
-│   ├── Home/          # Home screen
-│   └── Settings/      # Settings screen
+│   ├── AccountDetailScreen.tsx  # Individual account management
+│   ├── HomeScreen.tsx          # Main dashboard
+│   ├── TableViewScreen.tsx     # Account overview
+│   └── SettingsScreen.tsx      # App settings
 ├── store/             # Data management layer
-│   ├── slices/        # Store slices (Theme)
+│   ├── slices/        # Store slices (Theme, Transaction)
 │   └── store.ts       # Main store interface
 ├── styles/            # Centralized styling
 │   ├── theme/         # Theme configuration
@@ -181,15 +206,17 @@ The app automatically migrates existing data from AsyncStorage to WatermelonDB:
 - **Seamless**: Users don't lose any existing transaction data
 - **One-time**: Migration runs automatically on first launch with v2.0.0
 - **Safe**: Original AsyncStorage data is preserved during migration
+- **Account Creation**: Automatically creates default account for migrated transactions
 - **Logging**: Comprehensive migration logging for debugging
 
 ### Migration Process
 
 1. **Detection**: Check if migration has already been completed
 2. **Data Loading**: Load existing transactions from AsyncStorage
-3. **Transfer**: Convert and insert data into WatermelonDB
-4. **Verification**: Ensure data integrity and completeness
-5. **Completion**: Mark migration as complete to prevent re-runs
+3. **Account Creation**: Create default account for legacy transactions
+4. **Transfer**: Convert and insert data into WatermelonDB with account relationships
+5. **Verification**: Ensure data integrity and completeness
+6. **Completion**: Mark migration as complete to prevent re-runs
 
 ## App Icons 🎨
 
@@ -205,34 +232,56 @@ MoneyBook features professionally designed app icons that adapt to any theme:
 
 ## Features in Detail 📋
 
+### Account Management
+
+- **Multiple Accounts**: Create and manage separate accounts (Personal, Business, Savings, etc.)
+- **Account Overview**: View all accounts with balances and transaction counts
+- **Individual Management**: Detailed view for each account with dedicated transaction history
+- **Account Deletion**: Safe account deletion with confirmation dialogs
+- **Balance Tracking**: Real-time balance calculation per account
+
 ### Transaction Management
 
-- Add cash in/out transactions with validation
-- Optional reason field (up to 100 characters)
-- Real-time balance calculation with database optimization
-- Success notifications with new balance
+- **Add Transactions**: Cash in/out with optional reasons and custom dates
+- **Edit Transactions**: Modify existing transactions with full date picker support
+- **Transaction Validation**: Amount validation with negative number auto-detection
+- **Custom Dates**: Select past dates for transactions using native date picker
+- **Transaction Types**: Auto-detection of debit for negative amounts
+- **Confirmation Dialogs**: Success notifications with updated balance information
 
-### Transaction History
+### Transaction History & Filtering
 
-- Chronological list of all transactions from database
-- Color-coded entries (Green for Cash In, Red for Cash Out)
-- Delete functionality with confirmation and balance adjustment
-- Efficient database queries with pagination support
-- Empty state when no transactions exist
+- **Chronological Lists**: Time-ordered transaction history per account
+- **Advanced Filtering**: Filter by all, credit, or debit transactions
+- **Color-coded Entries**: Green for Cash In, Red for Cash Out
+- **Transaction Actions**: Edit and delete functionality with confirmations
+- **Empty States**: Helpful messages when no transactions exist
+- **Pull to Refresh**: Refresh transaction data with pull-down gesture
+
+### Visual Enhancements
+
+- **Responsive Design**: Adaptive layouts for all screen sizes
+- **Background Images**: Different backgrounds for positive/negative balances
+- **Gradient Overlays**: Beautiful gradient effects with transparency
+- **Visual Warnings**: Special styling for negative balances
+- **Floating Elements**: Decorative elements for visual appeal
+- **Shadow Effects**: Professional card shadows and depth
 
 ### Theme System
 
-- Light and dark theme support with persistent storage
-- Real-time theme switching across all components
-- Consistent color scheme with centralized theme management
-- Adaptive app icons that change with system theme
+- **Light and Dark Modes**: Complete theme support with persistent storage
+- **Real-time Switching**: Instant theme changes across all components
+- **Consistent Colors**: Centralized theme management
+- **Adaptive Icons**: App icons that change with system theme
+- **Context-aware Styling**: Theme-appropriate gradients and backgrounds
 
 ### Database Performance
 
-- **Lazy Loading**: Only load transactions when needed
-- **Indexed Queries**: Fast lookups with database indexes
+- **Account-based Queries**: Efficient data retrieval per account
+- **Indexed Lookups**: Fast transaction searches with database indexes
+- **Lazy Loading**: Only load data when needed
 - **Background Operations**: Non-blocking database operations
-- **Memory Efficient**: Reduced memory footprint compared to AsyncStorage
+- **Memory Efficient**: Optimized memory usage for large datasets
 - **Concurrent Safe**: Thread-safe database operations
 
 ## Version History 📝
@@ -240,7 +289,7 @@ MoneyBook features professionally designed app icons that adapt to any theme:
 - **v1.0.0**: Initial release with AsyncStorage
 
   - Basic money management features
-  - Transaction history with AsyncStorage
+  - Single balance tracking with AsyncStorage
   - Theme switching capabilities
 
 - **v1.1.0**: Icon and UI improvements
@@ -255,22 +304,53 @@ MoneyBook features professionally designed app icons that adapt to any theme:
   - Enhanced dark/light mode support
   - Improved visual consistency
 
-- **v2.0.0**: **WatermelonDB Migration** (current)
-  - **Complete database migration** from AsyncStorage to WatermelonDB
-  - **Automatic data migration** with zero user impact
-  - **Enhanced performance** for large transaction datasets
-  - **Improved reliability** with ACID transactions
-  - **Scalable architecture** ready for advanced features
-  - **Backwards compatible** interface maintaining all existing functionality
+- **v2.0.0**: **WatermelonDB Migration**
+
+  - Complete database migration from AsyncStorage to WatermelonDB
+  - Automatic data migration with zero user impact
+  - Enhanced performance for large transaction datasets
+  - Improved reliability with ACID transactions
+  - Scalable architecture ready for advanced features
+
+- **v2.1.0**: Enhanced UI and performance
+
+  - Improved user interface design
+  - Performance optimizations
+  - Better error handling
+
+- **v2.2.0**: Advanced features
+
+  - Additional functionality and improvements
+  - Enhanced user experience
+
+- **v2.3.0**: Stability improvements
+
+  - Bug fixes and performance enhancements
+  - Code optimization
+
+- **v2.4.0**: **Account Management & Transaction Modals** (current)
+  - **🏦 Multi-Account Support**: Create and manage multiple accounts independently
+  - **📱 Account Detail Screen**: Comprehensive account management interface
+  - **✨ Transaction Modals**: Beautiful add/edit transaction forms with validation
+  - **📅 Date Picker Integration**: Custom date selection using react-native-date-picker
+  - **🔍 Advanced Filtering**: Filter transactions by type (all/credit/debit)
+  - **⚠️ Negative Balance Handling**: Visual warnings and special styling for deficit accounts
+  - **🎨 Enhanced UI**: Responsive design with gradient backgrounds and floating elements
+  - **✏️ Transaction Editing**: Full edit capability for existing transactions
+  - **🗑️ Safe Deletion**: Account and transaction deletion with confirmation dialogs
 
 ## Available Builds 📦
 
 ```
 output/
-├── MoneyBook-v1.0.0-release.apk          # AsyncStorage (53MB)
-├── MoneyBook-v1.1.0-release.apk          # Icon updates (53MB) 
-├── MoneyBook-v1.2.0-transparent-release.apk # Transparent icons (53MB)
-└── MoneyBook-v2.0.0-WatermelonDB-release.apk # WatermelonDB (54MB) ⭐
+├── MoneyBook-v1.0.0-release.apk                    # AsyncStorage (53MB)
+├── MoneyBook-v1.1.0-release.apk                    # Icon updates (53MB)
+├── MoneyBook-v1.2.0-transparent-release.apk        # Transparent icons (53MB)
+├── MoneyBook-v2.0.0-WatermelonDB-release.apk       # WatermelonDB (54MB)
+├── MoneyBook-v2.1.0-release.apk                    # Enhanced UI (55MB)
+├── MoneyBook-v2.2.0-release.apk                    # Advanced features (55MB)
+├── MoneyBook-v2.3.0-release.apk                    # Stability improvements (56MB)
+└── moneybook-v2.4.0-release.apk                    # Account Management (57MB) ⭐
 ```
 
 ## Contributing 🤝
@@ -293,4 +373,4 @@ If you encounter any issues or have questions, please open an issue on the repos
 
 Made with ❤️ using React Native and WatermelonDB
 
-_Now powered by professional-grade database technology for superior performance and reliability._
+_Now featuring professional account management with multi-account support, transaction modals, and advanced filtering capabilities._

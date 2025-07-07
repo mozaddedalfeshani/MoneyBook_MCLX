@@ -4,7 +4,6 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  Modal,
   Alert,
   ScrollView,
   FlatList,
@@ -15,8 +14,6 @@ import {
   Platform,
   SafeAreaView,
   KeyboardAvoidingView,
-  Keyboard,
-  TouchableWithoutFeedback,
   ImageBackground,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
@@ -26,6 +23,7 @@ import { TransactionService } from '../database/services/TransactionService';
 import { Transaction } from '../database/models/Transaction';
 import { useTheme } from '../contexts';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+import { AddTransactionModal, EditTransactionModal } from '../components';
 
 // Get device dimensions
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
@@ -261,6 +259,14 @@ export default function AccountDetailScreen({ route, navigation }: any) {
   const [filteredCredit, setFilteredCredit] = useState<number>(0);
   const [filteredDebit, setFilteredDebit] = useState<number>(0);
 
+  // Date picker states
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const [showDatePicker, setShowDatePicker] = useState<boolean>(false);
+  const [useCustomDate, setUseCustomDate] = useState<boolean>(false);
+  const [editSelectedDate, setEditSelectedDate] = useState<Date>(new Date());
+  const [editShowDatePicker, setEditShowDatePicker] = useState<boolean>(false);
+  const [editUseCustomDate, setEditUseCustomDate] = useState<boolean>(false);
+
   // Theme-compatible gradient colors
   const gradientColors =
     balance < 0
@@ -364,16 +370,21 @@ export default function AccountDetailScreen({ route, navigation }: any) {
   const handleCredit = async () => {
     try {
       const creditAmount = parseFloat(amount);
+      const transactionDate = useCustomDate ? selectedDate : new Date();
+
       await TransactionService.addTransaction(
         accountId,
         'cash_in',
         creditAmount,
         reason,
+        transactionDate,
       );
       await loadAccountData();
       setModalVisible(false);
       setAmount('');
       setReason('');
+      setUseCustomDate(false);
+      setSelectedDate(new Date());
 
       const reasonText = reason.trim() ? ` (${reason.trim()})` : '';
       Alert.alert(
@@ -410,16 +421,22 @@ export default function AccountDetailScreen({ route, navigation }: any) {
               text: 'Proceed',
               style: 'destructive',
               onPress: async () => {
+                const transactionDate = useCustomDate
+                  ? selectedDate
+                  : new Date();
                 await TransactionService.addTransaction(
                   accountId,
                   'cash_out',
                   debitAmount,
                   reason,
+                  transactionDate,
                 );
                 await loadAccountData();
                 setModalVisible(false);
                 setAmount('');
                 setReason('');
+                setUseCustomDate(false);
+                setSelectedDate(new Date());
 
                 const reasonText = reason.trim() ? ` (${reason.trim()})` : '';
                 Alert.alert(
@@ -435,16 +452,20 @@ export default function AccountDetailScreen({ route, navigation }: any) {
         return;
       }
 
+      const transactionDate = useCustomDate ? selectedDate : new Date();
       await TransactionService.addTransaction(
         accountId,
         'cash_out',
         debitAmount,
         reason,
+        transactionDate,
       );
       await loadAccountData();
       setModalVisible(false);
       setAmount('');
       setReason('');
+      setUseCustomDate(false);
+      setSelectedDate(new Date());
 
       const reasonText = reason.trim() ? ` (${reason.trim()})` : '';
       Alert.alert(
@@ -463,6 +484,8 @@ export default function AccountDetailScreen({ route, navigation }: any) {
     setEditingTransaction(transaction);
     setAmount(transaction.amount.toString());
     setReason(transaction.reason);
+    setEditSelectedDate(new Date(transaction.timestamp));
+    setEditUseCustomDate(false);
     setEditModalVisible(true);
   };
 
@@ -478,12 +501,14 @@ export default function AccountDetailScreen({ route, navigation }: any) {
     try {
       const newAmount = parseFloat(amount);
       const newType = editingTransaction.type; // Keep same type for simplicity
+      const transactionDate = editUseCustomDate ? editSelectedDate : undefined;
 
       await TransactionService.updateTransaction(
         editingTransaction,
         newType,
         newAmount,
         reason,
+        transactionDate,
       );
 
       await loadAccountData();
@@ -491,6 +516,8 @@ export default function AccountDetailScreen({ route, navigation }: any) {
       setEditingTransaction(null);
       setAmount('');
       setReason('');
+      setEditUseCustomDate(false);
+      setEditSelectedDate(new Date());
 
       Alert.alert('Success', 'Transaction updated successfully!');
     } catch (error) {
@@ -534,6 +561,9 @@ export default function AccountDetailScreen({ route, navigation }: any) {
     setModalVisible(false);
     setReason('');
     setAmount('');
+    setUseCustomDate(false);
+    setSelectedDate(new Date());
+    setShowDatePicker(false);
   };
 
   const closeEditModal = () => {
@@ -541,6 +571,17 @@ export default function AccountDetailScreen({ route, navigation }: any) {
     setEditingTransaction(null);
     setReason('');
     setAmount('');
+    setEditUseCustomDate(false);
+    setEditSelectedDate(new Date());
+    setEditShowDatePicker(false);
+  };
+
+  const formatDate = (date: Date) => {
+    return (
+      date.toLocaleDateString() +
+      ' ' +
+      date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    );
   };
 
   const onRefresh = useCallback(() => {
@@ -1100,119 +1141,6 @@ export default function AccountDetailScreen({ route, navigation }: any) {
       fontSize: Typography.fontSize.medium,
       color: colors.textSecondary,
     },
-    // Modal styles
-    modalOverlay: {
-      flex: 1,
-      backgroundColor:
-        Platform.OS === 'ios' ? 'rgba(0, 0, 0, 0.5)' : colors.overlay,
-      justifyContent: 'center',
-      alignItems: 'center',
-      padding: Spacing.xl,
-      paddingBottom: Platform.OS === 'ios' ? responsive.hp(10) : Spacing.xl,
-    },
-    modalContent: {
-      backgroundColor: colors.white,
-      borderRadius: Spacing.borderRadius.xxl,
-      padding: Spacing.xxl,
-      width: responsive.wp(90),
-      maxWidth: responsive.wp(95),
-      alignItems: 'center',
-      ...shadows.large,
-    },
-    modalTitle: {
-      fontSize: Typography.fontSize.xl,
-      fontWeight: Typography.fontWeight.bold,
-      color: colors.textPrimary,
-      marginBottom: Spacing.lg,
-      textAlign: 'center',
-    },
-    modalAmount: {
-      fontSize: Typography.fontSize.large,
-      fontWeight: Typography.fontWeight.semibold,
-      color: colors.primary,
-      marginBottom: Spacing.xl,
-    },
-    autoDetectedText: {
-      fontSize: Typography.fontSize.footnote,
-      color: colors.warning,
-      textAlign: 'center',
-      marginBottom: Spacing.md,
-      fontStyle: 'italic',
-    },
-    reasonContainer: {
-      width: '100%',
-      marginBottom: Spacing.xl,
-    },
-    reasonLabel: {
-      fontSize: Typography.fontSize.medium,
-      fontWeight: Typography.fontWeight.semibold,
-      color: colors.textPrimary,
-      marginBottom: Spacing.md,
-    },
-    reasonInput: {
-      borderWidth: Spacing.width.border,
-      borderColor: colors.border,
-      borderRadius: Spacing.borderRadius.medium,
-      paddingHorizontal: Spacing.lg,
-      paddingVertical: Spacing.md,
-      fontSize: Typography.fontSize.medium,
-      backgroundColor: colors.veryLightGray,
-      color: colors.textPrimary,
-      minHeight: 60,
-      textAlignVertical: 'top',
-    },
-    modalButtons: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      width: '100%',
-      gap: Spacing.gap.medium,
-      marginBottom: Spacing.xl,
-    },
-    modalButton: {
-      flex: 1,
-      paddingVertical: Spacing.lg,
-      paddingHorizontal: Spacing.lg,
-      borderRadius: Spacing.borderRadius.large,
-      alignItems: 'center',
-    },
-    creditButton: {
-      backgroundColor: colors.success,
-    },
-    debitButton: {
-      backgroundColor: colors.error,
-    },
-    updateTransactionButton: {
-      backgroundColor: colors.primary,
-    },
-    modalButtonText: {
-      color: colors.textLight,
-      fontSize: Typography.fontSize.medium,
-      fontWeight: Typography.fontWeight.semibold,
-    },
-    actionButtons: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      width: '100%',
-      gap: Spacing.gap.medium,
-    },
-    actionButton: {
-      flex: 1,
-      paddingVertical: Spacing.md,
-      borderRadius: Spacing.borderRadius.medium,
-      alignItems: 'center',
-    },
-    cancelButton: {
-      backgroundColor: colors.gray,
-    },
-    cancelButtonText: {
-      color: colors.textLight,
-      fontSize: Typography.fontSize.medium,
-      fontWeight: Typography.fontWeight.medium,
-    },
-    modalKeyboardAvoid: {
-      width: '100%',
-      alignItems: 'center',
-    },
   });
 
   if (isLoading) {
@@ -1415,164 +1343,42 @@ export default function AccountDetailScreen({ route, navigation }: any) {
             </View>
 
             {/* Add Transaction Modal */}
-            <Modal
-              animationType="slide"
-              transparent={true}
+            <AddTransactionModal
               visible={modalVisible}
-              onRequestClose={closeModal}
-              presentationStyle="pageSheet"
-            >
-              <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-                <View style={styles.modalOverlay}>
-                  <KeyboardAvoidingView
-                    behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-                    style={styles.modalKeyboardAvoid}
-                  >
-                    <View style={styles.modalContent}>
-                      <Text style={styles.modalTitle}>{modalConfig.title}</Text>
-                      <Text style={styles.modalAmount}>
-                        Amount: {Math.abs(parseFloat(amount) || 0).toFixed(2)}{' '}
-                        Tk
-                      </Text>
-                      {modalConfig.autoDetected && (
-                        <Text style={styles.autoDetectedText}>
-                          ⚡ Auto-detected as debit transaction
-                        </Text>
-                      )}
-
-                      <View style={styles.reasonContainer}>
-                        <Text style={styles.reasonLabel}>
-                          Reason (Optional)
-                        </Text>
-                        <TextInput
-                          style={styles.reasonInput}
-                          placeholder="e.g., Groceries, Salary, Gift..."
-                          placeholderTextColor={colors.textSecondary}
-                          value={reason}
-                          onChangeText={setReason}
-                          multiline={true}
-                          maxLength={100}
-                        />
-                      </View>
-
-                      <View
-                        style={[
-                          styles.modalButtons,
-                          (!modalConfig.showCredit ||
-                            !modalConfig.showDebit) && {
-                            justifyContent: 'center',
-                          },
-                        ]}
-                      >
-                        {modalConfig.showCredit && (
-                          <TouchableOpacity
-                            style={[styles.modalButton, styles.creditButton]}
-                            onPress={handleCredit}
-                            activeOpacity={0.7}
-                          >
-                            <Text style={styles.modalButtonText}>
-                              💰 Credit
-                            </Text>
-                          </TouchableOpacity>
-                        )}
-
-                        {modalConfig.showDebit && (
-                          <TouchableOpacity
-                            style={[styles.modalButton, styles.debitButton]}
-                            onPress={handleDebit}
-                            activeOpacity={0.7}
-                          >
-                            <Text style={styles.modalButtonText}>💸 Debit</Text>
-                          </TouchableOpacity>
-                        )}
-                      </View>
-
-                      <TouchableOpacity
-                        style={styles.cancelButton}
-                        onPress={closeModal}
-                        activeOpacity={0.7}
-                      >
-                        <Text style={styles.cancelButtonText}>Cancel</Text>
-                      </TouchableOpacity>
-                    </View>
-                  </KeyboardAvoidingView>
-                </View>
-              </TouchableWithoutFeedback>
-            </Modal>
+              onClose={closeModal}
+              amount={amount}
+              reason={reason}
+              onReasonChange={setReason}
+              selectedDate={selectedDate}
+              showDatePicker={showDatePicker}
+              useCustomDate={useCustomDate}
+              modalConfig={modalConfig}
+              onSetShowDatePicker={setShowDatePicker}
+              onSetUseCustomDate={setUseCustomDate}
+              onSetSelectedDate={setSelectedDate}
+              onCredit={handleCredit}
+              onDebit={handleDebit}
+              formatDate={formatDate}
+            />
 
             {/* Edit Transaction Modal */}
-            <Modal
-              animationType="slide"
-              transparent={true}
+            <EditTransactionModal
               visible={editModalVisible}
-              onRequestClose={closeEditModal}
-              presentationStyle="pageSheet"
-            >
-              <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-                <View style={styles.modalOverlay}>
-                  <KeyboardAvoidingView
-                    behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-                    style={styles.modalKeyboardAvoid}
-                  >
-                    <View style={styles.modalContent}>
-                      <Text style={styles.modalTitle}>Edit Transaction</Text>
-                      <Text style={styles.modalAmount}>
-                        Type:{' '}
-                        {editingTransaction?.type === 'cash_in'
-                          ? 'Credit'
-                          : 'Debit'}
-                      </Text>
-
-                      <View style={styles.reasonContainer}>
-                        <Text style={styles.reasonLabel}>Amount (Tk)</Text>
-                        <TextInput
-                          style={styles.reasonInput}
-                          placeholder="Enter amount"
-                          placeholderTextColor={colors.textSecondary}
-                          value={amount}
-                          onChangeText={setAmount}
-                          keyboardType="numeric"
-                        />
-                      </View>
-
-                      <View style={styles.reasonContainer}>
-                        <Text style={styles.reasonLabel}>Reason</Text>
-                        <TextInput
-                          style={styles.reasonInput}
-                          placeholder="e.g., Groceries, Salary, Gift..."
-                          placeholderTextColor={colors.textSecondary}
-                          value={reason}
-                          onChangeText={setReason}
-                          multiline={true}
-                          maxLength={100}
-                        />
-                      </View>
-
-                      <View style={styles.modalButtons}>
-                        <TouchableOpacity
-                          style={[
-                            styles.modalButton,
-                            styles.updateTransactionButton,
-                          ]}
-                          onPress={handleUpdateTransaction}
-                          activeOpacity={0.7}
-                        >
-                          <Text style={styles.modalButtonText}>Update</Text>
-                        </TouchableOpacity>
-                      </View>
-
-                      <TouchableOpacity
-                        style={styles.cancelButton}
-                        onPress={closeEditModal}
-                        activeOpacity={0.7}
-                      >
-                        <Text style={styles.cancelButtonText}>Cancel</Text>
-                      </TouchableOpacity>
-                    </View>
-                  </KeyboardAvoidingView>
-                </View>
-              </TouchableWithoutFeedback>
-            </Modal>
+              onClose={closeEditModal}
+              editingTransaction={editingTransaction}
+              amount={amount}
+              reason={reason}
+              onAmountChange={setAmount}
+              onReasonChange={setReason}
+              editSelectedDate={editSelectedDate}
+              editShowDatePicker={editShowDatePicker}
+              editUseCustomDate={editUseCustomDate}
+              onSetEditShowDatePicker={setEditShowDatePicker}
+              onSetEditUseCustomDate={setEditUseCustomDate}
+              onSetEditSelectedDate={setEditSelectedDate}
+              onUpdateTransaction={handleUpdateTransaction}
+              formatDate={formatDate}
+            />
           </ScrollView>
         </KeyboardAvoidingView>
       </LinearGradient>
