@@ -11,6 +11,12 @@ import {
   RefreshControl,
   ActivityIndicator,
   StyleSheet,
+  Dimensions,
+  Platform,
+  SafeAreaView,
+  KeyboardAvoidingView,
+  Keyboard,
+  TouchableWithoutFeedback,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
@@ -19,33 +25,50 @@ import { TransactionService } from '../database/services/TransactionService';
 import { Transaction } from '../database/models/Transaction';
 import { useTheme } from '../contexts';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+import { ImageBackground } from 'react-native';
+import { BlurView } from '@react-native-community/blur';
 
-// iOS Typography System
+// Get device dimensions
+const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
+
+// Responsive utilities
+const responsive = {
+  // Width-based scaling
+  wp: (percentage: number) => (SCREEN_WIDTH * percentage) / 100,
+  // Height-based scaling
+  hp: (percentage: number) => (SCREEN_HEIGHT * percentage) / 100,
+  // Font scaling based on width
+  fontSize: (size: number) => (SCREEN_WIDTH / 375) * size, // 375 is iPhone X width
+  // Spacing scaling
+  spacing: (size: number) => (SCREEN_WIDTH / 375) * size,
+};
+
+// iOS Typography System with responsive sizing
 const Typography = {
   // iOS Font Sizes (following iOS Human Interface Guidelines)
   fontSize: {
     // iOS naming
-    caption2: 11, // Caption 2
-    caption1: 12, // Caption 1
-    footnote: 13, // Footnote
-    subheadline: 15, // Subheadline
-    callout: 16, // Callout
-    body: 17, // Body
-    headline: 17, // Headline
-    title3: 20, // Title 3
-    title2: 22, // Title 2
-    title1: 28, // Title 1
-    largeTitle: 34, // Large Title
+    caption2: responsive.fontSize(11), // Caption 2
+    caption1: responsive.fontSize(12), // Caption 1
+    footnote: responsive.fontSize(13), // Footnote
+    subheadline: responsive.fontSize(15), // Subheadline
+    callout: responsive.fontSize(16), // Callout
+    body: responsive.fontSize(17), // Body
+    headline: responsive.fontSize(17), // Headline
+    title3: responsive.fontSize(20), // Title 3
+    title2: responsive.fontSize(22), // Title 2
+    title1: responsive.fontSize(28), // Title 1
+    largeTitle: responsive.fontSize(34), // Large Title
 
     // Backward compatibility
-    tiny: 11, // Maps to caption2
-    small: 13, // Maps to footnote
-    regular: 17, // Maps to body
-    medium: 16, // Maps to callout
-    large: 20, // Maps to title3
-    xl: 22, // Maps to title2
-    xxl: 28, // Maps to title1
-    xxxl: 34, // Maps to largeTitle
+    tiny: responsive.fontSize(11), // Maps to caption2
+    small: responsive.fontSize(13), // Maps to footnote
+    regular: responsive.fontSize(17), // Maps to body
+    medium: responsive.fontSize(16), // Maps to callout
+    large: responsive.fontSize(20), // Maps to title3
+    xl: responsive.fontSize(22), // Maps to title2
+    xxl: responsive.fontSize(28), // Maps to title1
+    xxxl: responsive.fontSize(34), // Maps to largeTitle
   },
 
   // iOS Font Weights
@@ -83,57 +106,57 @@ const Typography = {
   },
 };
 
-// iOS Spacing System (8pt grid)
+// iOS Spacing System (8pt grid) with responsive sizing
 const Spacing = {
   // Base spacing unit (iOS uses 8pt grid)
-  base: 8,
+  base: responsive.spacing(8),
 
   // iOS spacing values
-  xs: 4, // 0.5x
-  sm: 8, // 1x
-  md: 16, // 2x
-  lg: 24, // 3x
-  xl: 32, // 4x
-  xxl: 40, // 5x
-  xxxl: 48, // 6x
+  xs: responsive.spacing(4), // 0.5x
+  sm: responsive.spacing(8), // 1x
+  md: responsive.spacing(16), // 2x
+  lg: responsive.spacing(24), // 3x
+  xl: responsive.spacing(32), // 4x
+  xxl: responsive.spacing(40), // 5x
+  xxxl: responsive.spacing(48), // 6x
 
   // iOS spacing
   margin: {
-    xs: 4,
-    sm: 8,
-    md: 16,
-    lg: 24,
-    xl: 32,
-    xxl: 40,
-    xxxl: 48,
+    xs: responsive.spacing(4),
+    sm: responsive.spacing(8),
+    md: responsive.spacing(16),
+    lg: responsive.spacing(24),
+    xl: responsive.spacing(32),
+    xxl: responsive.spacing(40),
+    xxxl: responsive.spacing(48),
   },
 
   padding: {
-    xs: 4,
-    sm: 8,
-    md: 16,
-    lg: 24,
-    xl: 32,
-    xxl: 40,
-    xxxl: 48,
+    xs: responsive.spacing(4),
+    sm: responsive.spacing(8),
+    md: responsive.spacing(16),
+    lg: responsive.spacing(24),
+    xl: responsive.spacing(32),
+    xxl: responsive.spacing(40),
+    xxxl: responsive.spacing(48),
   },
 
   // iOS Border radius (more rounded)
   borderRadius: {
-    small: 8,
-    medium: 12,
-    large: 16,
-    xl: 20,
-    xxl: 24,
-    xxxl: 28,
+    small: responsive.spacing(8),
+    medium: responsive.spacing(12),
+    large: responsive.spacing(16),
+    xl: responsive.spacing(20),
+    xxl: responsive.spacing(24),
+    xxxl: responsive.spacing(28),
   },
 
   // iOS Heights
   height: {
-    input: 44, // iOS standard touch target
-    button: 44, // iOS standard touch target
-    card: 200,
-    icon: 44, // iOS standard touch target
+    input: responsive.spacing(44), // iOS standard touch target
+    button: responsive.spacing(44), // iOS standard touch target
+    card: responsive.hp(25), // 25% of screen height
+    icon: responsive.spacing(44), // iOS standard touch target
   },
 
   // iOS Widths
@@ -144,10 +167,10 @@ const Spacing = {
 
   // iOS Gaps
   gap: {
-    small: 8,
-    medium: 16,
-    large: 24,
-    xl: 32,
+    small: responsive.spacing(8),
+    medium: responsive.spacing(16),
+    large: responsive.spacing(24),
+    xl: responsive.spacing(32),
   },
 };
 
@@ -214,6 +237,9 @@ interface RouteParams {
 }
 
 type FilterType = 'all' | 'credit' | 'debit';
+
+// iOS touch feedback opacity
+const IOS_ACTIVE_OPACITY = 0.7;
 
 export default function AccountDetailScreen({ route, navigation }: any) {
   const { accountId, accountName }: RouteParams = route.params;
@@ -725,10 +751,11 @@ export default function AccountDetailScreen({ route, navigation }: any) {
       fontWeight: Typography.fontWeight.medium,
     },
     balanceAmount: {
-      fontSize: 36,
+      fontSize: responsive.fontSize(36),
       fontWeight: Typography.fontWeight.bold,
       color: colors.textLight,
       marginBottom: Spacing.sm,
+      letterSpacing: Typography.letterSpacing.tight,
     },
     lastUpdated: {
       fontSize: Typography.fontSize.footnote,
@@ -766,22 +793,22 @@ export default function AccountDetailScreen({ route, navigation }: any) {
     },
     decorativeCircle1: {
       position: 'absolute',
-      width: 150,
-      height: 150,
-      borderRadius: 75,
+      width: responsive.wp(40),
+      height: responsive.wp(40),
+      borderRadius: responsive.wp(20),
       backgroundColor: colors.whiteTransparent,
-      top: -75,
-      right: -75,
+      top: -responsive.wp(20),
+      right: -responsive.wp(20),
       zIndex: 0,
     },
     decorativeCircle2: {
       position: 'absolute',
-      width: 100,
-      height: 100,
-      borderRadius: 50,
+      width: responsive.wp(26),
+      height: responsive.wp(26),
+      borderRadius: responsive.wp(13),
       backgroundColor: colors.whiteOpaque,
-      bottom: -50,
-      left: -50,
+      bottom: -responsive.wp(13),
+      left: -responsive.wp(13),
       zIndex: 0,
     },
     // Transaction Management Box
@@ -925,9 +952,9 @@ export default function AccountDetailScreen({ route, navigation }: any) {
       alignItems: 'flex-start',
     },
     transactionIcon: {
-      width: 40,
-      height: 40,
-      borderRadius: 20,
+      width: responsive.wp(11),
+      height: responsive.wp(11),
+      borderRadius: responsive.wp(5.5),
       justifyContent: 'center',
       alignItems: 'center',
       marginRight: Spacing.md,
@@ -1005,18 +1032,21 @@ export default function AccountDetailScreen({ route, navigation }: any) {
     // Modal styles
     modalOverlay: {
       flex: 1,
-      backgroundColor: colors.overlay,
+      backgroundColor:
+        Platform.OS === 'ios' ? 'rgba(0, 0, 0, 0.5)' : colors.overlay,
       justifyContent: 'center',
       alignItems: 'center',
       padding: Spacing.xl,
+      paddingBottom: Platform.OS === 'ios' ? responsive.hp(10) : Spacing.xl,
     },
     modalContent: {
       backgroundColor: colors.white,
       borderRadius: Spacing.borderRadius.xxl,
       padding: Spacing.xxl,
-      width: '100%',
-      maxWidth: 350,
+      width: responsive.wp(90),
+      maxWidth: responsive.wp(95),
       alignItems: 'center',
+      ...shadows.large,
     },
     modalTitle: {
       fontSize: Typography.fontSize.xl,
@@ -1101,6 +1131,10 @@ export default function AccountDetailScreen({ route, navigation }: any) {
       fontSize: Typography.fontSize.medium,
       fontWeight: Typography.fontWeight.medium,
     },
+    modalKeyboardAvoid: {
+      width: '100%',
+      alignItems: 'center',
+    },
   });
 
   if (isLoading) {
@@ -1120,281 +1154,323 @@ export default function AccountDetailScreen({ route, navigation }: any) {
   }
 
   return (
-    <LinearGradient
-      colors={gradientColors}
-      style={styles.gradientContainer}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 1, y: 1 }}
-    >
-      <ScrollView
-        style={styles.container}
-        contentContainerStyle={styles.contentContainer}
-        refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={onRefresh}
-            colors={[colors.primary]}
-            tintColor={colors.primary}
-          />
-        }
+    <SafeAreaView style={{ flex: 1 }}>
+      <LinearGradient
+        colors={gradientColors}
+        style={styles.gradientContainer}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
       >
-        {/* Account Summary Card */}
-        <View style={styles.accountCard}>
-          <View style={styles.gradientOverlay} />
-          <View style={styles.cardContentContainer}>
-            <View style={styles.balanceSection}>
-              <Text style={styles.accountNameLabel}>{accountName}</Text>
-              <Text style={styles.balanceLabel}>
-                {balance < 0 ? '⚠️ Negative Balance' : 'Current Balance'}
-              </Text>
-              <Text
-                style={[
-                  styles.balanceAmount,
-                  balance < 0 && { color: '#ffcccc' },
-                ]}
-              >
-                {balance.toFixed(2)} Tk
-              </Text>
-              <Text style={styles.lastUpdated}>
-                {balance < 0
-                  ? 'Account running in deficit'
-                  : 'Last updated just now'}
-              </Text>
-            </View>
-
-            <View style={styles.bottomSection}>
-              <View style={styles.statItem}>
-                <Text style={styles.statValue}>
-                  {currentFilter === 'all'
-                    ? totalCredit.toFixed(2)
-                    : filteredCredit.toFixed(2)}{' '}
-                  Tk
-                </Text>
-                <Text style={styles.statLabel}>
-                  {currentFilter === 'all' ? 'Total Credit' : 'Filtered Credit'}
-                </Text>
-              </View>
-              <View style={styles.divider} />
-              <View style={styles.statItem}>
-                <Text style={styles.statValue}>
-                  {currentFilter === 'all'
-                    ? totalDebit.toFixed(2)
-                    : filteredDebit.toFixed(2)}{' '}
-                  Tk
-                </Text>
-                <Text style={styles.statLabel}>
-                  {currentFilter === 'all' ? 'Total Debit' : 'Filtered Debit'}
-                </Text>
-              </View>
-            </View>
-          </View>
-
-          {/* Decorative elements */}
-          <View style={styles.decorativeCircle1} />
-          <View style={styles.decorativeCircle2} />
-        </View>
-
-        {/* Transaction Management Box */}
-        <View
-          style={[
-            styles.managementBox,
-            balance < 0 && {
-              borderColor:
-                currentTheme === 'light'
-                  ? 'rgba(255, 0, 0, 0.3)'
-                  : 'rgba(255, 100, 100, 0.3)',
-            },
-          ]}
+        <KeyboardAvoidingView
+          style={{ flex: 1 }}
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
         >
-          <Text style={styles.boxTitle}>Add Transaction</Text>
-
-          {balance < 0 && (
-            <Text style={styles.negativeWarning}>
-              ⚠️ Account is running negative
-            </Text>
-          )}
-
-          <View style={styles.inputContainer}>
-            <TextInput
-              style={styles.input}
-              placeholder="Amount (Tk)"
-              placeholderTextColor={colors.textSecondary}
-              value={amount}
-              onChangeText={setAmount}
-              keyboardType="numeric"
-            />
-            <TouchableOpacity
-              style={styles.updateButton}
-              onPress={handleUpdatePress}
-              activeOpacity={0.7}
-            >
-              <Text style={styles.updateButtonText}>
-                <MaterialIcons
-                  name="history-edu"
-                  size={25}
-                  color={colors.textLight}
-                />
-              </Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-
-        {/* Filter Buttons */}
-        <View style={styles.filterContainer}>
-          {renderFilterButton('all', 'All', 'list')}
-          {renderFilterButton('credit', 'Credit', 'plus')}
-          {renderFilterButton('debit', 'Debit', 'minus')}
-        </View>
-
-        {/* Transaction History */}
-        <View style={styles.transactionsList}>
-          <View style={styles.transactionsHeader}>
-            <Text style={styles.transactionsTitle}>
-              Transaction History ({filteredTransactions.length})
-            </Text>
-            {currentFilter !== 'all' && (
-              <Text style={styles.filterSummary}>
-                Showing {currentFilter} only
-              </Text>
-            )}
-          </View>
-
-          <FlatList
-            data={filteredTransactions}
-            renderItem={renderTransaction}
-            keyExtractor={item => item.id}
-            ListEmptyComponent={renderEmptyState}
-            scrollEnabled={false}
+          <ScrollView
+            style={styles.container}
+            contentContainerStyle={styles.contentContainer}
+            refreshControl={
+              <RefreshControl
+                refreshing={refreshing}
+                onRefresh={onRefresh}
+                colors={[colors.primary]}
+                tintColor={colors.primary}
+              />
+            }
             showsVerticalScrollIndicator={false}
-          />
-        </View>
+            keyboardShouldPersistTaps="handled"
+          >
+            {/* Account Summary Card */}
+            <View style={styles.accountCard}>
+              <View style={styles.gradientOverlay} />
+              <View style={styles.cardContentContainer}>
+                <View style={styles.balanceSection}>
+                  <Text style={styles.accountNameLabel}>{accountName}</Text>
+                  <Text style={styles.balanceLabel}>
+                    {balance < 0 ? '⚠️ Negative Balance' : 'Current Balance'}
+                  </Text>
+                  <Text
+                    style={[
+                      styles.balanceAmount,
+                      balance < 0 && { color: '#ffcccc' },
+                    ]}
+                  >
+                    {balance.toFixed(2)} Tk
+                  </Text>
+                  <Text style={styles.lastUpdated}>
+                    {balance < 0
+                      ? 'Account running in deficit'
+                      : 'Last updated just now'}
+                  </Text>
+                </View>
 
-        {/* Add Transaction Modal */}
-        <Modal
-          animationType="slide"
-          transparent={true}
-          visible={modalVisible}
-          onRequestClose={closeModal}
-        >
-          <View style={styles.modalOverlay}>
-            <View style={styles.modalContent}>
-              <Text style={styles.modalTitle}>{modalConfig.title}</Text>
-              <Text style={styles.modalAmount}>Amount: {amount} Tk</Text>
-
-              <View style={styles.reasonContainer}>
-                <Text style={styles.reasonLabel}>Reason (Optional)</Text>
-                <TextInput
-                  style={styles.reasonInput}
-                  placeholder="e.g., Groceries, Salary, Gift..."
-                  placeholderTextColor={colors.textSecondary}
-                  value={reason}
-                  onChangeText={setReason}
-                  multiline={true}
-                  maxLength={100}
-                />
+                <View style={styles.bottomSection}>
+                  <View style={styles.statItem}>
+                    <Text style={styles.statValue}>
+                      {currentFilter === 'all'
+                        ? totalCredit.toFixed(2)
+                        : filteredCredit.toFixed(2)}{' '}
+                      Tk
+                    </Text>
+                    <Text style={styles.statLabel}>
+                      {currentFilter === 'all'
+                        ? 'Total Credit'
+                        : 'Filtered Credit'}
+                    </Text>
+                  </View>
+                  <View style={styles.divider} />
+                  <View style={styles.statItem}>
+                    <Text style={styles.statValue}>
+                      {currentFilter === 'all'
+                        ? totalDebit.toFixed(2)
+                        : filteredDebit.toFixed(2)}{' '}
+                      Tk
+                    </Text>
+                    <Text style={styles.statLabel}>
+                      {currentFilter === 'all'
+                        ? 'Total Debit'
+                        : 'Filtered Debit'}
+                    </Text>
+                  </View>
+                </View>
               </View>
 
-              <View
-                style={[
-                  styles.modalButtons,
-                  (!modalConfig.showCredit || !modalConfig.showDebit) && {
-                    justifyContent: 'center',
-                  },
-                ]}
-              >
-                {modalConfig.showCredit && (
-                  <TouchableOpacity
-                    style={[styles.modalButton, styles.creditButton]}
-                    onPress={handleCredit}
-                    activeOpacity={0.7}
-                  >
-                    <Text style={styles.modalButtonText}>💰 Credit</Text>
-                  </TouchableOpacity>
-                )}
-
-                {modalConfig.showDebit && (
-                  <TouchableOpacity
-                    style={[styles.modalButton, styles.debitButton]}
-                    onPress={handleDebit}
-                    activeOpacity={0.7}
-                  >
-                    <Text style={styles.modalButtonText}>💸 Debit</Text>
-                  </TouchableOpacity>
-                )}
-              </View>
-
-              <TouchableOpacity
-                style={styles.cancelButton}
-                onPress={closeModal}
-                activeOpacity={0.7}
-              >
-                <Text style={styles.cancelButtonText}>Cancel</Text>
-              </TouchableOpacity>
+              {/* Decorative elements */}
+              <View style={styles.decorativeCircle1} />
+              <View style={styles.decorativeCircle2} />
             </View>
-          </View>
-        </Modal>
 
-        {/* Edit Transaction Modal */}
-        <Modal
-          animationType="slide"
-          transparent={true}
-          visible={editModalVisible}
-          onRequestClose={closeEditModal}
-        >
-          <View style={styles.modalOverlay}>
-            <View style={styles.modalContent}>
-              <Text style={styles.modalTitle}>Edit Transaction</Text>
-              <Text style={styles.modalAmount}>
-                Type:{' '}
-                {editingTransaction?.type === 'cash_in' ? 'Credit' : 'Debit'}
-              </Text>
+            {/* Transaction Management Box */}
+            <View
+              style={[
+                styles.managementBox,
+                balance < 0 && {
+                  borderColor:
+                    currentTheme === 'light'
+                      ? 'rgba(255, 0, 0, 0.3)'
+                      : 'rgba(255, 100, 100, 0.3)',
+                },
+              ]}
+            >
+              <Text style={styles.boxTitle}>Add Transaction</Text>
 
-              <View style={styles.reasonContainer}>
-                <Text style={styles.reasonLabel}>Amount (Tk)</Text>
+              {balance < 0 && (
+                <Text style={styles.negativeWarning}>
+                  ⚠️ Account is running negative
+                </Text>
+              )}
+
+              <View style={styles.inputContainer}>
                 <TextInput
-                  style={styles.reasonInput}
-                  placeholder="Enter amount"
+                  style={styles.input}
+                  placeholder="Amount (Tk)"
                   placeholderTextColor={colors.textSecondary}
                   value={amount}
                   onChangeText={setAmount}
                   keyboardType="numeric"
                 />
-              </View>
-
-              <View style={styles.reasonContainer}>
-                <Text style={styles.reasonLabel}>Reason</Text>
-                <TextInput
-                  style={styles.reasonInput}
-                  placeholder="e.g., Groceries, Salary, Gift..."
-                  placeholderTextColor={colors.textSecondary}
-                  value={reason}
-                  onChangeText={setReason}
-                  multiline={true}
-                  maxLength={100}
-                />
-              </View>
-
-              <View style={styles.modalButtons}>
                 <TouchableOpacity
-                  style={[styles.modalButton, styles.updateTransactionButton]}
-                  onPress={handleUpdateTransaction}
+                  style={styles.updateButton}
+                  onPress={handleUpdatePress}
                   activeOpacity={0.7}
                 >
-                  <Text style={styles.modalButtonText}>Update</Text>
+                  <Text style={styles.updateButtonText}>
+                    <MaterialIcons
+                      name="history-edu"
+                      size={25}
+                      color={colors.textLight}
+                    />
+                  </Text>
                 </TouchableOpacity>
               </View>
-
-              <TouchableOpacity
-                style={styles.cancelButton}
-                onPress={closeEditModal}
-                activeOpacity={0.7}
-              >
-                <Text style={styles.cancelButtonText}>Cancel</Text>
-              </TouchableOpacity>
             </View>
-          </View>
-        </Modal>
-      </ScrollView>
-    </LinearGradient>
+
+            {/* Filter Buttons */}
+            <View style={styles.filterContainer}>
+              {renderFilterButton('all', 'All', 'list')}
+              {renderFilterButton('credit', 'Credit', 'plus')}
+              {renderFilterButton('debit', 'Debit', 'minus')}
+            </View>
+
+            {/* Transaction History */}
+            <View style={styles.transactionsList}>
+              <View style={styles.transactionsHeader}>
+                <Text style={styles.transactionsTitle}>
+                  Transaction History ({filteredTransactions.length})
+                </Text>
+                {currentFilter !== 'all' && (
+                  <Text style={styles.filterSummary}>
+                    Showing {currentFilter} only
+                  </Text>
+                )}
+              </View>
+
+              <FlatList
+                data={filteredTransactions}
+                renderItem={renderTransaction}
+                keyExtractor={item => item.id}
+                ListEmptyComponent={renderEmptyState}
+                scrollEnabled={false}
+                showsVerticalScrollIndicator={false}
+              />
+            </View>
+
+            {/* Add Transaction Modal */}
+            <Modal
+              animationType="slide"
+              transparent={true}
+              visible={modalVisible}
+              onRequestClose={closeModal}
+              presentationStyle="pageSheet"
+            >
+              <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+                <View style={styles.modalOverlay}>
+                  <KeyboardAvoidingView
+                    behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+                    style={styles.modalKeyboardAvoid}
+                  >
+                    <View style={styles.modalContent}>
+                      <Text style={styles.modalTitle}>{modalConfig.title}</Text>
+                      <Text style={styles.modalAmount}>
+                        Amount: {amount} Tk
+                      </Text>
+
+                      <View style={styles.reasonContainer}>
+                        <Text style={styles.reasonLabel}>
+                          Reason (Optional)
+                        </Text>
+                        <TextInput
+                          style={styles.reasonInput}
+                          placeholder="e.g., Groceries, Salary, Gift..."
+                          placeholderTextColor={colors.textSecondary}
+                          value={reason}
+                          onChangeText={setReason}
+                          multiline={true}
+                          maxLength={100}
+                        />
+                      </View>
+
+                      <View
+                        style={[
+                          styles.modalButtons,
+                          (!modalConfig.showCredit ||
+                            !modalConfig.showDebit) && {
+                            justifyContent: 'center',
+                          },
+                        ]}
+                      >
+                        {modalConfig.showCredit && (
+                          <TouchableOpacity
+                            style={[styles.modalButton, styles.creditButton]}
+                            onPress={handleCredit}
+                            activeOpacity={0.7}
+                          >
+                            <Text style={styles.modalButtonText}>
+                              💰 Credit
+                            </Text>
+                          </TouchableOpacity>
+                        )}
+
+                        {modalConfig.showDebit && (
+                          <TouchableOpacity
+                            style={[styles.modalButton, styles.debitButton]}
+                            onPress={handleDebit}
+                            activeOpacity={0.7}
+                          >
+                            <Text style={styles.modalButtonText}>💸 Debit</Text>
+                          </TouchableOpacity>
+                        )}
+                      </View>
+
+                      <TouchableOpacity
+                        style={styles.cancelButton}
+                        onPress={closeModal}
+                        activeOpacity={0.7}
+                      >
+                        <Text style={styles.cancelButtonText}>Cancel</Text>
+                      </TouchableOpacity>
+                    </View>
+                  </KeyboardAvoidingView>
+                </View>
+              </TouchableWithoutFeedback>
+            </Modal>
+
+            {/* Edit Transaction Modal */}
+            <Modal
+              animationType="slide"
+              transparent={true}
+              visible={editModalVisible}
+              onRequestClose={closeEditModal}
+              presentationStyle="pageSheet"
+            >
+              <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+                <View style={styles.modalOverlay}>
+                  <KeyboardAvoidingView
+                    behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+                    style={styles.modalKeyboardAvoid}
+                  >
+                    <View style={styles.modalContent}>
+                      <Text style={styles.modalTitle}>Edit Transaction</Text>
+                      <Text style={styles.modalAmount}>
+                        Type:{' '}
+                        {editingTransaction?.type === 'cash_in'
+                          ? 'Credit'
+                          : 'Debit'}
+                      </Text>
+
+                      <View style={styles.reasonContainer}>
+                        <Text style={styles.reasonLabel}>Amount (Tk)</Text>
+                        <TextInput
+                          style={styles.reasonInput}
+                          placeholder="Enter amount"
+                          placeholderTextColor={colors.textSecondary}
+                          value={amount}
+                          onChangeText={setAmount}
+                          keyboardType="numeric"
+                        />
+                      </View>
+
+                      <View style={styles.reasonContainer}>
+                        <Text style={styles.reasonLabel}>Reason</Text>
+                        <TextInput
+                          style={styles.reasonInput}
+                          placeholder="e.g., Groceries, Salary, Gift..."
+                          placeholderTextColor={colors.textSecondary}
+                          value={reason}
+                          onChangeText={setReason}
+                          multiline={true}
+                          maxLength={100}
+                        />
+                      </View>
+
+                      <View style={styles.modalButtons}>
+                        <TouchableOpacity
+                          style={[
+                            styles.modalButton,
+                            styles.updateTransactionButton,
+                          ]}
+                          onPress={handleUpdateTransaction}
+                          activeOpacity={0.7}
+                        >
+                          <Text style={styles.modalButtonText}>Update</Text>
+                        </TouchableOpacity>
+                      </View>
+
+                      <TouchableOpacity
+                        style={styles.cancelButton}
+                        onPress={closeEditModal}
+                        activeOpacity={0.7}
+                      >
+                        <Text style={styles.cancelButtonText}>Cancel</Text>
+                      </TouchableOpacity>
+                    </View>
+                  </KeyboardAvoidingView>
+                </View>
+              </TouchableWithoutFeedback>
+            </Modal>
+          </ScrollView>
+        </KeyboardAvoidingView>
+      </LinearGradient>
+    </SafeAreaView>
   );
 }
