@@ -191,8 +191,7 @@ const HomeCard: React.FC<HomeCardProps> = ({
   totalTransactions,
   totalCashIn,
   totalCashOut,
-  globalBalance,
-  totalAccounts,
+
 }) => {
   const { colors } = useTheme();
   const shadows = getShadows(colors);
@@ -220,7 +219,7 @@ const HomeCard: React.FC<HomeCardProps> = ({
       right: 0,
       bottom: 0,
       backgroundColor: colors.secondary,
-      opacity: 0.85,
+      opacity: 0.50,
     },
     gradientOverlay: {
       position: 'absolute',
@@ -359,21 +358,7 @@ const HomeCard: React.FC<HomeCardProps> = ({
           <View style={styles.contentContainer}>
             <View style={styles.balanceSection}>
               {/* Global Balance Summary */}
-              {globalBalance !== undefined && totalAccounts !== undefined && (
-                <View style={styles.globalBalanceSection}>
-                  <Text style={styles.globalBalanceLabel}>
-                    All Accounts Summary
-                  </Text>
-                  <Text style={styles.globalBalanceAmount}>
-                    {isLoading
-                      ? 'Loading...'
-                      : `${globalBalance.toFixed(2)} Tk`}
-                  </Text>
-                  <Text style={styles.accountCount}>
-                    {totalAccounts} account{totalAccounts !== 1 ? 's' : ''}
-                  </Text>
-                </View>
-              )}
+              {/*  */}
 
               {/* Current Account Balance */}
               <Text style={styles.balanceLabel}>Current Account Balance</Text>
