@@ -11,8 +11,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
-import Store, { AppData } from '../store/store';
-import { Transaction } from '../database/models/Transaction';
+import Store, { LegacyTransaction } from '../store/store';
 import { useTheme } from '../contexts';
 import { HomeCard as HomeCardComponent } from '../components';
 
@@ -192,8 +191,17 @@ export default function HomeScreen({ navigation }: any) {
   const shadows = getShadows(colors);
   const insets = useSafeAreaInsets();
   const [balance, setBalance] = useState<number>(0);
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [transactions, setTransactions] = useState<LegacyTransaction[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [transactionStats, setTransactionStats] = useState({
+    totalTransactions: 0,
+    totalCashIn: 0,
+    totalCashOut: 0,
+  });
+  const [globalStats, setGlobalStats] = useState({
+    globalBalance: 0,
+    totalAccounts: 1, // Show at least 1 account by default
+  });
 
   // Navigation cards data
   const navigationCards = [
@@ -247,12 +255,52 @@ export default function HomeScreen({ navigation }: any) {
     try {
       setIsLoading(true);
       await Store.initialize();
-      const data: AppData = await Store.loadData();
+
+      // Load current account data
+      const data = await Store.loadData();
+
+      console.log('📊 HomeScreen Debug:');
+      console.log('- Current Account Balance:', data.balance);
+      console.log('- Current Account Transactions:', data.transactions.length);
+
+      if (data.transactions.length > 0) {
+        console.log('- Sample legacy transaction:', {
+          id: data.transactions[0].id,
+          type: data.transactions[0].type,
+          amount: data.transactions[0].amount,
+        });
+      }
+
       setBalance(data.balance);
       setTransactions(data.transactions);
+
+      // Load global stats separately with error handling
+      try {
+        const globalData = await Store.getGlobalStats();
+        console.log('- Global Balance:', globalData.globalBalance);
+        console.log('- Total Accounts:', globalData.totalAccounts);
+
+        setGlobalStats({
+          globalBalance: globalData.globalBalance,
+          totalAccounts: Math.max(globalData.totalAccounts, 1), // Ensure at least 1
+        });
+      } catch (globalError) {
+        console.error('Error loading global stats:', globalError);
+        // Fallback: use current account data as global data
+        setGlobalStats({
+          globalBalance: data.balance,
+          totalAccounts: 1,
+        });
+      }
     } catch (error) {
       console.error('Error loading data:', error);
       Alert.alert('Error', 'Failed to load transaction data');
+
+      // Set fallback values
+      setGlobalStats({
+        globalBalance: 0,
+        totalAccounts: 1,
+      });
     } finally {
       setIsLoading(false);
     }
@@ -268,8 +316,32 @@ export default function HomeScreen({ navigation }: any) {
       }
     };
 
+    const calculateStats = () => {
+      const totalCashIn = transactions
+        .filter(t => t.type === 'cash_in')
+        .reduce((sum, t) => sum + t.amount, 0);
+
+      const totalCashOut = transactions
+        .filter(t => t.type === 'cash_out')
+        .reduce((sum, t) => sum + t.amount, 0);
+
+      setTransactionStats({
+        totalTransactions: transactions.length,
+        totalCashIn,
+        totalCashOut,
+      });
+    };
+
     if (transactions.length > 0) {
       getLastAmounts();
+      calculateStats();
+    } else {
+      // Reset stats when no transactions
+      setTransactionStats({
+        totalTransactions: 0,
+        totalCashIn: 0,
+        totalCashOut: 0,
+      });
     }
   }, [transactions]);
 
@@ -386,6 +458,11 @@ export default function HomeScreen({ navigation }: any) {
         isLoading={isLoading}
         lastCashIn={lastTransactionAmounts.lastCashIn}
         lastCashOut={lastTransactionAmounts.lastCashOut}
+        totalTransactions={transactionStats.totalTransactions}
+        totalCashIn={transactionStats.totalCashIn}
+        totalCashOut={transactionStats.totalCashOut}
+        globalBalance={globalStats.globalBalance}
+        totalAccounts={globalStats.totalAccounts}
       />
 
       {/* Navigation Cards */}
