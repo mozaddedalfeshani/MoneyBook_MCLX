@@ -241,7 +241,11 @@ export default function AccountDetailScreen({ route, navigation }: any) {
 
   // Theme-compatible gradient colors
   const gradientColors =
-    currentTheme === 'light'
+    balance < 0
+      ? currentTheme === 'light'
+        ? ['#ffe6e6', '#ffcccc', '#ffb3b3'] // Light red gradient for negative balance
+        : ['#4a1a1a', '#3d1515', '#301010'] // Dark red gradient for negative balance
+      : currentTheme === 'light'
       ? ['#f0faff', '#e6f7ff', '#f8fbff'] // Very light blue gradient
       : ['#2a2a2a', '#252525', '#1f1f1f']; // Subtle dark gradient
 
@@ -277,24 +281,27 @@ export default function AccountDetailScreen({ route, navigation }: any) {
     setFilteredDebit(debit);
   };
 
-  const applyFilter = (filter: FilterType, transactionList: Transaction[]) => {
-    let filtered: Transaction[] = [];
+  const applyFilter = useCallback(
+    (filter: FilterType, transactionList: Transaction[]) => {
+      let filtered: Transaction[] = [];
 
-    switch (filter) {
-      case 'credit':
-        filtered = transactionList.filter(t => t.type === 'cash_in');
-        break;
-      case 'debit':
-        filtered = transactionList.filter(t => t.type === 'cash_out');
-        break;
-      default:
-        filtered = transactionList;
-        break;
-    }
+      switch (filter) {
+        case 'credit':
+          filtered = transactionList.filter(t => t.type === 'cash_in');
+          break;
+        case 'debit':
+          filtered = transactionList.filter(t => t.type === 'cash_out');
+          break;
+        default:
+          filtered = transactionList;
+          break;
+      }
 
-    setFilteredTransactions(filtered);
-    calculateFilteredTotals(filtered);
-  };
+      setFilteredTransactions(filtered);
+      calculateFilteredTotals(filtered);
+    },
+    [],
+  );
 
   const handleFilterChange = (filter: FilterType) => {
     setCurrentFilter(filter);
@@ -319,7 +326,7 @@ export default function AccountDetailScreen({ route, navigation }: any) {
     } finally {
       setIsLoading(false);
     }
-  }, [accountId, currentFilter]);
+  }, [accountId, currentFilter, applyFilter]);
 
   const handleUpdatePress = () => {
     if (!amount || parseFloat(amount) <= 0) {
@@ -363,10 +370,41 @@ export default function AccountDetailScreen({ route, navigation }: any) {
     try {
       const debitAmount = parseFloat(amount);
 
+      // Removed balance check to allow negative balance
+      // Show warning if going negative instead of blocking
       if (balance < debitAmount) {
         Alert.alert(
-          'Insufficient Balance',
-          "You don't have enough money for this transaction",
+          'Negative Balance Warning',
+          `This transaction will put your account in negative balance. Your new balance will be ${(
+            balance - debitAmount
+          ).toFixed(2)} Tk. Do you want to proceed?`,
+          [
+            { text: 'Cancel', style: 'cancel' },
+            {
+              text: 'Proceed',
+              style: 'destructive',
+              onPress: async () => {
+                await TransactionService.addTransaction(
+                  accountId,
+                  'cash_out',
+                  debitAmount,
+                  reason,
+                );
+                await loadAccountData();
+                setModalVisible(false);
+                setAmount('');
+                setReason('');
+
+                const reasonText = reason.trim() ? ` (${reason.trim()})` : '';
+                Alert.alert(
+                  'Success',
+                  `Debit successful! New balance: ${
+                    balance - debitAmount
+                  } Tk${reasonText}`,
+                );
+              },
+            },
+          ],
         );
         return;
       }
@@ -661,8 +699,8 @@ export default function AccountDetailScreen({ route, navigation }: any) {
       left: 0,
       right: 0,
       bottom: 0,
-      backgroundColor: colors.secondary,
-      opacity: 0.9,
+      backgroundColor: balance < 0 ? colors.error : colors.secondary,
+      opacity: balance < 0 ? 0.85 : 0.9,
     },
     cardContentContainer: {
       padding: Spacing.xxl,
@@ -771,6 +809,13 @@ export default function AccountDetailScreen({ route, navigation }: any) {
       color: colors.textPrimary,
       marginBottom: Spacing.lg,
       textAlign: 'center',
+    },
+    negativeWarning: {
+      fontSize: Typography.fontSize.footnote,
+      color: colors.error,
+      textAlign: 'center',
+      marginBottom: Spacing.md,
+      fontStyle: 'italic',
     },
     inputContainer: {
       flexDirection: 'row',
@@ -1099,9 +1144,22 @@ export default function AccountDetailScreen({ route, navigation }: any) {
           <View style={styles.cardContentContainer}>
             <View style={styles.balanceSection}>
               <Text style={styles.accountNameLabel}>{accountName}</Text>
-              <Text style={styles.balanceLabel}>Current Balance</Text>
-              <Text style={styles.balanceAmount}>{balance.toFixed(2)} Tk</Text>
-              <Text style={styles.lastUpdated}>Last updated just now</Text>
+              <Text style={styles.balanceLabel}>
+                {balance < 0 ? '⚠️ Negative Balance' : 'Current Balance'}
+              </Text>
+              <Text
+                style={[
+                  styles.balanceAmount,
+                  balance < 0 && { color: '#ffcccc' },
+                ]}
+              >
+                {balance.toFixed(2)} Tk
+              </Text>
+              <Text style={styles.lastUpdated}>
+                {balance < 0
+                  ? 'Account running in deficit'
+                  : 'Last updated just now'}
+              </Text>
             </View>
 
             <View style={styles.bottomSection}>
@@ -1137,8 +1195,24 @@ export default function AccountDetailScreen({ route, navigation }: any) {
         </View>
 
         {/* Transaction Management Box */}
-        <View style={styles.managementBox}>
+        <View
+          style={[
+            styles.managementBox,
+            balance < 0 && {
+              borderColor:
+                currentTheme === 'light'
+                  ? 'rgba(255, 0, 0, 0.3)'
+                  : 'rgba(255, 100, 100, 0.3)',
+            },
+          ]}
+        >
           <Text style={styles.boxTitle}>Add Transaction</Text>
+
+          {balance < 0 && (
+            <Text style={styles.negativeWarning}>
+              ⚠️ Account is running negative
+            </Text>
+          )}
 
           <View style={styles.inputContainer}>
             <TextInput
