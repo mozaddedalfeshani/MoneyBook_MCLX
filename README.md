@@ -415,15 +415,36 @@ output/
 
 ## Contributing 🤝
 
+This is an **open source project** and we welcome contributions from the community!
+
+### How to Contribute
+
 1. Fork the repository
-2. Create a feature branch
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
 3. Make your changes
 4. Add tests if applicable
-5. Submit a pull request
+5. Commit your changes (`git commit -m 'Add some amazing feature'`)
+6. Push to the branch (`git push origin feature/amazing-feature`)
+7. Submit a pull request
+
+### Contribution Guidelines
+
+- Please ensure your code follows the existing style and conventions
+- Add comments for complex logic
+- Update documentation if you add new features
+- Test your changes thoroughly
+- Be respectful and constructive in discussions
+
+## Author 👨‍💻
+
+**Mir Mozadded Alfeshani Murad**
+
+- **Email**: [imurad2020@gmail.com](mailto:imurad2020@gmail.com)
+- **GitHub**: [github.com/mozaddedalfeshani](https://github.com/mozaddedalfeshani)
 
 ## License 📄
 
-This project is licensed under the MIT License.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## Support 💬
 
