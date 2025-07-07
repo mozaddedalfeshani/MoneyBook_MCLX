@@ -68,16 +68,17 @@ CREATE TABLE transactions (
 );
 ```
 
-## Tech Stack 🛠️
+## Tech Stack ��️
 
-- **React Native** - Cross-platform mobile development
+- **React Native 0.80.1** - Cross-platform mobile development
 - **TypeScript** - Type-safe JavaScript
 - **WatermelonDB** - High-performance SQLite database with reactive queries
 - **React Navigation** - Tab and stack-based navigation
-- **AsyncStorage** - Theme and migration state storage
 - **React Native Vector Icons** - Beautiful icons (FontAwesome5, MaterialIcons)
 - **React Native Date Picker** - Custom date selection for transactions
 - **React Native Linear Gradient** - Beautiful gradient backgrounds
+- **React Native Safe Area Context** - Screen compatibility
+- **React Native Async Storage** - Theme and migration state storage
 - **Centralized Styling** - Theme-based design system with dark/light mode
 - **Babel Decorators** - ES7 decorators for WatermelonDB models
 
@@ -90,6 +91,7 @@ CREATE TABLE transactions (
 - Android Studio (for Android development)
 - Xcode (for iOS development - macOS only)
 - Yarn package manager (recommended)
+- Java OpenJDK 17 (for Android builds)
 
 ### Installation
 
@@ -150,12 +152,29 @@ CREATE TABLE transactions (
    ```
 
 2. **Build release APK**
+
    ```bash
    cd android
    ./gradlew assembleRelease
    ```
 
-Built APKs will be available in the `output/` folder.
+3. **Build release AAB (Google Play Store)**
+   ```bash
+   cd android
+   ./gradlew bundleRelease
+   ```
+
+Built artifacts will be available in the `output/` folder.
+
+### Build Environment
+
+- **Platform**: Linux (Ubuntu/Debian based)
+- **Build Tools**: Gradle 8.14.1
+- **Java**: OpenJDK 17
+- **Android SDK**: Latest
+- **Architecture**: Old React Native Architecture (newArchEnabled=false)
+- **JavaScript Engine**: Hermes ✅
+- **Target Platforms**: Android (armeabi-v7a, arm64-v8a, x86, x86_64)
 
 ### iOS
 
@@ -328,18 +347,26 @@ MoneyBook features professionally designed app icons that adapt to any theme:
   - Bug fixes and performance enhancements
   - Code optimization
 
-- **v2.4.0**: **Account Management & Transaction Modals** (current)
-  - **🏦 Multi-Account Support**: Create and manage multiple accounts independently
-  - **📱 Account Detail Screen**: Comprehensive account management interface
-  - **✨ Transaction Modals**: Beautiful add/edit transaction forms with validation
-  - **📅 Date Picker Integration**: Custom date selection using react-native-date-picker
-  - **🔍 Advanced Filtering**: Filter transactions by type (all/credit/debit)
-  - **⚠️ Negative Balance Handling**: Visual warnings and special styling for deficit accounts
-  - **🎨 Enhanced UI**: Responsive design with gradient backgrounds and floating elements
-  - **✏️ Transaction Editing**: Full edit capability for existing transactions
+- **v2.4.0**: **Account Management & Transaction Modals** (Current Release - July 8, 2025)
+  - **🏦 Multi-Account Support**: Create and manage multiple accounts with individual balances
+  - **📱 Transaction Modals**: Beautiful add/edit transaction forms with validation and custom date selection
+  - **📊 Account Detail Screen**: Comprehensive account management with transaction filtering options
+  - **📅 Custom Date Selection**: Add transactions with custom dates using native date picker
+  - **🔍 Advanced Filtering**: Filter transactions by credit, debit, or all transactions
+  - **⚠️ Negative Balance Alerts**: Visual warnings for accounts running negative with special styling
+  - **✏️ Transaction Editing**: Full edit capability for existing transactions with date picker support
+  - **🎨 Enhanced UI**: Responsive design with gradient backgrounds and floating visual elements
   - **🗑️ Safe Deletion**: Account and transaction deletion with confirmation dialogs
+  - **📝 Improved Transaction History**: Better organization and visual representation of financial data
 
 ## Available Builds 📦
+
+### Latest Release: v2.4.0 (July 8, 2025)
+
+- **APK**: `moneybook-v2.4.0-release.apk` (53.7 MB) - Direct installation
+- **AAB**: `moneybook-v2.4.0-release.aab` (26.6 MB) - Google Play Store
+
+### Previous Builds
 
 ```
 output/
@@ -350,20 +377,74 @@ output/
 ├── MoneyBook-v2.1.0-release.apk                    # Enhanced UI (55MB)
 ├── MoneyBook-v2.2.0-release.apk                    # Advanced features (55MB)
 ├── MoneyBook-v2.3.0-release.apk                    # Stability improvements (56MB)
-└── moneybook-v2.4.0-release.apk                    # Account Management (57MB) ⭐
+└── moneybook-v2.4.0-release.apk                    # Account Management (53.7MB) ⭐
 ```
+
+## Installation Instructions 📱
+
+### For Android APK (Direct Installation)
+
+1. **Enable Unknown Sources**:
+   - Go to Settings → Security → Unknown Sources (Enable)
+   - Or Settings → Apps → Special Access → Install Unknown Apps
+2. **Transfer APK**: Copy `moneybook-v2.4.0-release.apk` to your Android device
+3. **Install**: Tap the APK file and follow installation prompts
+4. **Launch**: Find MoneyBook in your app drawer
+
+### For Google Play Store (AAB)
+
+1. **Upload to Console**: Use `moneybook-v2.4.0-release.aab` in Google Play Console
+2. **Create Release**: Follow Google Play Store publishing guidelines
+3. **Review Process**: App will go through Google's review process
+4. **Distribution**: Available to users after approval
+
+## Troubleshooting 🔧
+
+### If Installation Fails:
+
+1. **Storage Space**: Ensure device has at least 100MB free space
+2. **Android Version**: Check minimum Android version compatibility
+3. **Permissions**: Verify installation permissions are granted
+4. **Conflicting Apps**: Uninstall any previous versions first
+
+### If App Crashes:
+
+1. **Clear Cache**: Clear app cache and data
+2. **Restart Device**: Reboot your Android device
+3. **Reinstall**: Uninstall and reinstall the app
 
 ## Contributing 🤝
 
+This is an **open source project** and we welcome contributions from the community!
+
+### How to Contribute
+
 1. Fork the repository
-2. Create a feature branch
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
 3. Make your changes
 4. Add tests if applicable
-5. Submit a pull request
+5. Commit your changes (`git commit -m 'Add some amazing feature'`)
+6. Push to the branch (`git push origin feature/amazing-feature`)
+7. Submit a pull request
+
+### Contribution Guidelines
+
+- Please ensure your code follows the existing style and conventions
+- Add comments for complex logic
+- Update documentation if you add new features
+- Test your changes thoroughly
+- Be respectful and constructive in discussions
+
+## Author 👨‍💻
+
+**Mir Mozadded Alfeshani Murad**
+
+- **Email**: [imurad2020@gmail.com](mailto:imurad2020@gmail.com)
+- **GitHub**: [github.com/mozaddedalfeshani](https://github.com/mozaddedalfeshani)
 
 ## License 📄
 
-This project is licensed under the MIT License.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## Support 💬
 
@@ -374,3 +455,5 @@ If you encounter any issues or have questions, please open an issue on the repos
 Made with ❤️ using React Native and WatermelonDB
 
 _Now featuring professional account management with multi-account support, transaction modals, and advanced filtering capabilities._
+
+**Build Status**: ✅ **BUILD SUCCESSFUL** - Release v2.4.0 created successfully!
