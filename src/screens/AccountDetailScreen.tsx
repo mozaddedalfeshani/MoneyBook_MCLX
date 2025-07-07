@@ -742,7 +742,7 @@ export default function AccountDetailScreen({ route, navigation }: any) {
     },
     backgroundImageStyle: {
       borderRadius: Spacing.borderRadius.xl,
-      opacity: 0.3, // Make background subtle
+      opacity: 0.6, // Increased opacity to make background more visible
     },
     imageOverlay: {
       position: 'absolute',
@@ -752,8 +752,8 @@ export default function AccountDetailScreen({ route, navigation }: any) {
       bottom: 0,
       backgroundColor:
         balance < 0
-          ? 'rgba(220, 20, 60, 0.88)' // Deeper crimson red for negative balance
-          : 'rgba(25, 118, 210, 0.85)', // Blue overlay for positive
+          ? 'rgba(220, 20, 60, 0.65)' // Reduced opacity for negative balance
+          : 'rgba(25, 118, 210, 0.60)', // Reduced opacity for positive balance
       borderRadius: Spacing.borderRadius.xl,
     },
     cardContent: {
