@@ -351,10 +351,10 @@ export default function AccountDetailScreen({ route, navigation }: any) {
   }, [accountId, currentFilter, applyFilter]);
 
   const handleUpdatePress = () => {
-    if (!amount || parseFloat(amount) <= 0) {
+    if (!amount || parseFloat(amount) === 0) {
       Alert.alert(
         'Invalid Amount',
-        'Please enter a valid amount greater than 0',
+        'Please enter a valid amount (positive or negative)',
       );
       return;
     }
@@ -390,9 +390,13 @@ export default function AccountDetailScreen({ route, navigation }: any) {
 
   const handleDebit = async () => {
     try {
-      const debitAmount = parseFloat(amount);
+      let debitAmount = parseFloat(amount);
 
-      // Removed balance check to allow negative balance
+      // If amount is negative, make it positive for debit calculation
+      if (debitAmount < 0) {
+        debitAmount = Math.abs(debitAmount);
+      }
+
       // Show warning if going negative instead of blocking
       if (balance < debitAmount) {
         Alert.alert(
@@ -667,26 +671,42 @@ export default function AccountDetailScreen({ route, navigation }: any) {
     </View>
   );
 
-  // Get modal title and default buttons based on current filter
+  // Get modal title and default buttons based on amount and filter
   const getModalConfig = () => {
+    const amountValue = parseFloat(amount);
+
+    // If amount is negative, auto-detect as debit
+    if (amountValue < 0) {
+      return {
+        title: 'Negative Amount (Debit)',
+        showCredit: false,
+        showDebit: true,
+        autoDetected: true,
+      };
+    }
+
+    // If amount is positive, check filter
     switch (currentFilter) {
       case 'credit':
         return {
           title: 'Add Credit Transaction',
           showCredit: true,
           showDebit: false,
+          autoDetected: false,
         };
       case 'debit':
         return {
           title: 'Add Debit Transaction',
           showCredit: false,
           showDebit: true,
+          autoDetected: false,
         };
       default:
         return {
           title: 'Choose Transaction Type',
           showCredit: true,
           showDebit: true,
+          autoDetected: false,
         };
     }
   };
@@ -709,7 +729,7 @@ export default function AccountDetailScreen({ route, navigation }: any) {
     // Account Summary Card - Compact & Charming Design
     accountCard: {
       marginHorizontal: Spacing.lg,
-      marginTop:0,
+      marginTop: 0,
       marginBottom: 0,
       borderRadius: Spacing.borderRadius.xl,
       overflow: 'hidden',
@@ -732,7 +752,7 @@ export default function AccountDetailScreen({ route, navigation }: any) {
       bottom: 0,
       backgroundColor:
         balance < 0
-          ? 'rgba(244, 67, 54, 0.85)' // Red overlay for negative
+          ? 'rgba(220, 20, 60, 0.88)' // Deeper crimson red for negative balance
           : 'rgba(25, 118, 210, 0.85)', // Blue overlay for positive
       borderRadius: Spacing.borderRadius.xl,
     },
@@ -791,7 +811,10 @@ export default function AccountDetailScreen({ route, navigation }: any) {
       textAlign: 'center',
     },
     negativeBalance: {
-      color: '#ffcccc',
+      color: '#ff6b6b', // Brighter red for negative balance
+      textShadowColor: 'rgba(139, 0, 0, 0.5)', // Dark red shadow
+      textShadowOffset: { width: 0, height: 1 },
+      textShadowRadius: 3,
     },
     currency: {
       fontSize: responsive.fontSize(20),
@@ -1109,6 +1132,13 @@ export default function AccountDetailScreen({ route, navigation }: any) {
       color: colors.primary,
       marginBottom: Spacing.xl,
     },
+    autoDetectedText: {
+      fontSize: Typography.fontSize.footnote,
+      color: colors.warning,
+      textAlign: 'center',
+      marginBottom: Spacing.md,
+      fontStyle: 'italic',
+    },
     reasonContainer: {
       width: '100%',
       marginBottom: Spacing.xl,
@@ -1231,7 +1261,11 @@ export default function AccountDetailScreen({ route, navigation }: any) {
             {/* Account Summary Card */}
             <View style={styles.accountCard}>
               <ImageBackground
-                source={require('../../assets/images/naturalflower.jpg')}
+                source={
+                  balance < 0
+                    ? require('../../assets/images/loan.png')
+                    : require('../../assets/images/naturalflower.jpg')
+                }
                 style={styles.backgroundImage}
                 imageStyle={styles.backgroundImageStyle}
               >
@@ -1397,8 +1431,14 @@ export default function AccountDetailScreen({ route, navigation }: any) {
                     <View style={styles.modalContent}>
                       <Text style={styles.modalTitle}>{modalConfig.title}</Text>
                       <Text style={styles.modalAmount}>
-                        Amount: {amount} Tk
+                        Amount: {Math.abs(parseFloat(amount) || 0).toFixed(2)}{' '}
+                        Tk
                       </Text>
+                      {modalConfig.autoDetected && (
+                        <Text style={styles.autoDetectedText}>
+                          ⚡ Auto-detected as debit transaction
+                        </Text>
+                      )}
 
                       <View style={styles.reasonContainer}>
                         <Text style={styles.reasonLabel}>
