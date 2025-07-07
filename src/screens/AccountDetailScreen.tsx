@@ -17,6 +17,7 @@ import {
   KeyboardAvoidingView,
   Keyboard,
   TouchableWithoutFeedback,
+  ImageBackground,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
@@ -25,8 +26,6 @@ import { TransactionService } from '../database/services/TransactionService';
 import { Transaction } from '../database/models/Transaction';
 import { useTheme } from '../contexts';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
-import { ImageBackground } from 'react-native';
-import { BlurView } from '@react-native-community/blur';
 
 // Get device dimensions
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
@@ -237,9 +236,6 @@ interface RouteParams {
 }
 
 type FilterType = 'all' | 'credit' | 'debit';
-
-// iOS touch feedback opacity
-const IOS_ACTIVE_OPACITY = 0.7;
 
 export default function AccountDetailScreen({ route, navigation }: any) {
   const { accountId, accountName }: RouteParams = route.params;
@@ -710,105 +706,157 @@ export default function AccountDetailScreen({ route, navigation }: any) {
       paddingTop: Spacing.xl,
       paddingBottom: 40,
     },
-    // Account Summary Card
+    // Account Summary Card - Compact & Charming Design
     accountCard: {
-      margin: Spacing.lg,
-      marginBottom: Spacing.md,
-      borderRadius: Spacing.borderRadius.xxl,
+      marginHorizontal: Spacing.lg,
+      marginTop:0,
+      marginBottom: 0,
+      borderRadius: Spacing.borderRadius.xl,
       overflow: 'hidden',
-      position: 'relative',
-      ...shadows.large,
+      height: responsive.hp(30), // Increased height to 24% of screen
+      ...shadows.medium,
     },
-    gradientOverlay: {
+    backgroundImage: {
+      flex: 1,
+      justifyContent: 'center',
+    },
+    backgroundImageStyle: {
+      borderRadius: Spacing.borderRadius.xl,
+      opacity: 0.3, // Make background subtle
+    },
+    imageOverlay: {
       position: 'absolute',
       top: 0,
       left: 0,
       right: 0,
       bottom: 0,
-      backgroundColor: balance < 0 ? colors.error : colors.secondary,
-      opacity: balance < 0 ? 0.85 : 0.9,
+      backgroundColor:
+        balance < 0
+          ? 'rgba(244, 67, 54, 0.85)' // Red overlay for negative
+          : 'rgba(25, 118, 210, 0.85)', // Blue overlay for positive
+      borderRadius: Spacing.borderRadius.xl,
     },
-    cardContentContainer: {
-      padding: Spacing.xxl,
-      paddingBottom: Spacing.xl,
-      position: 'relative',
+    cardContent: {
+      flex: 1,
+      padding: Spacing.lg,
+      justifyContent: 'space-between',
       zIndex: 1,
     },
-    balanceSection: {
-      alignItems: 'center',
-      marginBottom: Spacing.xxl,
-    },
-    accountNameLabel: {
-      fontSize: Typography.fontSize.callout,
-      color: colors.textLight,
-      marginBottom: Spacing.md,
-      fontWeight: Typography.fontWeight.medium,
-    },
-    balanceLabel: {
-      fontSize: Typography.fontSize.callout,
-      color: colors.textLight,
-      marginBottom: Spacing.md,
-      fontWeight: Typography.fontWeight.medium,
-    },
-    balanceAmount: {
-      fontSize: responsive.fontSize(36),
-      fontWeight: Typography.fontWeight.bold,
-      color: colors.textLight,
-      marginBottom: Spacing.sm,
-      letterSpacing: Typography.letterSpacing.tight,
-    },
-    lastUpdated: {
-      fontSize: Typography.fontSize.footnote,
-      color: colors.overlayLight,
-      fontStyle: 'italic',
-    },
-    bottomSection: {
+    // Header section
+    cardHeader: {
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'center',
-      paddingTop: Spacing.lg,
-      borderTopWidth: 1,
-      borderTopColor: colors.overlayLight,
     },
-    statItem: {
-      flex: 1,
-      alignItems: 'center',
-    },
-    statValue: {
+    accountName: {
       fontSize: Typography.fontSize.title3,
-      fontWeight: Typography.fontWeight.bold,
-      color: colors.textLight,
-      marginBottom: 4,
+      fontWeight: Typography.fontWeight.semibold,
+      color: '#ffffff',
+      textShadowColor: 'rgba(0, 0, 0, 0.3)',
+      textShadowOffset: { width: 0, height: 1 },
+      textShadowRadius: 2,
     },
-    statLabel: {
+    warningBadge: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: 'rgba(255, 255, 255, 0.2)',
+      paddingHorizontal: Spacing.sm,
+      paddingVertical: Spacing.xs,
+      borderRadius: Spacing.borderRadius.medium,
+      gap: Spacing.xs,
+    },
+    warningText: {
+      fontSize: Typography.fontSize.caption1,
+      color: '#ffffff',
+      fontWeight: Typography.fontWeight.medium,
+    },
+    // Balance display
+    balanceDisplay: {
+      alignItems: 'center',
+      marginVertical: Spacing.sm,
+    },
+    balanceLabel: {
       fontSize: Typography.fontSize.footnote,
-      color: colors.overlayLight,
+      color: 'rgba(255, 255, 255, 0.8)',
+      marginBottom: Spacing.xs,
       textAlign: 'center',
     },
-    divider: {
-      width: 1,
-      height: 40,
-      backgroundColor: colors.overlayLight,
-      marginHorizontal: Spacing.lg,
+    balanceAmount: {
+      fontSize: responsive.fontSize(32),
+      fontWeight: Typography.fontWeight.bold,
+      color: '#ffffff',
+      textShadowColor: 'rgba(0, 0, 0, 0.3)',
+      textShadowOffset: { width: 0, height: 1 },
+      textShadowRadius: 2,
+      textAlign: 'center',
     },
-    decorativeCircle1: {
+    negativeBalance: {
+      color: '#ffcccc',
+    },
+    currency: {
+      fontSize: responsive.fontSize(20),
+      fontWeight: Typography.fontWeight.medium,
+    },
+    // Stats section
+    statsContainer: {
+      flexDirection: 'row',
+      justifyContent: 'space-around',
+      alignItems: 'center',
+      backgroundColor: 'rgba(255, 255, 255, 0.15)',
+      borderRadius: Spacing.borderRadius.medium,
+      paddingVertical: Spacing.sm,
+      paddingHorizontal: Spacing.md,
+    },
+    statBox: {
+      flex: 1,
+      alignItems: 'center',
+      gap: Spacing.xs,
+    },
+    statAmount: {
+      fontSize: Typography.fontSize.callout,
+      fontWeight: Typography.fontWeight.semibold,
+      color: '#ffffff',
+    },
+    statLabel: {
+      fontSize: Typography.fontSize.caption2,
+      color: 'rgba(255, 255, 255, 0.7)',
+      textAlign: 'center',
+    },
+    statDivider: {
+      width: 1,
+      height: responsive.hp(4),
+      backgroundColor: 'rgba(255, 255, 255, 0.3)',
+      marginHorizontal: Spacing.md,
+    },
+    // Floating decorative elements
+    floatingDot1: {
       position: 'absolute',
-      width: responsive.wp(40),
-      height: responsive.wp(40),
-      borderRadius: responsive.wp(20),
-      backgroundColor: colors.whiteTransparent,
-      top: -responsive.wp(20),
-      right: -responsive.wp(20),
+      width: responsive.wp(8),
+      height: responsive.wp(8),
+      borderRadius: responsive.wp(4),
+      backgroundColor: 'rgba(255, 255, 255, 0.2)',
+      top: Spacing.lg,
+      right: Spacing.lg,
       zIndex: 0,
     },
-    decorativeCircle2: {
+    floatingDot2: {
       position: 'absolute',
-      width: responsive.wp(26),
-      height: responsive.wp(26),
-      borderRadius: responsive.wp(13),
-      backgroundColor: colors.whiteOpaque,
-      bottom: -responsive.wp(13),
-      left: -responsive.wp(13),
+      width: responsive.wp(5),
+      height: responsive.wp(5),
+      borderRadius: responsive.wp(2.5),
+      backgroundColor: 'rgba(255, 255, 255, 0.15)',
+      bottom: Spacing.xl,
+      left: Spacing.xl,
+      zIndex: 0,
+    },
+    floatingDot3: {
+      position: 'absolute',
+      width: responsive.wp(6),
+      height: responsive.wp(6),
+      borderRadius: responsive.wp(3),
+      backgroundColor: 'rgba(255, 255, 255, 0.1)',
+      top: Spacing.xl,
+      left: '30%',
       zIndex: 0,
     },
     // Transaction Management Box
@@ -1182,62 +1230,79 @@ export default function AccountDetailScreen({ route, navigation }: any) {
           >
             {/* Account Summary Card */}
             <View style={styles.accountCard}>
-              <View style={styles.gradientOverlay} />
-              <View style={styles.cardContentContainer}>
-                <View style={styles.balanceSection}>
-                  <Text style={styles.accountNameLabel}>{accountName}</Text>
-                  <Text style={styles.balanceLabel}>
-                    {balance < 0 ? '⚠️ Negative Balance' : 'Current Balance'}
-                  </Text>
-                  <Text
-                    style={[
-                      styles.balanceAmount,
-                      balance < 0 && { color: '#ffcccc' },
-                    ]}
-                  >
-                    {balance.toFixed(2)} Tk
-                  </Text>
-                  <Text style={styles.lastUpdated}>
-                    {balance < 0
-                      ? 'Account running in deficit'
-                      : 'Last updated just now'}
-                  </Text>
-                </View>
+              <ImageBackground
+                source={require('../../assets/images/naturalflower.jpg')}
+                style={styles.backgroundImage}
+                imageStyle={styles.backgroundImageStyle}
+              >
+                <View style={styles.imageOverlay} />
+                <View style={styles.cardContent}>
+                  {/* Header with account name and balance status */}
+                  <View style={styles.cardHeader}>
+                    <Text style={styles.accountName}>{accountName}</Text>
+                    {balance < 0 && (
+                      <View style={styles.warningBadge}>
+                        <FontAwesome5
+                          name="exclamation-triangle"
+                          size={12}
+                          color="#fff"
+                        />
+                        <Text style={styles.warningText}>Deficit</Text>
+                      </View>
+                    )}
+                  </View>
 
-                <View style={styles.bottomSection}>
-                  <View style={styles.statItem}>
-                    <Text style={styles.statValue}>
-                      {currentFilter === 'all'
-                        ? totalCredit.toFixed(2)
-                        : filteredCredit.toFixed(2)}{' '}
-                      Tk
+                  {/* Main balance display */}
+                  <View style={styles.balanceDisplay}>
+                    <Text style={styles.balanceLabel}>
+                      {balance < 0 ? 'Negative Balance' : 'Available Balance'}
                     </Text>
-                    <Text style={styles.statLabel}>
-                      {currentFilter === 'all'
-                        ? 'Total Credit'
-                        : 'Filtered Credit'}
+                    <Text
+                      style={[
+                        styles.balanceAmount,
+                        balance < 0 && styles.negativeBalance,
+                      ]}
+                    >
+                      {balance.toFixed(2)}{' '}
+                      <Text style={styles.currency}>Tk</Text>
                     </Text>
                   </View>
-                  <View style={styles.divider} />
-                  <View style={styles.statItem}>
-                    <Text style={styles.statValue}>
-                      {currentFilter === 'all'
-                        ? totalDebit.toFixed(2)
-                        : filteredDebit.toFixed(2)}{' '}
-                      Tk
-                    </Text>
-                    <Text style={styles.statLabel}>
-                      {currentFilter === 'all'
-                        ? 'Total Debit'
-                        : 'Filtered Debit'}
-                    </Text>
+
+                  {/* Quick stats in a compact layout */}
+                  <View style={styles.statsContainer}>
+                    <View style={styles.statBox}>
+                      <FontAwesome5 name="arrow-up" size={14} color="#4CAF50" />
+                      <Text style={styles.statAmount}>
+                        {currentFilter === 'all'
+                          ? totalCredit.toFixed(0)
+                          : filteredCredit.toFixed(0)}
+                      </Text>
+                      <Text style={styles.statLabel}>Credit</Text>
+                    </View>
+
+                    <View style={styles.statDivider} />
+
+                    <View style={styles.statBox}>
+                      <FontAwesome5
+                        name="arrow-down"
+                        size={14}
+                        color="#f44336"
+                      />
+                      <Text style={styles.statAmount}>
+                        {currentFilter === 'all'
+                          ? totalDebit.toFixed(0)
+                          : filteredDebit.toFixed(0)}
+                      </Text>
+                      <Text style={styles.statLabel}>Debit</Text>
+                    </View>
                   </View>
                 </View>
-              </View>
 
-              {/* Decorative elements */}
-              <View style={styles.decorativeCircle1} />
-              <View style={styles.decorativeCircle2} />
+                {/* Floating decorative elements */}
+                <View style={styles.floatingDot1} />
+                <View style={styles.floatingDot2} />
+                <View style={styles.floatingDot3} />
+              </ImageBackground>
             </View>
 
             {/* Transaction Management Box */}
