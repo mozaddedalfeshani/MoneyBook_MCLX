@@ -9,8 +9,6 @@ import {
   ActivityIndicator,
   TextInput,
   Modal,
-  Platform,
-  StatusBar,
   StyleSheet,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
@@ -21,6 +19,7 @@ import {
   AccountWithStats,
 } from '../database/services/AccountService';
 import { useTheme } from '../contexts';
+import Store from '../store/store';
 
 // Typography styles moved from centralized styles
 const Typography = {
@@ -210,8 +209,22 @@ export default function TableViewScreen({ navigation }: any) {
   const loadAccounts = async () => {
     try {
       setIsLoading(true);
+
+      // Ensure Store is initialized (this will run migration if needed)
+      await Store.initialize();
+
+      // Load all accounts with their stats
       const accountsData = await AccountService.getAllAccountsWithStats();
       setAccounts(accountsData);
+
+      // If no accounts exist, create the default "Main Account"
+      if (accountsData.length === 0) {
+        await AccountService.createAccount('Main Account');
+        // Reload accounts after creating the default one
+        const updatedAccountsData =
+          await AccountService.getAllAccountsWithStats();
+        setAccounts(updatedAccountsData);
+      }
     } catch (error) {
       console.error('Error loading accounts:', error);
       Alert.alert('Error', 'Failed to load accounts');

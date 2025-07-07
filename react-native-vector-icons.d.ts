@@ -23,3 +23,16 @@ declare module 'react-native-vector-icons/AntDesign' {
 
   export default class AntDesign extends React.Component<Props> {}
 }
+
+declare module 'react-native-vector-icons/MaterialIcons' {
+  import React from 'react';
+  import { TextProps } from 'react-native';
+
+  interface Props extends TextProps {
+    name: string;
+    size?: number;
+    color?: string;
+  }
+
+  export default class MaterialIcons extends React.Component<Props> {}
+}

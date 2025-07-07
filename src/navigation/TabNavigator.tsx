@@ -1,6 +1,7 @@
 /* eslint-disable react/no-unstable-nested-components */
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { Platform } from 'react-native';
 
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import AntDesign from 'react-native-vector-icons/AntDesign';
@@ -9,7 +10,7 @@ import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import { useTheme } from '../contexts';
 
 // Import our screen components
-import HomeScreen from '../screens/HomeScreen';
+import HomeNavigator from './HomeNavigator';
 import TableViewNavigator from './TableViewNavigator';
 import SettingsNavigator from './SettingsNavigator';
 
@@ -17,7 +18,7 @@ import SettingsNavigator from './SettingsNavigator';
 const Tab = createBottomTabNavigator();
 
 export default function TabNavigator() {
-  const { colors } = useTheme();
+  const { colors, currentTheme } = useTheme();
   const insets = useSafeAreaInsets();
 
   return (
@@ -26,28 +27,31 @@ export default function TabNavigator() {
         tabBarActiveTintColor: colors.primary,
         tabBarInactiveTintColor: colors.textTertiary,
         tabBarStyle: {
-          backgroundColor: colors.white,
+          backgroundColor:
+            currentTheme === 'light' ? colors.white : colors.background,
           backdropFilter: 'blur(10px)',
           borderTopWidth: 0, // Remove top border
-          height: 80, // Increased height to show labels
+          height: 70, // Fixed height without safe area
           paddingTop: 5, // Add top padding
-          paddingBottom: 0, // Add top padding
-          paddingLeft: 0, // Add top padding
-          paddingRight: 0, // Add top padding
-          marginHorizontal: 14, // Add top padding
-          marginBottom: 9, // Add top padding
-          marginTop: 0, // Add top padding
-
-          borderRadius: 16, // Slightly smaller radius
-          shadowColor: '#000',
+          paddingBottom: 10, // Fixed bottom padding
+          paddingLeft: 0,
+          paddingRight: 0,
+          marginHorizontal: 16,
+          marginBottom: insets.bottom + 16, // Margin from bottom edge
+          marginTop: 0,
+          borderRadius: 16,
+          shadowColor: currentTheme === 'light' ? '#000' : colors.shadowPrimary,
           shadowOffset: {
             width: 0,
-            height: -2,
+            height: 4,
           },
-          shadowOpacity: 0.08,
-          shadowRadius: 8,
-          elevation: 6, // Reduced shadow
-          position: 'absolute', // Make it float
+          shadowOpacity: currentTheme === 'light' ? 0.15 : 0.25,
+          shadowRadius: 12,
+          elevation: 8,
+          position: 'absolute', // Make it floating
+          left: 0,
+          right: 0,
+          bottom: 0,
         },
         tabBarLabelStyle: {
           fontSize: 13,
@@ -60,11 +64,14 @@ export default function TabNavigator() {
           marginBottom: 3,
         },
         headerShown: false,
+        // Add keyboard handling
+        tabBarHideOnKeyboard: Platform.OS === 'android', // Hide tab bar on Android when keyboard appears
+        tabBarKeyboardHidesTabBar: true, // This helps with keyboard behavior
       })}
     >
       <Tab.Screen
         name="Home"
-        component={HomeScreen}
+        component={HomeNavigator}
         options={{
           tabBarIcon: ({ color, size }) => {
             let iconName: string = 'home';
@@ -73,12 +80,16 @@ export default function TabNavigator() {
         }}
       />
       <Tab.Screen
-        name="Table View"
+        name="Accounts"
         component={TableViewNavigator}
         options={{
           tabBarIcon: ({ color, size }) => {
             return (
-              <MaterialIcons name="table-view" size={size} color={color} />
+              <MaterialIcons
+                name="account-balance-wallet"
+                size={size}
+                color={color}
+              />
             );
           },
         }}

@@ -348,6 +348,33 @@ export default function SettingsScreen({ navigation }: any) {
           </TouchableOpacity>
         </View>
 
+        {/* Tools Section */}
+        <View style={styles.settingsSection}>
+          <Text style={styles.sectionTitle}>Tools</Text>
+
+          <TouchableOpacity
+            style={styles.navigableCard}
+            onPress={() => navigation.navigate('Calculator')}
+            activeOpacity={0.7}
+          >
+            <View style={[styles.cardIcon, { backgroundColor: '#FFF3E0' }]}>
+              <FontAwesome5 name="calculator" size={20} color="#FFA726" />
+            </View>
+            <View style={styles.cardContent}>
+              <Text style={styles.cardTitle}>Calculator</Text>
+              <Text style={styles.cardDescription}>
+                Quick calculations for your transactions
+              </Text>
+            </View>
+            <FontAwesome5
+              name="chevron-right"
+              size={16}
+              color={colors.textSecondary}
+              style={styles.chevronIcon}
+            />
+          </TouchableOpacity>
+        </View>
+
         {/* Appearance Section */}
         <View style={styles.settingsSection}>
           <Text style={styles.sectionTitle}>Appearance</Text>

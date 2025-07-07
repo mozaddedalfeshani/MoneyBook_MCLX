@@ -194,6 +194,51 @@ export class Store {
     }
   }
 
+  // Get global balance and statistics across all accounts
+  static async getGlobalStats(): Promise<{
+    globalBalance: number;
+    totalAccounts: number;
+    globalTransactionCount: number;
+    globalCashIn: number;
+    globalCashOut: number;
+  }> {
+    try {
+      // Get data step by step for better debugging
+      const allTransactions = await TransactionService.getAllTransactions();
+      const accounts = await AccountService.getAllAccounts();
+      const globalBalance = await TransactionService.getCurrentBalance();
+
+      const globalCashIn = allTransactions
+        .filter(t => t.type === 'cash_in')
+        .reduce((sum, t) => sum + t.amount, 0);
+
+      const globalCashOut = allTransactions
+        .filter(t => t.type === 'cash_out')
+        .reduce((sum, t) => sum + t.amount, 0);
+
+      // Use manual calculation if service returns 0 but we have transactions
+      const finalBalance =
+        globalBalance !== 0 ? globalBalance : globalCashIn - globalCashOut;
+
+      return {
+        globalBalance: finalBalance,
+        totalAccounts: accounts.length,
+        globalTransactionCount: allTransactions.length,
+        globalCashIn,
+        globalCashOut,
+      };
+    } catch (error) {
+      console.error('Error getting global stats:', error);
+      return {
+        globalBalance: 0,
+        totalAccounts: 0,
+        globalTransactionCount: 0,
+        globalCashIn: 0,
+        globalCashOut: 0,
+      };
+    }
+  }
+
   // NEW METHODS FOR ACCOUNT-BASED SYSTEM
 
   // Get all accounts with statistics

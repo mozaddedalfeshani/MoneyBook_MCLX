@@ -1,4 +1,4 @@
-import { Text, View, StyleSheet } from 'react-native';
+import { Text, View, StyleSheet, ImageBackground } from 'react-native';
 import React from 'react';
 import { useTheme } from '../../contexts';
 
@@ -176,6 +176,11 @@ interface HomeCardProps {
   isLoading: boolean;
   lastCashIn: number;
   lastCashOut: number;
+  totalTransactions?: number;
+  totalCashIn?: number;
+  totalCashOut?: number;
+  globalBalance?: number;
+  totalAccounts?: number;
 }
 
 const HomeCard: React.FC<HomeCardProps> = ({
@@ -183,6 +188,10 @@ const HomeCard: React.FC<HomeCardProps> = ({
   isLoading,
   lastCashIn,
   lastCashOut,
+  totalTransactions,
+  totalCashIn,
+  totalCashOut,
+
 }) => {
   const { colors } = useTheme();
   const shadows = getShadows(colors);
@@ -199,14 +208,27 @@ const HomeCard: React.FC<HomeCardProps> = ({
       position: 'relative',
       ...shadows.large,
     },
-    gradientOverlay: {
+    backgroundImage: {
+      flex: 1,
+      resizeMode: 'cover',
+    },
+    blurOverlay: {
       position: 'absolute',
       top: 0,
       left: 0,
       right: 0,
       bottom: 0,
       backgroundColor: colors.secondary,
-      opacity: 0.9,
+      opacity: 0.50,
+    },
+    gradientOverlay: {
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      backgroundColor: 'rgba(0, 0, 0, 0.3)',
+      opacity: 0.7,
     },
     contentContainer: {
       padding: Spacing.xxl,
@@ -218,17 +240,50 @@ const HomeCard: React.FC<HomeCardProps> = ({
       alignItems: 'center',
       marginBottom: Spacing.xxl,
     },
+    globalBalanceSection: {
+      alignItems: 'center',
+      marginBottom: Spacing.xl,
+      paddingBottom: Spacing.lg,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.overlayLight,
+      width: '100%',
+    },
+    globalBalanceLabel: {
+      fontSize: Typography.fontSize.small,
+      color: colors.overlayLight,
+      marginBottom: Spacing.sm,
+      fontWeight: Typography.fontWeight.medium,
+    },
+    globalBalanceAmount: {
+      fontSize: Typography.fontSize.xl,
+      fontWeight: Typography.fontWeight.bold,
+      color: colors.textLight,
+      marginBottom: 4,
+    },
+    accountCount: {
+      fontSize: Typography.fontSize.small,
+      color: colors.overlayLight,
+    },
     balanceLabel: {
       fontSize: Typography.fontSize.medium,
       color: colors.textLight,
       marginBottom: Spacing.md,
       fontWeight: Typography.fontWeight.medium,
     },
+    balanceSubLabel: {
+      fontSize: Typography.fontSize.small,
+      color: colors.overlayLight,
+      marginBottom: Spacing.md,
+    },
     balanceAmount: {
       fontSize: 36,
       fontWeight: Typography.fontWeight.bold,
       color: colors.textLight,
       marginBottom: Spacing.sm,
+    },
+    transactionCount: {
+      fontSize: Typography.fontSize.small,
+      color: colors.overlayLight,
     },
     lastUpdated: {
       fontSize: Typography.fontSize.small,
@@ -289,44 +344,91 @@ const HomeCard: React.FC<HomeCardProps> = ({
   return (
     <View style={styles.container}>
       <View style={styles.cardbox}>
-        {/* Gradient overlay */}
-        <View style={styles.gradientOverlay} />
+        {/* Background Image */}
+        <ImageBackground
+          source={require('../../../assets/images/oneflower.jpeg')}
+          style={styles.backgroundImage}
+          blurRadius={8}
+        >
+          {/* Blur and gradient overlays */}
+          <View style={styles.blurOverlay} />
+          <View style={styles.gradientOverlay} />
 
-        {/* Balance content */}
-        <View style={styles.contentContainer}>
-          <View style={styles.balanceSection}>
-            <Text style={styles.balanceLabel}>Your Balance</Text>
-            <Text style={styles.balanceAmount}>
-              {isLoading ? 'Loading...' : `${balance.toFixed(2)} Tk`}
-            </Text>
-            <Text style={styles.lastUpdated}>
-              {isLoading ? 'Loading data...' : 'Last updated just now'}
-            </Text>
+          {/* Balance content */}
+          <View style={styles.contentContainer}>
+            <View style={styles.balanceSection}>
+              {/* Global Balance Summary */}
+              {/*  */}
+
+              {/* Current Account Balance */}
+              <Text style={styles.balanceLabel}>Current Account Balance</Text>
+              <Text style={styles.balanceSubLabel}>
+                From Complete Transaction History
+              </Text>
+              <Text style={styles.balanceAmount}>
+                {isLoading ? 'Loading...' : `${balance.toFixed(2)} Tk`}
+              </Text>
+              {!isLoading && totalTransactions !== undefined && (
+                <Text style={styles.transactionCount}>
+                  Based on {totalTransactions} transaction
+                  {totalTransactions !== 1 ? 's' : ''}
+                </Text>
+              )}
+              <Text style={styles.lastUpdated}>
+                {isLoading ? 'Loading data...' : 'Last updated just now'}
+              </Text>
+            </View>
+
+            {/* Bottom section with transaction statistics */}
+            <View style={styles.bottomSection}>
+              {totalCashIn !== undefined && totalCashOut !== undefined ? (
+                <>
+                  <View style={styles.statItem}>
+                    <Text style={styles.statValue}>
+                      {totalCashIn > 0
+                        ? `+${totalCashIn.toFixed(2)} Tk`
+                        : '0.00 Tk'}
+                    </Text>
+                    <Text style={styles.statLabel}>Total Cash In</Text>
+                  </View>
+                  <View style={styles.divider} />
+                  <View style={styles.statItem}>
+                    <Text style={styles.statValue}>
+                      {totalCashOut > 0
+                        ? `-${totalCashOut.toFixed(2)} Tk`
+                        : '0.00 Tk'}
+                    </Text>
+                    <Text style={styles.statLabel}>Total Cash Out</Text>
+                  </View>
+                </>
+              ) : (
+                <>
+                  <View style={styles.statItem}>
+                    <Text style={styles.statValue}>
+                      {lastCashIn > 0
+                        ? `${lastCashIn.toFixed(2)} Tk`
+                        : 'No cash in'}
+                    </Text>
+                    <Text style={styles.statLabel}>Last Cash In</Text>
+                  </View>
+                  <View style={styles.divider} />
+                  <View style={styles.statItem}>
+                    <Text style={styles.statValue}>
+                      {lastCashOut > 0
+                        ? `${lastCashOut.toFixed(2)} Tk`
+                        : 'No cash out'}
+                    </Text>
+                    <Text style={styles.statLabel}>Last Cash Out</Text>
+                  </View>
+                </>
+              )}
+            </View>
           </View>
 
-          {/* Bottom section with last transactions */}
-          <View style={styles.bottomSection}>
-            <View style={styles.statItem}>
-              <Text style={styles.statValue}>
-                {lastCashIn > 0 ? `${lastCashIn.toFixed(2)} Tk` : 'No cash in'}
-              </Text>
-              <Text style={styles.statLabel}>Last Cash In</Text>
-            </View>
-            <View style={styles.divider} />
-            <View style={styles.statItem}>
-              <Text style={styles.statValue}>
-                {lastCashOut > 0
-                  ? `${lastCashOut.toFixed(2)} Tk`
-                  : 'No cash out'}
-              </Text>
-              <Text style={styles.statLabel}>Last Cash Out</Text>
-            </View>
-          </View>
-        </View>
-
-        {/* Decorative elements */}
-        <View style={styles.decorativeCircle1} />
-        <View style={styles.decorativeCircle2} />
+          {/* Decorative elements */}
+          <View style={styles.decorativeCircle1} />
+          <View style={styles.decorativeCircle2} />
+        </ImageBackground>
       </View>
     </View>
   );

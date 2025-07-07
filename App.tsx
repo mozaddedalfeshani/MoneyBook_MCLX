@@ -7,7 +7,7 @@ import {
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { TabNavigator } from './src/navigation';
 import { ThemeProvider, useTheme } from './src/contexts';
-import { StatusBar } from 'react-native';
+import { StatusBar, KeyboardAvoidingView, Platform } from 'react-native';
 
 function AppNavigator() {
   const { currentTheme, colors } = useTheme();
@@ -27,9 +27,15 @@ function AppNavigator() {
   };
 
   return (
-    <NavigationContainer theme={navigationTheme}>
-      <TabNavigator />
-    </NavigationContainer>
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
+    >
+      <NavigationContainer theme={navigationTheme}>
+        <TabNavigator />
+      </NavigationContainer>
+    </KeyboardAvoidingView>
   );
 }
 

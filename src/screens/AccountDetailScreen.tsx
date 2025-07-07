@@ -11,6 +11,13 @@ import {
   RefreshControl,
   ActivityIndicator,
   StyleSheet,
+  Dimensions,
+  Platform,
+  SafeAreaView,
+  KeyboardAvoidingView,
+  Keyboard,
+  TouchableWithoutFeedback,
+  ImageBackground,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
@@ -18,33 +25,49 @@ import { useFocusEffect } from '@react-navigation/native';
 import { TransactionService } from '../database/services/TransactionService';
 import { Transaction } from '../database/models/Transaction';
 import { useTheme } from '../contexts';
+import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 
-// iOS Typography System
+// Get device dimensions
+const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
+
+// Responsive utilities
+const responsive = {
+  // Width-based scaling
+  wp: (percentage: number) => (SCREEN_WIDTH * percentage) / 100,
+  // Height-based scaling
+  hp: (percentage: number) => (SCREEN_HEIGHT * percentage) / 100,
+  // Font scaling based on width
+  fontSize: (size: number) => (SCREEN_WIDTH / 375) * size, // 375 is iPhone X width
+  // Spacing scaling
+  spacing: (size: number) => (SCREEN_WIDTH / 375) * size,
+};
+
+// iOS Typography System with responsive sizing
 const Typography = {
   // iOS Font Sizes (following iOS Human Interface Guidelines)
   fontSize: {
     // iOS naming
-    caption2: 11, // Caption 2
-    caption1: 12, // Caption 1
-    footnote: 13, // Footnote
-    subheadline: 15, // Subheadline
-    callout: 16, // Callout
-    body: 17, // Body
-    headline: 17, // Headline
-    title3: 20, // Title 3
-    title2: 22, // Title 2
-    title1: 28, // Title 1
-    largeTitle: 34, // Large Title
+    caption2: responsive.fontSize(11), // Caption 2
+    caption1: responsive.fontSize(12), // Caption 1
+    footnote: responsive.fontSize(13), // Footnote
+    subheadline: responsive.fontSize(15), // Subheadline
+    callout: responsive.fontSize(16), // Callout
+    body: responsive.fontSize(17), // Body
+    headline: responsive.fontSize(17), // Headline
+    title3: responsive.fontSize(20), // Title 3
+    title2: responsive.fontSize(22), // Title 2
+    title1: responsive.fontSize(28), // Title 1
+    largeTitle: responsive.fontSize(34), // Large Title
 
     // Backward compatibility
-    tiny: 11, // Maps to caption2
-    small: 13, // Maps to footnote
-    regular: 17, // Maps to body
-    medium: 16, // Maps to callout
-    large: 20, // Maps to title3
-    xl: 22, // Maps to title2
-    xxl: 28, // Maps to title1
-    xxxl: 34, // Maps to largeTitle
+    tiny: responsive.fontSize(11), // Maps to caption2
+    small: responsive.fontSize(13), // Maps to footnote
+    regular: responsive.fontSize(17), // Maps to body
+    medium: responsive.fontSize(16), // Maps to callout
+    large: responsive.fontSize(20), // Maps to title3
+    xl: responsive.fontSize(22), // Maps to title2
+    xxl: responsive.fontSize(28), // Maps to title1
+    xxxl: responsive.fontSize(34), // Maps to largeTitle
   },
 
   // iOS Font Weights
@@ -82,57 +105,57 @@ const Typography = {
   },
 };
 
-// iOS Spacing System (8pt grid)
+// iOS Spacing System (8pt grid) with responsive sizing
 const Spacing = {
   // Base spacing unit (iOS uses 8pt grid)
-  base: 8,
+  base: responsive.spacing(8),
 
   // iOS spacing values
-  xs: 4, // 0.5x
-  sm: 8, // 1x
-  md: 16, // 2x
-  lg: 24, // 3x
-  xl: 32, // 4x
-  xxl: 40, // 5x
-  xxxl: 48, // 6x
+  xs: responsive.spacing(4), // 0.5x
+  sm: responsive.spacing(8), // 1x
+  md: responsive.spacing(16), // 2x
+  lg: responsive.spacing(24), // 3x
+  xl: responsive.spacing(32), // 4x
+  xxl: responsive.spacing(40), // 5x
+  xxxl: responsive.spacing(48), // 6x
 
   // iOS spacing
   margin: {
-    xs: 4,
-    sm: 8,
-    md: 16,
-    lg: 24,
-    xl: 32,
-    xxl: 40,
-    xxxl: 48,
+    xs: responsive.spacing(4),
+    sm: responsive.spacing(8),
+    md: responsive.spacing(16),
+    lg: responsive.spacing(24),
+    xl: responsive.spacing(32),
+    xxl: responsive.spacing(40),
+    xxxl: responsive.spacing(48),
   },
 
   padding: {
-    xs: 4,
-    sm: 8,
-    md: 16,
-    lg: 24,
-    xl: 32,
-    xxl: 40,
-    xxxl: 48,
+    xs: responsive.spacing(4),
+    sm: responsive.spacing(8),
+    md: responsive.spacing(16),
+    lg: responsive.spacing(24),
+    xl: responsive.spacing(32),
+    xxl: responsive.spacing(40),
+    xxxl: responsive.spacing(48),
   },
 
   // iOS Border radius (more rounded)
   borderRadius: {
-    small: 8,
-    medium: 12,
-    large: 16,
-    xl: 20,
-    xxl: 24,
-    xxxl: 28,
+    small: responsive.spacing(8),
+    medium: responsive.spacing(12),
+    large: responsive.spacing(16),
+    xl: responsive.spacing(20),
+    xxl: responsive.spacing(24),
+    xxxl: responsive.spacing(28),
   },
 
   // iOS Heights
   height: {
-    input: 44, // iOS standard touch target
-    button: 44, // iOS standard touch target
-    card: 200,
-    icon: 44, // iOS standard touch target
+    input: responsive.spacing(44), // iOS standard touch target
+    button: responsive.spacing(44), // iOS standard touch target
+    card: responsive.hp(25), // 25% of screen height
+    icon: responsive.spacing(44), // iOS standard touch target
   },
 
   // iOS Widths
@@ -143,10 +166,10 @@ const Spacing = {
 
   // iOS Gaps
   gap: {
-    small: 8,
-    medium: 16,
-    large: 24,
-    xl: 32,
+    small: responsive.spacing(8),
+    medium: responsive.spacing(16),
+    large: responsive.spacing(24),
+    xl: responsive.spacing(32),
   },
 };
 
@@ -240,7 +263,11 @@ export default function AccountDetailScreen({ route, navigation }: any) {
 
   // Theme-compatible gradient colors
   const gradientColors =
-    currentTheme === 'light'
+    balance < 0
+      ? currentTheme === 'light'
+        ? ['#ffe6e6', '#ffcccc', '#ffb3b3'] // Light red gradient for negative balance
+        : ['#4a1a1a', '#3d1515', '#301010'] // Dark red gradient for negative balance
+      : currentTheme === 'light'
       ? ['#f0faff', '#e6f7ff', '#f8fbff'] // Very light blue gradient
       : ['#2a2a2a', '#252525', '#1f1f1f']; // Subtle dark gradient
 
@@ -276,24 +303,27 @@ export default function AccountDetailScreen({ route, navigation }: any) {
     setFilteredDebit(debit);
   };
 
-  const applyFilter = (filter: FilterType, transactionList: Transaction[]) => {
-    let filtered: Transaction[] = [];
+  const applyFilter = useCallback(
+    (filter: FilterType, transactionList: Transaction[]) => {
+      let filtered: Transaction[] = [];
 
-    switch (filter) {
-      case 'credit':
-        filtered = transactionList.filter(t => t.type === 'cash_in');
-        break;
-      case 'debit':
-        filtered = transactionList.filter(t => t.type === 'cash_out');
-        break;
-      default:
-        filtered = transactionList;
-        break;
-    }
+      switch (filter) {
+        case 'credit':
+          filtered = transactionList.filter(t => t.type === 'cash_in');
+          break;
+        case 'debit':
+          filtered = transactionList.filter(t => t.type === 'cash_out');
+          break;
+        default:
+          filtered = transactionList;
+          break;
+      }
 
-    setFilteredTransactions(filtered);
-    calculateFilteredTotals(filtered);
-  };
+      setFilteredTransactions(filtered);
+      calculateFilteredTotals(filtered);
+    },
+    [],
+  );
 
   const handleFilterChange = (filter: FilterType) => {
     setCurrentFilter(filter);
@@ -318,13 +348,13 @@ export default function AccountDetailScreen({ route, navigation }: any) {
     } finally {
       setIsLoading(false);
     }
-  }, [accountId, currentFilter]);
+  }, [accountId, currentFilter, applyFilter]);
 
   const handleUpdatePress = () => {
-    if (!amount || parseFloat(amount) <= 0) {
+    if (!amount || parseFloat(amount) === 0) {
       Alert.alert(
         'Invalid Amount',
-        'Please enter a valid amount greater than 0',
+        'Please enter a valid amount (positive or negative)',
       );
       return;
     }
@@ -360,12 +390,47 @@ export default function AccountDetailScreen({ route, navigation }: any) {
 
   const handleDebit = async () => {
     try {
-      const debitAmount = parseFloat(amount);
+      let debitAmount = parseFloat(amount);
 
+      // If amount is negative, make it positive for debit calculation
+      if (debitAmount < 0) {
+        debitAmount = Math.abs(debitAmount);
+      }
+
+      // Show warning if going negative instead of blocking
       if (balance < debitAmount) {
         Alert.alert(
-          'Insufficient Balance',
-          "You don't have enough money for this transaction",
+          'Negative Balance Warning',
+          `This transaction will put your account in negative balance. Your new balance will be ${(
+            balance - debitAmount
+          ).toFixed(2)} Tk. Do you want to proceed?`,
+          [
+            { text: 'Cancel', style: 'cancel' },
+            {
+              text: 'Proceed',
+              style: 'destructive',
+              onPress: async () => {
+                await TransactionService.addTransaction(
+                  accountId,
+                  'cash_out',
+                  debitAmount,
+                  reason,
+                );
+                await loadAccountData();
+                setModalVisible(false);
+                setAmount('');
+                setReason('');
+
+                const reasonText = reason.trim() ? ` (${reason.trim()})` : '';
+                Alert.alert(
+                  'Success',
+                  `Debit successful! New balance: ${
+                    balance - debitAmount
+                  } Tk${reasonText}`,
+                );
+              },
+            },
+          ],
         );
         return;
       }
@@ -606,26 +671,42 @@ export default function AccountDetailScreen({ route, navigation }: any) {
     </View>
   );
 
-  // Get modal title and default buttons based on current filter
+  // Get modal title and default buttons based on amount and filter
   const getModalConfig = () => {
+    const amountValue = parseFloat(amount);
+
+    // If amount is negative, auto-detect as debit
+    if (amountValue < 0) {
+      return {
+        title: 'Negative Amount (Debit)',
+        showCredit: false,
+        showDebit: true,
+        autoDetected: true,
+      };
+    }
+
+    // If amount is positive, check filter
     switch (currentFilter) {
       case 'credit':
         return {
           title: 'Add Credit Transaction',
           showCredit: true,
           showDebit: false,
+          autoDetected: false,
         };
       case 'debit':
         return {
           title: 'Add Debit Transaction',
           showCredit: false,
           showDebit: true,
+          autoDetected: false,
         };
       default:
         return {
           title: 'Choose Transaction Type',
           showCredit: true,
           showDebit: true,
+          autoDetected: false,
         };
     }
   };
@@ -645,104 +726,160 @@ export default function AccountDetailScreen({ route, navigation }: any) {
       paddingTop: Spacing.xl,
       paddingBottom: 40,
     },
-    // Account Summary Card
+    // Account Summary Card - Compact & Charming Design
     accountCard: {
-      margin: Spacing.lg,
-      marginBottom: Spacing.md,
-      borderRadius: Spacing.borderRadius.xxl,
+      marginHorizontal: Spacing.lg,
+      marginTop: 0,
+      marginBottom: 0,
+      borderRadius: Spacing.borderRadius.xl,
       overflow: 'hidden',
-      position: 'relative',
-      ...shadows.large,
+      height: responsive.hp(30), // Increased height to 24% of screen
+      ...shadows.medium,
     },
-    gradientOverlay: {
+    backgroundImage: {
+      flex: 1,
+      justifyContent: 'center',
+    },
+    backgroundImageStyle: {
+      borderRadius: Spacing.borderRadius.xl,
+      opacity: 0.6, // Increased opacity to make background more visible
+    },
+    imageOverlay: {
       position: 'absolute',
       top: 0,
       left: 0,
       right: 0,
       bottom: 0,
-      backgroundColor: colors.secondary,
-      opacity: 0.9,
+      backgroundColor:
+        balance < 0
+          ? 'rgba(220, 20, 60, 0.65)' // Reduced opacity for negative balance
+          : 'rgba(25, 118, 210, 0.60)', // Reduced opacity for positive balance
+      borderRadius: Spacing.borderRadius.xl,
     },
-    cardContentContainer: {
-      padding: Spacing.xxl,
-      paddingBottom: Spacing.xl,
-      position: 'relative',
+    cardContent: {
+      flex: 1,
+      padding: Spacing.lg,
+      justifyContent: 'space-between',
       zIndex: 1,
     },
-    balanceSection: {
-      alignItems: 'center',
-      marginBottom: Spacing.xxl,
-    },
-    accountNameLabel: {
-      fontSize: Typography.fontSize.callout,
-      color: colors.textLight,
-      marginBottom: Spacing.md,
-      fontWeight: Typography.fontWeight.medium,
-    },
-    balanceLabel: {
-      fontSize: Typography.fontSize.callout,
-      color: colors.textLight,
-      marginBottom: Spacing.md,
-      fontWeight: Typography.fontWeight.medium,
-    },
-    balanceAmount: {
-      fontSize: 36,
-      fontWeight: Typography.fontWeight.bold,
-      color: colors.textLight,
-      marginBottom: Spacing.sm,
-    },
-    lastUpdated: {
-      fontSize: Typography.fontSize.footnote,
-      color: colors.overlayLight,
-      fontStyle: 'italic',
-    },
-    bottomSection: {
+    // Header section
+    cardHeader: {
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'center',
-      paddingTop: Spacing.lg,
-      borderTopWidth: 1,
-      borderTopColor: colors.overlayLight,
     },
-    statItem: {
-      flex: 1,
-      alignItems: 'center',
-    },
-    statValue: {
+    accountName: {
       fontSize: Typography.fontSize.title3,
-      fontWeight: Typography.fontWeight.bold,
-      color: colors.textLight,
-      marginBottom: 4,
+      fontWeight: Typography.fontWeight.semibold,
+      color: '#ffffff',
+      textShadowColor: 'rgba(0, 0, 0, 0.3)',
+      textShadowOffset: { width: 0, height: 1 },
+      textShadowRadius: 2,
     },
-    statLabel: {
+    warningBadge: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: 'rgba(255, 255, 255, 0.2)',
+      paddingHorizontal: Spacing.sm,
+      paddingVertical: Spacing.xs,
+      borderRadius: Spacing.borderRadius.medium,
+      gap: Spacing.xs,
+    },
+    warningText: {
+      fontSize: Typography.fontSize.caption1,
+      color: '#ffffff',
+      fontWeight: Typography.fontWeight.medium,
+    },
+    // Balance display
+    balanceDisplay: {
+      alignItems: 'center',
+      marginVertical: Spacing.sm,
+    },
+    balanceLabel: {
       fontSize: Typography.fontSize.footnote,
-      color: colors.overlayLight,
+      color: 'rgba(255, 255, 255, 0.8)',
+      marginBottom: Spacing.xs,
       textAlign: 'center',
     },
-    divider: {
-      width: 1,
-      height: 40,
-      backgroundColor: colors.overlayLight,
-      marginHorizontal: Spacing.lg,
+    balanceAmount: {
+      fontSize: responsive.fontSize(32),
+      fontWeight: Typography.fontWeight.bold,
+      color: '#ffffff',
+      textShadowColor: 'rgba(0, 0, 0, 0.3)',
+      textShadowOffset: { width: 0, height: 1 },
+      textShadowRadius: 2,
+      textAlign: 'center',
     },
-    decorativeCircle1: {
+    negativeBalance: {
+      color: '#ff6b6b', // Brighter red for negative balance
+      textShadowColor: 'rgba(139, 0, 0, 0.5)', // Dark red shadow
+      textShadowOffset: { width: 0, height: 1 },
+      textShadowRadius: 3,
+    },
+    currency: {
+      fontSize: responsive.fontSize(20),
+      fontWeight: Typography.fontWeight.medium,
+    },
+    // Stats section
+    statsContainer: {
+      flexDirection: 'row',
+      justifyContent: 'space-around',
+      alignItems: 'center',
+      backgroundColor: 'rgba(255, 255, 255, 0.15)',
+      borderRadius: Spacing.borderRadius.medium,
+      paddingVertical: Spacing.sm,
+      paddingHorizontal: Spacing.md,
+    },
+    statBox: {
+      flex: 1,
+      alignItems: 'center',
+      gap: Spacing.xs,
+    },
+    statAmount: {
+      fontSize: Typography.fontSize.callout,
+      fontWeight: Typography.fontWeight.semibold,
+      color: '#ffffff',
+    },
+    statLabel: {
+      fontSize: Typography.fontSize.caption2,
+      color: 'rgba(255, 255, 255, 0.7)',
+      textAlign: 'center',
+    },
+    statDivider: {
+      width: 1,
+      height: responsive.hp(4),
+      backgroundColor: 'rgba(255, 255, 255, 0.3)',
+      marginHorizontal: Spacing.md,
+    },
+    // Floating decorative elements
+    floatingDot1: {
       position: 'absolute',
-      width: 150,
-      height: 150,
-      borderRadius: 75,
-      backgroundColor: colors.whiteTransparent,
-      top: -75,
-      right: -75,
+      width: responsive.wp(8),
+      height: responsive.wp(8),
+      borderRadius: responsive.wp(4),
+      backgroundColor: 'rgba(255, 255, 255, 0.2)',
+      top: Spacing.lg,
+      right: Spacing.lg,
       zIndex: 0,
     },
-    decorativeCircle2: {
+    floatingDot2: {
       position: 'absolute',
-      width: 100,
-      height: 100,
-      borderRadius: 50,
-      backgroundColor: colors.whiteOpaque,
-      bottom: -50,
-      left: -50,
+      width: responsive.wp(5),
+      height: responsive.wp(5),
+      borderRadius: responsive.wp(2.5),
+      backgroundColor: 'rgba(255, 255, 255, 0.15)',
+      bottom: Spacing.xl,
+      left: Spacing.xl,
+      zIndex: 0,
+    },
+    floatingDot3: {
+      position: 'absolute',
+      width: responsive.wp(6),
+      height: responsive.wp(6),
+      borderRadius: responsive.wp(3),
+      backgroundColor: 'rgba(255, 255, 255, 0.1)',
+      top: Spacing.xl,
+      left: '30%',
       zIndex: 0,
     },
     // Transaction Management Box
@@ -753,8 +890,10 @@ export default function AccountDetailScreen({ route, navigation }: any) {
           : 'rgba(45, 45, 45, 0.9)',
       marginHorizontal: Spacing.lg,
       marginTop: Spacing.xl,
-      borderRadius: Spacing.borderRadius.xl,
-      padding: Spacing.xl,
+      borderRadius: 10,
+      paddingLeft: Spacing.sm,
+      paddingRight: Spacing.sm,
+      paddingVertical: Spacing.md,
       ...shadows.medium,
       borderWidth: 1,
       borderColor:
@@ -769,6 +908,13 @@ export default function AccountDetailScreen({ route, navigation }: any) {
       marginBottom: Spacing.lg,
       textAlign: 'center',
     },
+    negativeWarning: {
+      fontSize: Typography.fontSize.footnote,
+      color: colors.error,
+      textAlign: 'center',
+      marginBottom: Spacing.md,
+      fontStyle: 'italic',
+    },
     inputContainer: {
       flexDirection: 'row',
       alignItems: 'center',
@@ -780,7 +926,7 @@ export default function AccountDetailScreen({ route, navigation }: any) {
       borderWidth: Spacing.width.border,
       borderColor: colors.border,
       borderRadius: Spacing.borderRadius.medium,
-      paddingHorizontal: Spacing.lg,
+      paddingHorizontal: Spacing.sm,
       fontSize: Typography.fontSize.body,
       backgroundColor: colors.veryLightGray,
       color: colors.textPrimary,
@@ -788,7 +934,7 @@ export default function AccountDetailScreen({ route, navigation }: any) {
     updateButton: {
       backgroundColor: colors.secondary,
       paddingHorizontal: Spacing.xl,
-      paddingVertical: Spacing.lg,
+      paddingVertical: Spacing.sm,
       borderRadius: Spacing.borderRadius.medium,
       minWidth: 80,
     },
@@ -810,8 +956,8 @@ export default function AccountDetailScreen({ route, navigation }: any) {
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'center',
-      paddingVertical: Spacing.md,
-      paddingHorizontal: Spacing.lg,
+      paddingVertical: Spacing.sm,
+      paddingHorizontal: Spacing.sm,
       borderRadius: Spacing.borderRadius.medium,
       backgroundColor:
         currentTheme === 'light'
@@ -835,11 +981,12 @@ export default function AccountDetailScreen({ route, navigation }: any) {
     },
     // Transaction History
     transactionsList: {
-      marginTop: Spacing.lg,
+      marginBottom: Spacing.xxxl,
+      marginTop: Spacing.sm,
     },
     transactionsHeader: {
       paddingHorizontal: Spacing.lg,
-      paddingVertical: Spacing.md,
+      paddingVertical: Spacing.sm,
       marginBottom: Spacing.md,
       flexDirection: 'row',
       justifyContent: 'space-between',
@@ -876,9 +1023,9 @@ export default function AccountDetailScreen({ route, navigation }: any) {
       alignItems: 'flex-start',
     },
     transactionIcon: {
-      width: 40,
-      height: 40,
-      borderRadius: 20,
+      width: responsive.wp(11),
+      height: responsive.wp(11),
+      borderRadius: responsive.wp(5.5),
       justifyContent: 'center',
       alignItems: 'center',
       marginRight: Spacing.md,
@@ -956,18 +1103,21 @@ export default function AccountDetailScreen({ route, navigation }: any) {
     // Modal styles
     modalOverlay: {
       flex: 1,
-      backgroundColor: colors.overlay,
+      backgroundColor:
+        Platform.OS === 'ios' ? 'rgba(0, 0, 0, 0.5)' : colors.overlay,
       justifyContent: 'center',
       alignItems: 'center',
       padding: Spacing.xl,
+      paddingBottom: Platform.OS === 'ios' ? responsive.hp(10) : Spacing.xl,
     },
     modalContent: {
       backgroundColor: colors.white,
       borderRadius: Spacing.borderRadius.xxl,
       padding: Spacing.xxl,
-      width: '100%',
-      maxWidth: 350,
+      width: responsive.wp(90),
+      maxWidth: responsive.wp(95),
       alignItems: 'center',
+      ...shadows.large,
     },
     modalTitle: {
       fontSize: Typography.fontSize.xl,
@@ -981,6 +1131,13 @@ export default function AccountDetailScreen({ route, navigation }: any) {
       fontWeight: Typography.fontWeight.semibold,
       color: colors.primary,
       marginBottom: Spacing.xl,
+    },
+    autoDetectedText: {
+      fontSize: Typography.fontSize.footnote,
+      color: colors.warning,
+      textAlign: 'center',
+      marginBottom: Spacing.md,
+      fontStyle: 'italic',
     },
     reasonContainer: {
       width: '100%',
@@ -1052,6 +1209,10 @@ export default function AccountDetailScreen({ route, navigation }: any) {
       fontSize: Typography.fontSize.medium,
       fontWeight: Typography.fontWeight.medium,
     },
+    modalKeyboardAvoid: {
+      width: '100%',
+      alignItems: 'center',
+    },
   });
 
   if (isLoading) {
@@ -1071,246 +1232,350 @@ export default function AccountDetailScreen({ route, navigation }: any) {
   }
 
   return (
-    <LinearGradient
-      colors={gradientColors}
-      style={styles.gradientContainer}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 1, y: 1 }}
-    >
-      <ScrollView
-        style={styles.container}
-        contentContainerStyle={styles.contentContainer}
-        refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={onRefresh}
-            colors={[colors.primary]}
-            tintColor={colors.primary}
-          />
-        }
+    <SafeAreaView style={{ flex: 1 }}>
+      <LinearGradient
+        colors={gradientColors}
+        style={styles.gradientContainer}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
       >
-        {/* Account Summary Card */}
-        <View style={styles.accountCard}>
-          <View style={styles.gradientOverlay} />
-          <View style={styles.cardContentContainer}>
-            <View style={styles.balanceSection}>
-              <Text style={styles.accountNameLabel}>{accountName}</Text>
-              <Text style={styles.balanceLabel}>Current Balance</Text>
-              <Text style={styles.balanceAmount}>{balance.toFixed(2)} Tk</Text>
-              <Text style={styles.lastUpdated}>Last updated just now</Text>
-            </View>
-
-            <View style={styles.bottomSection}>
-              <View style={styles.statItem}>
-                <Text style={styles.statValue}>
-                  {currentFilter === 'all'
-                    ? totalCredit.toFixed(2)
-                    : filteredCredit.toFixed(2)}{' '}
-                  Tk
-                </Text>
-                <Text style={styles.statLabel}>
-                  {currentFilter === 'all' ? 'Total Credit' : 'Filtered Credit'}
-                </Text>
-              </View>
-              <View style={styles.divider} />
-              <View style={styles.statItem}>
-                <Text style={styles.statValue}>
-                  {currentFilter === 'all'
-                    ? totalDebit.toFixed(2)
-                    : filteredDebit.toFixed(2)}{' '}
-                  Tk
-                </Text>
-                <Text style={styles.statLabel}>
-                  {currentFilter === 'all' ? 'Total Debit' : 'Filtered Debit'}
-                </Text>
-              </View>
-            </View>
-          </View>
-
-          {/* Decorative elements */}
-          <View style={styles.decorativeCircle1} />
-          <View style={styles.decorativeCircle2} />
-        </View>
-
-        {/* Transaction Management Box */}
-        <View style={styles.managementBox}>
-          <Text style={styles.boxTitle}>Add Transaction</Text>
-
-          <View style={styles.inputContainer}>
-            <TextInput
-              style={styles.input}
-              placeholder="Enter amount (Tk)"
-              placeholderTextColor={colors.textSecondary}
-              value={amount}
-              onChangeText={setAmount}
-              keyboardType="numeric"
-            />
-            <TouchableOpacity
-              style={styles.updateButton}
-              onPress={handleUpdatePress}
-              activeOpacity={0.7}
-            >
-              <Text style={styles.updateButtonText}>Add</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-
-        {/* Filter Buttons */}
-        <View style={styles.filterContainer}>
-          {renderFilterButton('all', 'All', 'list')}
-          {renderFilterButton('credit', 'Credit', 'plus')}
-          {renderFilterButton('debit', 'Debit', 'minus')}
-        </View>
-
-        {/* Transaction History */}
-        <View style={styles.transactionsList}>
-          <View style={styles.transactionsHeader}>
-            <Text style={styles.transactionsTitle}>
-              Transaction History ({filteredTransactions.length})
-            </Text>
-            {currentFilter !== 'all' && (
-              <Text style={styles.filterSummary}>
-                Showing {currentFilter} only
-              </Text>
-            )}
-          </View>
-
-          <FlatList
-            data={filteredTransactions}
-            renderItem={renderTransaction}
-            keyExtractor={item => item.id}
-            ListEmptyComponent={renderEmptyState}
-            scrollEnabled={false}
+        <KeyboardAvoidingView
+          style={{ flex: 1 }}
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
+        >
+          <ScrollView
+            style={styles.container}
+            contentContainerStyle={styles.contentContainer}
+            refreshControl={
+              <RefreshControl
+                refreshing={refreshing}
+                onRefresh={onRefresh}
+                colors={[colors.primary]}
+                tintColor={colors.primary}
+              />
+            }
             showsVerticalScrollIndicator={false}
-          />
-        </View>
-
-        {/* Add Transaction Modal */}
-        <Modal
-          animationType="slide"
-          transparent={true}
-          visible={modalVisible}
-          onRequestClose={closeModal}
-        >
-          <View style={styles.modalOverlay}>
-            <View style={styles.modalContent}>
-              <Text style={styles.modalTitle}>{modalConfig.title}</Text>
-              <Text style={styles.modalAmount}>Amount: {amount} Tk</Text>
-
-              <View style={styles.reasonContainer}>
-                <Text style={styles.reasonLabel}>Reason (Optional)</Text>
-                <TextInput
-                  style={styles.reasonInput}
-                  placeholder="e.g., Groceries, Salary, Gift..."
-                  placeholderTextColor={colors.textSecondary}
-                  value={reason}
-                  onChangeText={setReason}
-                  multiline={true}
-                  maxLength={100}
-                />
-              </View>
-
-              <View
-                style={[
-                  styles.modalButtons,
-                  (!modalConfig.showCredit || !modalConfig.showDebit) && {
-                    justifyContent: 'center',
-                  },
-                ]}
+            keyboardShouldPersistTaps="handled"
+          >
+            {/* Account Summary Card */}
+            <View style={styles.accountCard}>
+              <ImageBackground
+                source={
+                  balance < 0
+                    ? require('../../assets/images/loan.png')
+                    : require('../../assets/images/naturalflower.jpg')
+                }
+                style={styles.backgroundImage}
+                imageStyle={styles.backgroundImageStyle}
               >
-                {modalConfig.showCredit && (
-                  <TouchableOpacity
-                    style={[styles.modalButton, styles.creditButton]}
-                    onPress={handleCredit}
-                    activeOpacity={0.7}
-                  >
-                    <Text style={styles.modalButtonText}>💰 Credit</Text>
-                  </TouchableOpacity>
-                )}
+                <View style={styles.imageOverlay} />
+                <View style={styles.cardContent}>
+                  {/* Header with account name and balance status */}
+                  <View style={styles.cardHeader}>
+                    <Text style={styles.accountName}>{accountName}</Text>
+                    {balance < 0 && (
+                      <View style={styles.warningBadge}>
+                        <FontAwesome5
+                          name="exclamation-triangle"
+                          size={12}
+                          color="#fff"
+                        />
+                        <Text style={styles.warningText}>Deficit</Text>
+                      </View>
+                    )}
+                  </View>
 
-                {modalConfig.showDebit && (
-                  <TouchableOpacity
-                    style={[styles.modalButton, styles.debitButton]}
-                    onPress={handleDebit}
-                    activeOpacity={0.7}
-                  >
-                    <Text style={styles.modalButtonText}>💸 Debit</Text>
-                  </TouchableOpacity>
-                )}
-              </View>
+                  {/* Main balance display */}
+                  <View style={styles.balanceDisplay}>
+                    <Text style={styles.balanceLabel}>
+                      {balance < 0 ? 'Negative Balance' : 'Available Balance'}
+                    </Text>
+                    <Text
+                      style={[
+                        styles.balanceAmount,
+                        balance < 0 && styles.negativeBalance,
+                      ]}
+                    >
+                      {balance.toFixed(2)}{' '}
+                      <Text style={styles.currency}>Tk</Text>
+                    </Text>
+                  </View>
 
-              <TouchableOpacity
-                style={styles.cancelButton}
-                onPress={closeModal}
-                activeOpacity={0.7}
-              >
-                <Text style={styles.cancelButtonText}>Cancel</Text>
-              </TouchableOpacity>
+                  {/* Quick stats in a compact layout */}
+                  <View style={styles.statsContainer}>
+                    <View style={styles.statBox}>
+                      <FontAwesome5 name="arrow-up" size={14} color="#4CAF50" />
+                      <Text style={styles.statAmount}>
+                        {currentFilter === 'all'
+                          ? totalCredit.toFixed(0)
+                          : filteredCredit.toFixed(0)}
+                      </Text>
+                      <Text style={styles.statLabel}>Credit</Text>
+                    </View>
+
+                    <View style={styles.statDivider} />
+
+                    <View style={styles.statBox}>
+                      <FontAwesome5
+                        name="arrow-down"
+                        size={14}
+                        color="#f44336"
+                      />
+                      <Text style={styles.statAmount}>
+                        {currentFilter === 'all'
+                          ? totalDebit.toFixed(0)
+                          : filteredDebit.toFixed(0)}
+                      </Text>
+                      <Text style={styles.statLabel}>Debit</Text>
+                    </View>
+                  </View>
+                </View>
+
+                {/* Floating decorative elements */}
+                <View style={styles.floatingDot1} />
+                <View style={styles.floatingDot2} />
+                <View style={styles.floatingDot3} />
+              </ImageBackground>
             </View>
-          </View>
-        </Modal>
 
-        {/* Edit Transaction Modal */}
-        <Modal
-          animationType="slide"
-          transparent={true}
-          visible={editModalVisible}
-          onRequestClose={closeEditModal}
-        >
-          <View style={styles.modalOverlay}>
-            <View style={styles.modalContent}>
-              <Text style={styles.modalTitle}>Edit Transaction</Text>
-              <Text style={styles.modalAmount}>
-                Type:{' '}
-                {editingTransaction?.type === 'cash_in' ? 'Credit' : 'Debit'}
-              </Text>
+            {/* Transaction Management Box */}
+            <View
+              style={[
+                styles.managementBox,
+                balance < 0 && {
+                  borderColor:
+                    currentTheme === 'light'
+                      ? 'rgba(255, 0, 0, 0.3)'
+                      : 'rgba(255, 100, 100, 0.3)',
+                },
+              ]}
+            >
+              <Text style={styles.boxTitle}>Add Transaction</Text>
 
-              <View style={styles.reasonContainer}>
-                <Text style={styles.reasonLabel}>Amount (Tk)</Text>
+              {balance < 0 && (
+                <Text style={styles.negativeWarning}>
+                  ⚠️ Account is running negative
+                </Text>
+              )}
+
+              <View style={styles.inputContainer}>
                 <TextInput
-                  style={styles.reasonInput}
-                  placeholder="Enter amount"
+                  style={styles.input}
+                  placeholder="Amount (Tk)"
                   placeholderTextColor={colors.textSecondary}
                   value={amount}
                   onChangeText={setAmount}
                   keyboardType="numeric"
                 />
-              </View>
-
-              <View style={styles.reasonContainer}>
-                <Text style={styles.reasonLabel}>Reason</Text>
-                <TextInput
-                  style={styles.reasonInput}
-                  placeholder="e.g., Groceries, Salary, Gift..."
-                  placeholderTextColor={colors.textSecondary}
-                  value={reason}
-                  onChangeText={setReason}
-                  multiline={true}
-                  maxLength={100}
-                />
-              </View>
-
-              <View style={styles.modalButtons}>
                 <TouchableOpacity
-                  style={[styles.modalButton, styles.updateTransactionButton]}
-                  onPress={handleUpdateTransaction}
+                  style={styles.updateButton}
+                  onPress={handleUpdatePress}
                   activeOpacity={0.7}
                 >
-                  <Text style={styles.modalButtonText}>Update</Text>
+                  <Text style={styles.updateButtonText}>
+                    <MaterialIcons
+                      name="history-edu"
+                      size={25}
+                      color={colors.textLight}
+                    />
+                  </Text>
                 </TouchableOpacity>
               </View>
-
-              <TouchableOpacity
-                style={styles.cancelButton}
-                onPress={closeEditModal}
-                activeOpacity={0.7}
-              >
-                <Text style={styles.cancelButtonText}>Cancel</Text>
-              </TouchableOpacity>
             </View>
-          </View>
-        </Modal>
-      </ScrollView>
-    </LinearGradient>
+
+            {/* Filter Buttons */}
+            <View style={styles.filterContainer}>
+              {renderFilterButton('all', 'All', 'list')}
+              {renderFilterButton('credit', 'Credit', 'plus')}
+              {renderFilterButton('debit', 'Debit', 'minus')}
+            </View>
+
+            {/* Transaction History */}
+            <View style={styles.transactionsList}>
+              <View style={styles.transactionsHeader}>
+                <Text style={styles.transactionsTitle}>
+                  Transaction History ({filteredTransactions.length})
+                </Text>
+                {currentFilter !== 'all' && (
+                  <Text style={styles.filterSummary}>
+                    Showing {currentFilter} only
+                  </Text>
+                )}
+              </View>
+
+              <FlatList
+                data={filteredTransactions}
+                renderItem={renderTransaction}
+                keyExtractor={item => item.id}
+                ListEmptyComponent={renderEmptyState}
+                scrollEnabled={false}
+                showsVerticalScrollIndicator={false}
+              />
+            </View>
+
+            {/* Add Transaction Modal */}
+            <Modal
+              animationType="slide"
+              transparent={true}
+              visible={modalVisible}
+              onRequestClose={closeModal}
+              presentationStyle="pageSheet"
+            >
+              <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+                <View style={styles.modalOverlay}>
+                  <KeyboardAvoidingView
+                    behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+                    style={styles.modalKeyboardAvoid}
+                  >
+                    <View style={styles.modalContent}>
+                      <Text style={styles.modalTitle}>{modalConfig.title}</Text>
+                      <Text style={styles.modalAmount}>
+                        Amount: {Math.abs(parseFloat(amount) || 0).toFixed(2)}{' '}
+                        Tk
+                      </Text>
+                      {modalConfig.autoDetected && (
+                        <Text style={styles.autoDetectedText}>
+                          ⚡ Auto-detected as debit transaction
+                        </Text>
+                      )}
+
+                      <View style={styles.reasonContainer}>
+                        <Text style={styles.reasonLabel}>
+                          Reason (Optional)
+                        </Text>
+                        <TextInput
+                          style={styles.reasonInput}
+                          placeholder="e.g., Groceries, Salary, Gift..."
+                          placeholderTextColor={colors.textSecondary}
+                          value={reason}
+                          onChangeText={setReason}
+                          multiline={true}
+                          maxLength={100}
+                        />
+                      </View>
+
+                      <View
+                        style={[
+                          styles.modalButtons,
+                          (!modalConfig.showCredit ||
+                            !modalConfig.showDebit) && {
+                            justifyContent: 'center',
+                          },
+                        ]}
+                      >
+                        {modalConfig.showCredit && (
+                          <TouchableOpacity
+                            style={[styles.modalButton, styles.creditButton]}
+                            onPress={handleCredit}
+                            activeOpacity={0.7}
+                          >
+                            <Text style={styles.modalButtonText}>
+                              💰 Credit
+                            </Text>
+                          </TouchableOpacity>
+                        )}
+
+                        {modalConfig.showDebit && (
+                          <TouchableOpacity
+                            style={[styles.modalButton, styles.debitButton]}
+                            onPress={handleDebit}
+                            activeOpacity={0.7}
+                          >
+                            <Text style={styles.modalButtonText}>💸 Debit</Text>
+                          </TouchableOpacity>
+                        )}
+                      </View>
+
+                      <TouchableOpacity
+                        style={styles.cancelButton}
+                        onPress={closeModal}
+                        activeOpacity={0.7}
+                      >
+                        <Text style={styles.cancelButtonText}>Cancel</Text>
+                      </TouchableOpacity>
+                    </View>
+                  </KeyboardAvoidingView>
+                </View>
+              </TouchableWithoutFeedback>
+            </Modal>
+
+            {/* Edit Transaction Modal */}
+            <Modal
+              animationType="slide"
+              transparent={true}
+              visible={editModalVisible}
+              onRequestClose={closeEditModal}
+              presentationStyle="pageSheet"
+            >
+              <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+                <View style={styles.modalOverlay}>
+                  <KeyboardAvoidingView
+                    behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+                    style={styles.modalKeyboardAvoid}
+                  >
+                    <View style={styles.modalContent}>
+                      <Text style={styles.modalTitle}>Edit Transaction</Text>
+                      <Text style={styles.modalAmount}>
+                        Type:{' '}
+                        {editingTransaction?.type === 'cash_in'
+                          ? 'Credit'
+                          : 'Debit'}
+                      </Text>
+
+                      <View style={styles.reasonContainer}>
+                        <Text style={styles.reasonLabel}>Amount (Tk)</Text>
+                        <TextInput
+                          style={styles.reasonInput}
+                          placeholder="Enter amount"
+                          placeholderTextColor={colors.textSecondary}
+                          value={amount}
+                          onChangeText={setAmount}
+                          keyboardType="numeric"
+                        />
+                      </View>
+
+                      <View style={styles.reasonContainer}>
+                        <Text style={styles.reasonLabel}>Reason</Text>
+                        <TextInput
+                          style={styles.reasonInput}
+                          placeholder="e.g., Groceries, Salary, Gift..."
+                          placeholderTextColor={colors.textSecondary}
+                          value={reason}
+                          onChangeText={setReason}
+                          multiline={true}
+                          maxLength={100}
+                        />
+                      </View>
+
+                      <View style={styles.modalButtons}>
+                        <TouchableOpacity
+                          style={[
+                            styles.modalButton,
+                            styles.updateTransactionButton,
+                          ]}
+                          onPress={handleUpdateTransaction}
+                          activeOpacity={0.7}
+                        >
+                          <Text style={styles.modalButtonText}>Update</Text>
+                        </TouchableOpacity>
+                      </View>
+
+                      <TouchableOpacity
+                        style={styles.cancelButton}
+                        onPress={closeEditModal}
+                        activeOpacity={0.7}
+                      >
+                        <Text style={styles.cancelButtonText}>Cancel</Text>
+                      </TouchableOpacity>
+                    </View>
+                  </KeyboardAvoidingView>
+                </View>
+              </TouchableWithoutFeedback>
+            </Modal>
+          </ScrollView>
+        </KeyboardAvoidingView>
+      </LinearGradient>
+    </SafeAreaView>
   );
 }
