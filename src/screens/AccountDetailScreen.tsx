@@ -4,7 +4,6 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  Modal,
   Alert,
   ScrollView,
   FlatList,
@@ -15,8 +14,6 @@ import {
   Platform,
   SafeAreaView,
   KeyboardAvoidingView,
-  Keyboard,
-  TouchableWithoutFeedback,
   ImageBackground,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
@@ -26,7 +23,7 @@ import { TransactionService } from '../database/services/TransactionService';
 import { Transaction } from '../database/models/Transaction';
 import { useTheme } from '../contexts';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
-import DatePicker from 'react-native-date-picker';
+import { AddTransactionModal, EditTransactionModal } from '../components';
 
 // Get device dimensions
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
@@ -1144,168 +1141,6 @@ export default function AccountDetailScreen({ route, navigation }: any) {
       fontSize: Typography.fontSize.medium,
       color: colors.textSecondary,
     },
-    // Modal styles
-    modalOverlay: {
-      flex: 1,
-      backgroundColor:
-        Platform.OS === 'ios' ? 'rgba(0, 0, 0, 0.5)' : colors.overlay,
-      justifyContent: 'center',
-      alignItems: 'center',
-      padding: Spacing.xl,
-      paddingBottom: Platform.OS === 'ios' ? responsive.hp(10) : Spacing.xl,
-    },
-    modalContent: {
-      backgroundColor: colors.white,
-      borderRadius: Spacing.borderRadius.xxl,
-      padding: Spacing.xxl,
-      width: responsive.wp(90),
-      maxWidth: responsive.wp(95),
-      alignItems: 'center',
-      ...shadows.large,
-    },
-    modalTitle: {
-      fontSize: Typography.fontSize.xl,
-      fontWeight: Typography.fontWeight.bold,
-      color: colors.textPrimary,
-      marginBottom: Spacing.lg,
-      textAlign: 'center',
-    },
-    modalAmount: {
-      fontSize: Typography.fontSize.large,
-      fontWeight: Typography.fontWeight.semibold,
-      color: colors.primary,
-      marginBottom: Spacing.xl,
-    },
-    autoDetectedText: {
-      fontSize: Typography.fontSize.footnote,
-      color: colors.warning,
-      textAlign: 'center',
-      marginBottom: Spacing.md,
-      fontStyle: 'italic',
-    },
-    reasonContainer: {
-      width: '100%',
-      marginBottom: Spacing.xl,
-    },
-    reasonLabel: {
-      fontSize: Typography.fontSize.medium,
-      fontWeight: Typography.fontWeight.semibold,
-      color: colors.textPrimary,
-      marginBottom: Spacing.md,
-    },
-    reasonInput: {
-      borderWidth: Spacing.width.border,
-      borderColor: colors.border,
-      borderRadius: Spacing.borderRadius.medium,
-      paddingHorizontal: Spacing.lg,
-      paddingVertical: Spacing.md,
-      fontSize: Typography.fontSize.medium,
-      backgroundColor: colors.veryLightGray,
-      color: colors.textPrimary,
-      minHeight: 60,
-      textAlignVertical: 'top',
-    },
-    modalButtons: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      width: '100%',
-      gap: Spacing.gap.medium,
-      marginBottom: Spacing.xl,
-    },
-    modalButton: {
-      flex: 1,
-      paddingVertical: Spacing.lg,
-      paddingHorizontal: Spacing.lg,
-      borderRadius: Spacing.borderRadius.large,
-      alignItems: 'center',
-    },
-    creditButton: {
-      backgroundColor: colors.success,
-    },
-    debitButton: {
-      backgroundColor: colors.error,
-    },
-    updateTransactionButton: {
-      backgroundColor: colors.primary,
-    },
-    modalButtonText: {
-      color: colors.textLight,
-      fontSize: Typography.fontSize.medium,
-      fontWeight: Typography.fontWeight.semibold,
-    },
-    actionButtons: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      width: '100%',
-      gap: Spacing.gap.medium,
-    },
-    actionButton: {
-      flex: 1,
-      paddingVertical: Spacing.md,
-      borderRadius: Spacing.borderRadius.medium,
-      alignItems: 'center',
-    },
-    cancelButton: {
-      backgroundColor: colors.gray,
-    },
-    cancelButtonText: {
-      color: colors.textLight,
-      fontSize: Typography.fontSize.medium,
-      fontWeight: Typography.fontWeight.medium,
-    },
-    modalKeyboardAvoid: {
-      width: '100%',
-      alignItems: 'center',
-    },
-    // Date picker styles
-    datePickerContainer: {
-      width: '100%',
-      marginBottom: Spacing.xl,
-    },
-    datePickerLabel: {
-      fontSize: Typography.fontSize.medium,
-      fontWeight: Typography.fontWeight.semibold,
-      color: colors.textPrimary,
-      marginBottom: Spacing.md,
-    },
-    dateToggleContainer: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      marginBottom: Spacing.md,
-    },
-    dateToggleText: {
-      fontSize: Typography.fontSize.medium,
-      color: colors.textPrimary,
-      marginRight: Spacing.sm,
-    },
-    dateDisplayContainer: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      borderWidth: Spacing.width.border,
-      borderColor: colors.border,
-      borderRadius: Spacing.borderRadius.medium,
-      paddingHorizontal: Spacing.lg,
-      paddingVertical: Spacing.md,
-      backgroundColor: colors.veryLightGray,
-    },
-    dateDisplayText: {
-      flex: 1,
-      fontSize: Typography.fontSize.medium,
-      color: colors.textPrimary,
-      paddingVertical: Spacing.sm,
-    },
-    datePickerButton: {
-      backgroundColor: colors.primary,
-      paddingHorizontal: Spacing.md,
-      paddingVertical: Spacing.sm,
-      borderRadius: Spacing.borderRadius.small,
-      marginLeft: Spacing.sm,
-    },
-    datePickerButtonText: {
-      color: colors.textLight,
-      fontSize: Typography.fontSize.small,
-      fontWeight: Typography.fontWeight.medium,
-    },
   });
 
   if (isLoading) {
@@ -1508,299 +1343,41 @@ export default function AccountDetailScreen({ route, navigation }: any) {
             </View>
 
             {/* Add Transaction Modal */}
-            <Modal
-              animationType="slide"
-              transparent={true}
+            <AddTransactionModal
               visible={modalVisible}
-              onRequestClose={closeModal}
-              presentationStyle="pageSheet"
-            >
-              <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-                <View style={styles.modalOverlay}>
-                  <KeyboardAvoidingView
-                    behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-                    style={styles.modalKeyboardAvoid}
-                  >
-                    <View style={styles.modalContent}>
-                      <Text style={styles.modalTitle}>{modalConfig.title}</Text>
-                      <Text style={styles.modalAmount}>
-                        Amount: {Math.abs(parseFloat(amount) || 0).toFixed(2)}{' '}
-                        Tk
-                      </Text>
-                      {modalConfig.autoDetected && (
-                        <Text style={styles.autoDetectedText}>
-                          ⚡ Auto-detected as debit transaction
-                        </Text>
-                      )}
-
-                      <View style={styles.reasonContainer}>
-                        <Text style={styles.reasonLabel}>
-                          Reason (Optional)
-                        </Text>
-                        <TextInput
-                          style={styles.reasonInput}
-                          placeholder="e.g., Groceries, Salary, Gift..."
-                          placeholderTextColor={colors.textSecondary}
-                          value={reason}
-                          onChangeText={setReason}
-                          multiline={true}
-                          maxLength={100}
-                        />
-                      </View>
-
-                      {/* Date Picker Section */}
-                      <View style={styles.datePickerContainer}>
-                        <Text style={styles.datePickerLabel}>
-                          Transaction Date
-                        </Text>
-
-                        <View style={styles.dateToggleContainer}>
-                          <Text style={styles.dateToggleText}>
-                            Use custom date:
-                          </Text>
-                          <TouchableOpacity
-                            style={[
-                              styles.datePickerButton,
-                              !useCustomDate && {
-                                backgroundColor: colors.gray,
-                              },
-                            ]}
-                            onPress={() => setUseCustomDate(!useCustomDate)}
-                            activeOpacity={0.7}
-                          >
-                            <Text style={styles.datePickerButtonText}>
-                              {useCustomDate ? 'ON' : 'OFF'}
-                            </Text>
-                          </TouchableOpacity>
-                        </View>
-
-                        {useCustomDate && (
-                          <View style={styles.dateDisplayContainer}>
-                            <Text style={styles.dateDisplayText}>
-                              {formatDate(selectedDate)}
-                            </Text>
-                            <TouchableOpacity
-                              style={styles.datePickerButton}
-                              onPress={() => setShowDatePicker(true)}
-                              activeOpacity={0.7}
-                            >
-                              <Text style={styles.datePickerButtonText}>
-                                <FontAwesome5
-                                  name="calendar-alt"
-                                  size={12}
-                                  color={colors.textLight}
-                                />
-                              </Text>
-                            </TouchableOpacity>
-                          </View>
-                        )}
-                      </View>
-
-                      <View
-                        style={[
-                          styles.modalButtons,
-                          (!modalConfig.showCredit ||
-                            !modalConfig.showDebit) && {
-                            justifyContent: 'center',
-                          },
-                        ]}
-                      >
-                        {modalConfig.showCredit && (
-                          <TouchableOpacity
-                            style={[styles.modalButton, styles.creditButton]}
-                            onPress={handleCredit}
-                            activeOpacity={0.7}
-                          >
-                            <Text style={styles.modalButtonText}>
-                              💰 Credit
-                            </Text>
-                          </TouchableOpacity>
-                        )}
-
-                        {modalConfig.showDebit && (
-                          <TouchableOpacity
-                            style={[styles.modalButton, styles.debitButton]}
-                            onPress={handleDebit}
-                            activeOpacity={0.7}
-                          >
-                            <Text style={styles.modalButtonText}>💸 Debit</Text>
-                          </TouchableOpacity>
-                        )}
-                      </View>
-
-                      <TouchableOpacity
-                        style={styles.cancelButton}
-                        onPress={closeModal}
-                        activeOpacity={0.7}
-                      >
-                        <Text style={styles.cancelButtonText}>Cancel</Text>
-                      </TouchableOpacity>
-                    </View>
-                  </KeyboardAvoidingView>
-                </View>
-              </TouchableWithoutFeedback>
-            </Modal>
-
-            {/* Date Picker Modal for Add Transaction */}
-            <DatePicker
-              modal
-              open={showDatePicker}
-              date={selectedDate}
-              mode="date"
-              maximumDate={new Date()}
-              onConfirm={date => {
-                setShowDatePicker(false);
-                setSelectedDate(date);
-              }}
-              onCancel={() => {
-                setShowDatePicker(false);
-              }}
+              onClose={closeModal}
+              amount={amount}
+              reason={reason}
+              onReasonChange={setReason}
+              selectedDate={selectedDate}
+              showDatePicker={showDatePicker}
+              useCustomDate={useCustomDate}
+              modalConfig={modalConfig}
+              onSetShowDatePicker={setShowDatePicker}
+              onSetUseCustomDate={setUseCustomDate}
+              onSetSelectedDate={setSelectedDate}
+              onCredit={handleCredit}
+              onDebit={handleDebit}
+              formatDate={formatDate}
             />
 
             {/* Edit Transaction Modal */}
-            <Modal
-              animationType="slide"
-              transparent={true}
+            <EditTransactionModal
               visible={editModalVisible}
-              onRequestClose={closeEditModal}
-              presentationStyle="pageSheet"
-            >
-              <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-                <View style={styles.modalOverlay}>
-                  <KeyboardAvoidingView
-                    behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-                    style={styles.modalKeyboardAvoid}
-                  >
-                    <View style={styles.modalContent}>
-                      <Text style={styles.modalTitle}>Edit Transaction</Text>
-                      <Text style={styles.modalAmount}>
-                        Type:{' '}
-                        {editingTransaction?.type === 'cash_in'
-                          ? 'Credit'
-                          : 'Debit'}
-                      </Text>
-
-                      <View style={styles.reasonContainer}>
-                        <Text style={styles.reasonLabel}>Amount (Tk)</Text>
-                        <TextInput
-                          style={styles.reasonInput}
-                          placeholder="Enter amount"
-                          placeholderTextColor={colors.textSecondary}
-                          value={amount}
-                          onChangeText={setAmount}
-                          keyboardType="numeric"
-                        />
-                      </View>
-
-                      <View style={styles.reasonContainer}>
-                        <Text style={styles.reasonLabel}>Reason</Text>
-                        <TextInput
-                          style={styles.reasonInput}
-                          placeholder="e.g., Groceries, Salary, Gift..."
-                          placeholderTextColor={colors.textSecondary}
-                          value={reason}
-                          onChangeText={setReason}
-                          multiline={true}
-                          maxLength={100}
-                        />
-                      </View>
-
-                      {/* Edit Date Picker Section */}
-                      <View style={styles.datePickerContainer}>
-                        <Text style={styles.datePickerLabel}>
-                          Transaction Date
-                        </Text>
-
-                        <View style={styles.dateToggleContainer}>
-                          <Text style={styles.dateToggleText}>
-                            Update date:
-                          </Text>
-                          <TouchableOpacity
-                            style={[
-                              styles.datePickerButton,
-                              !editUseCustomDate && {
-                                backgroundColor: colors.gray,
-                              },
-                            ]}
-                            onPress={() =>
-                              setEditUseCustomDate(!editUseCustomDate)
-                            }
-                            activeOpacity={0.7}
-                          >
-                            <Text style={styles.datePickerButtonText}>
-                              {editUseCustomDate ? 'ON' : 'OFF'}
-                            </Text>
-                          </TouchableOpacity>
-                        </View>
-
-                        <View style={styles.dateDisplayContainer}>
-                          <Text style={styles.dateDisplayText}>
-                            Current: {formatDate(editSelectedDate)}
-                          </Text>
-                        </View>
-
-                        {editUseCustomDate && (
-                          <View style={styles.dateDisplayContainer}>
-                            <Text style={styles.dateDisplayText}>
-                              New: {formatDate(editSelectedDate)}
-                            </Text>
-                            <TouchableOpacity
-                              style={styles.datePickerButton}
-                              onPress={() => setEditShowDatePicker(true)}
-                              activeOpacity={0.7}
-                            >
-                              <Text style={styles.datePickerButtonText}>
-                                <FontAwesome5
-                                  name="calendar-alt"
-                                  size={12}
-                                  color={colors.textLight}
-                                />
-                              </Text>
-                            </TouchableOpacity>
-                          </View>
-                        )}
-                      </View>
-
-                      <View style={styles.modalButtons}>
-                        <TouchableOpacity
-                          style={[
-                            styles.modalButton,
-                            styles.updateTransactionButton,
-                          ]}
-                          onPress={handleUpdateTransaction}
-                          activeOpacity={0.7}
-                        >
-                          <Text style={styles.modalButtonText}>Update</Text>
-                        </TouchableOpacity>
-                      </View>
-
-                      <TouchableOpacity
-                        style={styles.cancelButton}
-                        onPress={closeEditModal}
-                        activeOpacity={0.7}
-                      >
-                        <Text style={styles.cancelButtonText}>Cancel</Text>
-                      </TouchableOpacity>
-                    </View>
-                  </KeyboardAvoidingView>
-                </View>
-              </TouchableWithoutFeedback>
-            </Modal>
-
-            {/* Date Picker Modal for Edit Transaction */}
-            <DatePicker
-              modal
-              open={editShowDatePicker}
-              date={editSelectedDate}
-              mode="date"
-              maximumDate={new Date()}
-              onConfirm={date => {
-                setEditShowDatePicker(false);
-                setEditSelectedDate(date);
-              }}
-              onCancel={() => {
-                setEditShowDatePicker(false);
-              }}
+              onClose={closeEditModal}
+              editingTransaction={editingTransaction}
+              amount={amount}
+              reason={reason}
+              onAmountChange={setAmount}
+              onReasonChange={setReason}
+              editSelectedDate={editSelectedDate}
+              editShowDatePicker={editShowDatePicker}
+              editUseCustomDate={editUseCustomDate}
+              onSetEditShowDatePicker={setEditShowDatePicker}
+              onSetEditUseCustomDate={setEditUseCustomDate}
+              onSetEditSelectedDate={setEditSelectedDate}
+              onUpdateTransaction={handleUpdateTransaction}
+              formatDate={formatDate}
             />
           </ScrollView>
         </KeyboardAvoidingView>
